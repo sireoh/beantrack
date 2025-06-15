@@ -2,6 +2,7 @@ import { TableBody, TableCell, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import WatchlistTableImage from "./watchlist-table-image";
 import WatchlistTableTitle from "./watchlist-table-title";
+import WatchlistTableProgress from "./watchlist-table-progress";
 
 export interface MockDataProps {
   id: string;
@@ -72,16 +73,7 @@ const WatchlistTableBody = () => {
 
           {/* Watchlist Table Progress */}
           <TableCell className="text-center">
-            <div className="hidden md:flex justify-center items-center gap-1">
-              <Button variant="ghost" size="sm">
-                -
-              </Button>
-              /
-              <Button variant="ghost" size="sm">
-                +
-              </Button>
-            </div>
-            <span>{item.episodesSeen}</span>/<span>{item.totalEpisodes}</span>
+            <WatchlistTableProgress {...item} />
           </TableCell>
         </TableRow>
       ))}

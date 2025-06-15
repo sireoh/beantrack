@@ -34,9 +34,7 @@ const WatchlistTableProgress = ({
           <Plus />
         </Button>
       </div>
-      <span>
-        <span>{episodesSeen}</span>/<span>{totalEpisodes}</span>
-      </span>
+      <span>{`${episodesSeen}/${totalEpisodes}`}</span>
     </div>
   );
 };

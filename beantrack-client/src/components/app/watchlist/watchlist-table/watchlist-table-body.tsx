@@ -1,79 +1,66 @@
 import { TableBody, TableCell, TableRow } from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
 import WatchlistTableImage from "./watchlist-table-image";
 import WatchlistTableTitle from "./watchlist-table-title";
 import WatchlistTableProgress from "./watchlist-table-progress";
+import res from "@/lib/mock-data/beantrack-mock-data.json";
+import WatchlistTableStatus from "./watchlist-table-status";
 
-export interface MockDataProps {
+export interface MockDataInsideProps {
   id: string;
+  status: string;
+  image: string;
   title: string;
-  href: string;
-  episodesSeen: number;
+  imdb: string;
+  score: Float16Array;
+  type: string;
+  currentEpisode: number;
   totalEpisodes: number;
 }
 
-const mockdata: MockDataProps[] = [
-  {
-    id: "32925",
-    title: "Hotel del Luna",
-    href: "/32925-hotel-del-luna",
-    episodesSeen: 0,
-    totalEpisodes: 16,
-  },
-  {
-    id: "750681",
-    title: "Light Shop",
-    href: "/750681-shop-of-the-lamp",
-    episodesSeen: 0,
-    totalEpisodes: 8,
-  },
-  {
-    id: "34063",
-    title: "Melting Me Softly",
-    href: "/34063-let-me-melt",
-    episodesSeen: 0,
-    totalEpisodes: 16,
-  },
-  {
-    id: "725367",
-    title: "Queen of Tears",
-    href: "/725367-untitled-park-ji-eun-project",
-    episodesSeen: 6,
-    totalEpisodes: 16,
-  },
-];
+export interface MockDataOutsideProps {
+  _id: {
+    data: MockDataInsideProps[];
+  };
+}
 
-const WatchlistTableBody = () => {
+const WatchlistTableBody = ({ screenSize }: { screenSize: string }) => {
   return (
     <TableBody>
-      {mockdata.map((item) => (
+      {res.data.map((item, index) => (
         <TableRow key={item.id}>
           {/* Watchlist Table Status */}
-          <TableCell className="bg-fuchsia-500 w-[1px] p-0"></TableCell>
+          <WatchlistTableStatus status={item.status} />
 
           {/* Watchlist Table Number */}
-          <TableCell className="text-end w-[1px] px-0">
-            <span className="text-sm">1</span>
-          </TableCell>
+          {screenSize == "desktop" && (
+            <TableCell className="text-center w-[1px] px-2">
+              <span className="text-sm">{index + 1}</span>
+            </TableCell>
+          )}
 
           {/* Watchlist Table Image */}
-          <TableCell className="w-[1px] px-0">
-            <WatchlistTableImage />
+          <TableCell className="w-[1px] p-0">
+            <WatchlistTableImage image={item.image} title={item.title} />
           </TableCell>
 
           {/* Watchlist Table Title */}
-          <TableCell className="">
-            <WatchlistTableTitle {...item} />
+          <TableCell className="max-w-[180px] sm:max-w-none whitespace-nowrap overflow-hidden text-ellipsis">
+            <WatchlistTableTitle imdb={item.imdb} title={item.title} />
           </TableCell>
 
-          {/* Watchlist Table Score */}
-          <TableCell className="text-center w-[1px] px-0">
-            <span className="text-sm">1</span>
-          </TableCell>
+          {/* Watchlist Table Score: Desktop/Tablet Only*/}
+          {screenSize == "desktop" && (
+            <TableCell className="text-center w-[1px] p-0">
+              <span className="text-sm">{item.score}</span>
+            </TableCell>
+          )}
 
           {/* Watchlist Table Progress */}
           <TableCell className="text-center">
-            <WatchlistTableProgress {...item} />
+            <WatchlistTableProgress
+              currentEpisode={item.currentEpisode}
+              totalEpisodes={item.totalEpisodes}
+            />
           </TableCell>
         </TableRow>
       ))}

@@ -1,13 +1,16 @@
 import Link from "next/link";
 import React from "react";
-import { MockDataProps } from "./watchlist-table-body";
 import { WatchlistTableTitleEditButton } from "./watchlist-table-title-edit-button";
+import { MockDataInsideProps } from "./watchlist-table-body";
 
-const WatchlistTableTitle = ({ href, title }: MockDataProps) => {
+const WatchlistTableTitle = ({
+  imdb,
+  title,
+}: Pick<MockDataInsideProps, "imdb" | "title">) => {
   return (
     <div className="flex justify-between items-center">
       <Link
-        href={href}
+        href={"https://www.imdb.com/title/" + imdb}
         target="_blank"
         className="text-primary font-semibold hover:underline">
         {title}

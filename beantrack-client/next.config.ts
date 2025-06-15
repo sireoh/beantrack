@@ -6,7 +6,7 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       {
         protocol: "https",
-        hostname: "cdn.myanimelist.net",
+        hostname: "static.tvmaze.com",
         pathname: "/**",
       },
     ],

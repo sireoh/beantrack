@@ -1,15 +1,21 @@
 import Link from "next/link";
 import Image from "next/image";
-import React from "react";
+import React, { useState } from "react";
+import { MockDataInsideProps } from "./watchlist-table-body";
 
-const WatchlistTableImage = () => {
+const WatchlistTableImage = ({
+  image,
+  title,
+}: Pick<MockDataInsideProps, "image" | "title">) => {
+  const _url = `https://static.tvmaze.com/uploads/images/original_untouched${image}.jpg`;
+
   return (
     <div className="flex justify-center items-center">
       <Link href="/anime/56038/Lazarus" className="link sort">
         <Image
-          src="https://cdn.myanimelist.net/r/192x272/images/anime/1098/150300.jpg?s=419e7b1639949c581db4de0e03cf3669"
-          alt="Lazarus"
-          width={48}
+          src={_url}
+          alt={title}
+          width={60}
           height={68}
           className="hover-info image"
         />

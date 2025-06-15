@@ -36,7 +36,11 @@ export default function RootLayout({
           disableTransitionOnChange>
           <div className="min-h-screen flex flex-col">
             <Navbar />
-            <SearchbarMobileDropdown />
+
+            {/* Search Mobile Dropdown */}
+            <div className="lg:hidden">
+              <SearchbarMobileDropdown />
+            </div>
             <main className="flex-1 light:bg-gray-200">
               <section className="py-4">
                 <div className="container mx-auto px-4">{children}</div>

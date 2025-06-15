@@ -15,31 +15,25 @@ const WatchlistTemplate = ({ type }: { type: string }) => {
 
       {/* Watchlist Status Tabs: Desktop */}
       <div className="hidden lg:flex">
-        <WatchlistStatusTabs
-          type={type == "tv" ? "tv" : "movie"}
-          screenSize="desktop"
-        />
+        <WatchlistStatusTabs type={type} screenSize="desktop" />
       </div>
       {/* End Watchlist Status Tabs: Desktop */}
 
       {/* Watchlist Status Tabs: Mobile */}
       <div className="block lg:hidden">
-        <WatchlistStatusTabs
-          type={type == "tv" ? "tv" : "movie"}
-          screenSize="mobile"
-        />
+        <WatchlistStatusTabs type={type} screenSize="mobile" />
       </div>
       {/* End Watchlist Status Tabs: Mobile */}
 
       {/* Watchlist Table: Desktop */}
       <div className="hidden lg:flex">
-        <WatchlistTable />
+        <WatchlistTable type={type} />
       </div>
       {/* End Watchlist Status Tabs: Desktop */}
 
       {/* Watchlist Table: Mobile */}
       <div className="block lg:hidden">
-        <WatchlistTable />
+        <WatchlistTable type={type} />
       </div>
       {/* End Watchlist Status Tabs: Mobile */}
     </>

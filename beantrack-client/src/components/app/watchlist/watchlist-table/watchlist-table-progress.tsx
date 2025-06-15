@@ -2,14 +2,14 @@
 
 import { Button } from "@/components/ui/button";
 import React from "react";
-import { MockDataProps } from "./watchlist-table-body";
 import { Minus, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { MockDataInsideProps } from "./watchlist-table-body";
 
 const WatchlistTableProgress = ({
-  episodesSeen,
+  currentEpisode,
   totalEpisodes,
-}: MockDataProps) => {
+}: Pick<MockDataInsideProps, "currentEpisode" | "totalEpisodes">) => {
   const _padding = "p-0 m-0 h-auto w-auto min-h-0 min-w-0";
   const _main =
     "leading-none rounded-sm text-xs light:bg-white dark:text-sky-600 text-sky-800 border-1 light:border-gray-400";
@@ -34,7 +34,7 @@ const WatchlistTableProgress = ({
           <Plus />
         </Button>
       </div>
-      <span>{`${episodesSeen}/${totalEpisodes}`}</span>
+      <span>{`${currentEpisode}/${totalEpisodes}`}</span>
     </div>
   );
 };

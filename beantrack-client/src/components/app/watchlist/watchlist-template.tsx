@@ -1,5 +1,6 @@
 import React from "react";
 import { WatchlistStatusTabs } from "./watchlist-status-tabs";
+import WatchlistTable from "./watchlist-table/watchlist-table";
 
 const WatchlistTemplate = ({ type }: { type: string }) => {
   return (
@@ -27,6 +28,18 @@ const WatchlistTemplate = ({ type }: { type: string }) => {
           type={type == "tv" ? "tv" : "movie"}
           screenSize="mobile"
         />
+      </div>
+      {/* End Watchlist Status Tabs: Mobile */}
+
+      {/* Watchlist Table: Desktop */}
+      <div className="hidden lg:flex">
+        <WatchlistTable />
+      </div>
+      {/* End Watchlist Status Tabs: Desktop */}
+
+      {/* Watchlist Table: Mobile */}
+      <div className="block lg:hidden">
+        <WatchlistTable />
       </div>
       {/* End Watchlist Status Tabs: Mobile */}
     </>

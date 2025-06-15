@@ -44,14 +44,17 @@ export function Searchbar() {
                 <FormControl>
                   <Input
                     placeholder="Search ..."
-                    className="h-8 px-2 rounded border placeholder:text-white selection:bg-sky-600 selection:text-white text-white"
+                    className="h-8 px-2 rounded border placeholder:text-white selection:bg-sky-600 selection:text-white text-white border-gray-400"
                     {...field}
                   />
                 </FormControl>
               </FormItem>
             )}
           />
-          <Button type="submit" variant="outline" className="">
+          <Button
+            type="submit"
+            variant="outline"
+            className="py-1.5 h-auto w-auto min-h-0 min-w-0 leading-none rounded-sm text-xs bg-opacity-0 text-white border-1 border-gray-400 dark:border-gray-400 hover:bg-gray-200">
             <Search />
           </Button>
         </div>

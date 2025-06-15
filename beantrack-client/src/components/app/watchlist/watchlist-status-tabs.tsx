@@ -91,7 +91,7 @@ const WatchlistStatusTabsDesktop = ({
 }: WatchlistStatusTabsScreenProps) => {
   return (
     <Tabs value={activeTab}>
-      <TabsList className="p-0">
+      <TabsList className="p-0 my-2">
         {tabs.map((tab) => (
           <TabsTrigger
             key={tab.href}
@@ -117,7 +117,7 @@ const WatchlistStatusTabsMobile = ({
   router,
 }: WatchlistStatusTabsScreenProps) => {
   return (
-    <div className="block mb-4">
+    <div className="block">
       <Select
         value={activeTab == "" ? "all" : activeTab}
         onValueChange={(value) => {

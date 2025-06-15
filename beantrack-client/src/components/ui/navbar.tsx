@@ -1,7 +1,8 @@
 import { Button } from "@/components/ui/button";
-import { Searchbar, SearchbarMobile } from "../app/searchbar";
+import { Searchbar } from "../app/searchbar";
 import WelcomeMessage from "../app/welcome-message";
 import ProfilePictureDropdown from "../app/profile-picture-dropdown";
+import { SearchbarMobile } from "../app/search-mobile";
 
 interface MenuItem {
   title: string;

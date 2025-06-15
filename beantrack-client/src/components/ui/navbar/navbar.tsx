@@ -1,8 +1,9 @@
 import { Button } from "@/components/ui/button";
-import { Searchbar } from "../app/searchbar";
-import WelcomeMessage from "../app/welcome-message";
-import ProfilePictureDropdown from "../app/profile-picture-dropdown";
-import { SearchbarMobile } from "../app/search-mobile";
+import { Searchbar } from "../../app/searchbar";
+import WelcomeMessage from "../../app/welcome-message";
+import ProfilePictureDropdown from "../../app/profile-picture-dropdown";
+import { SearchbarMobile } from "../../app/search-mobile";
+import NavbarTitle, { NavbarTitleProps } from "./navbar-title";
 
 interface MenuItem {
   title: string;
@@ -13,13 +14,7 @@ interface MenuItem {
 }
 
 interface NavbarProps {
-  logo?: {
-    url: string;
-    src: string;
-    alt: string;
-    title: string;
-  };
-  menu?: MenuItem[];
+  navbarTitle?: NavbarTitleProps;
   navbarRight?: {
     login: {
       title: string;
@@ -29,9 +24,9 @@ interface NavbarProps {
 }
 
 const Navbar = ({
-  logo = {
+  navbarTitle = {
     url: "/",
-    src: "images/peapod.png",
+    src: "/images/peapod.png",
     alt: "logo",
     title: "BeanTrack",
   },
@@ -43,15 +38,8 @@ const Navbar = ({
     <section className="py-4 bg-sky-800">
       {/* Desktop Menu */}
       <nav className="hidden lg:flex items-center justify-between">
-        {/* NavbarLeft: Logo */}
-        <div className="flex items-center gap-2">
-          <a href={logo.url} className="flex items-center gap-2">
-            <img src={logo.src} className="max-h-8" alt={logo.alt} />
-            <span className="text-lg font-semibold tracking-tighter">
-              {logo.title}
-            </span>
-          </a>
-        </div>
+        {/* NavbarLeft: Title and Logo */}
+        <NavbarTitle {...navbarTitle} />
 
         {/* Right Side: Authenticated or Login */}
         <div className="flex items-center gap-4">
@@ -71,14 +59,9 @@ const Navbar = ({
 
       {/* Mobile Menu */}
       <div className="block lg:hidden">
-        <div className="flex items-center justify-between">
-          {/* NavbarLeft: Logo */}
-          <a href={logo.url} className="flex items-center gap-2">
-            <img src={logo.src} className="max-h-8" alt={logo.alt} />
-            <span className="text-lg font-semibold tracking-tighter">
-              {logo.title}
-            </span>
-          </a>
+        <nav className="flex items-center justify-between">
+          {/* NavbarLeft: Title and Logo */}
+          <NavbarTitle {...navbarTitle} />
 
           {/* Right Side: Authenticated or Login */}
           <div className="flex items-center gap-4">
@@ -93,7 +76,7 @@ const Navbar = ({
               </Button>
             )}
           </div>
-        </div>
+        </nav>
       </div>
     </section>
   );

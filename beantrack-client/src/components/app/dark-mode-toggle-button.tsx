@@ -4,6 +4,8 @@ import React, { useState } from "react";
 import { Button } from "../ui/button";
 import { cn } from "@/lib/utils";
 import { useTheme } from "next-themes";
+import { DropdownMenuItem } from "../ui/dropdown-menu";
+import { Moon } from "lucide-react";
 
 const DarkModeToggleButton = () => {
   const { setTheme, theme } = useTheme();
@@ -30,11 +32,15 @@ const DarkModeToggleButton = () => {
   }
 
   return (
-    <Button
-      className={cn(_darkModeMainClasses, getCurrentDynamicClass())}
-      onClick={toggleDarkMode}>
-      {theme == "dark" ? "ON" : "OFF"}
-    </Button>
+    <DropdownMenuItem asChild onClick={toggleDarkMode}>
+      <div className="flex justify-between items-center w-full text-info">
+        <Moon />
+        Dark Mode
+        <Button className={cn(_darkModeMainClasses, getCurrentDynamicClass())}>
+          {theme == "dark" ? "ON" : "OFF"}
+        </Button>
+      </div>
+    </DropdownMenuItem>
   );
 };
 

@@ -1,12 +1,5 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import {
-  ChevronDown,
-  Clapperboard,
-  LogOut,
-  Moon,
-  Settings,
-  Tv,
-} from "lucide-react";
+import { ChevronDown, Clapperboard, LogOut, Settings, Tv } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -37,14 +30,14 @@ const ProfilePictureDropdown = () => {
 
       <DropdownMenuContent className="w-72">
         <DropdownMenuItem asChild>
-          <Link href="/tvlist">
+          <Link href={`/tvlist/${process.env.NEXT_PUBLIC_USERNAME}`}>
             <Tv />
             TV List
           </Link>
         </DropdownMenuItem>
 
         <DropdownMenuItem asChild>
-          <Link href="/movielist">
+          <Link href={`/movielist/${process.env.NEXT_PUBLIC_USERNAME}`}>
             <Clapperboard />
             Movie List
           </Link>
@@ -57,13 +50,7 @@ const ProfilePictureDropdown = () => {
           </Link>
         </DropdownMenuItem>
 
-        <DropdownMenuItem asChild>
-          <div className="flex justify-between items-center w-full text-info">
-            <Moon />
-            Dark Mode
-            <DarkModeToggleButton />
-          </div>
-        </DropdownMenuItem>
+        <DarkModeToggleButton />
 
         <DropdownMenuSeparator />
 

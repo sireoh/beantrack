@@ -15,7 +15,10 @@ export function SearchbarMobile() {
   const navbar = useStore((state) => state.navbar);
 
   return (
-    <Button variant="ghost" onClick={() => navbar.toggleExpand()}>
+    <Button
+      variant="ghost"
+      className="text-white"
+      onClick={() => navbar.toggleExpand()}>
       <Search />
     </Button>
   );

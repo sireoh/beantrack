@@ -43,15 +43,15 @@ export function Searchbar() {
               <FormItem>
                 <FormControl>
                   <Input
-                    placeholder="Search..."
-                    className="h-8 px-2 rounded border"
+                    placeholder="Search ..."
+                    className="h-8 px-2 rounded border placeholder:text-white selection:bg-sky-600 selection:text-white text-white"
                     {...field}
                   />
                 </FormControl>
               </FormItem>
             )}
           />
-          <Button type="submit" variant="outline">
+          <Button type="submit" variant="outline" className="">
             <Search />
           </Button>
         </div>

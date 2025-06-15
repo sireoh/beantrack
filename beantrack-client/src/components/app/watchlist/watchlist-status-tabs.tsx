@@ -4,6 +4,13 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
 import { usePathname, useRouter } from "next/navigation";
 import React from "react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 type TabArrayType = { label: string; href: string }[];
 
@@ -49,14 +56,21 @@ export const WatchlistStatusTabs = ({
   const _hrefBase = `/${type}list/${process.env.NEXT_PUBLIC_USERNAME}/`;
 
   // Determine active tab by current URL
-  const activeTab =
+  const activeTab: string =
     tabs
       .slice() // create a copy
       .reverse() // check more specific routes first
       .find((tab) => pathname.endsWith("/" + tab.href))?.href || "";
 
   if (screenSize === "mobile") {
-    return <WatchlistStatusTabsMobile />;
+    return (
+      <WatchlistStatusTabsMobile
+        activeTab={activeTab}
+        tabs={tabs}
+        _hrefBase={_hrefBase}
+        router={router}
+      />
+    );
   } else {
     return (
       <WatchlistStatusTabsDesktop
@@ -96,6 +110,33 @@ const WatchlistStatusTabsDesktop = ({
   );
 };
 
-const WatchlistStatusTabsMobile = () => {
-  return "";
+const WatchlistStatusTabsMobile = ({
+  activeTab,
+  tabs,
+  _hrefBase = "",
+  router,
+}: WatchlistStatusTabsScreenProps) => {
+  return (
+    <div className="block mb-4">
+      <Select
+        value={activeTab == "" ? "all" : activeTab}
+        onValueChange={(value) => {
+          router.push(value == "all" ? _hrefBase : _hrefBase + value);
+        }}>
+        <SelectTrigger className="w-full dark:bg-gray-700 rounded-none dark:[&>svg]:text-white dark:hover:bg-gray-600">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent className="w-full dark:bg-gray-700 rounded-none dark:[&>svg]:text-white dark:hover:bg-gray-600">
+          {tabs.map((tab) => (
+            <SelectItem
+              key={tab.href}
+              value={tab.href == "" ? "all" : tab.href}
+              className="w-full dark:bg-gray-600 rounded-none dark:[&>svg]:text-white dark:hover:bg-gray-700">
+              {tab.label}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
+  );
 };

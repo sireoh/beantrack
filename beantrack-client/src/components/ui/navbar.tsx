@@ -39,7 +39,7 @@ const Navbar = ({
   },
 }: NavbarProps) => {
   return (
-    <section className="py-4">
+    <section className="py-4 bg-sky-800">
       {/* Desktop Menu */}
       <nav className="hidden lg:flex items-center justify-between">
         {/* NavbarLeft: Logo */}

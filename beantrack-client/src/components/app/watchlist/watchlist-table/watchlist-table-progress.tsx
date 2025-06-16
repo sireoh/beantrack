@@ -9,7 +9,11 @@ import { MockDataInsideProps } from "./watchlist-table-body";
 const WatchlistTableProgress = ({
   currentEpisode,
   totalEpisodes,
-}: Pick<MockDataInsideProps, "currentEpisode" | "totalEpisodes">) => {
+  status,
+}: Pick<
+  MockDataInsideProps,
+  "currentEpisode" | "totalEpisodes" | "status"
+>) => {
   const _padding = "p-0 m-0 h-auto w-auto min-h-0 min-w-0";
   const _main =
     "leading-none rounded-sm text-xs light:bg-white dark:text-sky-600 text-sky-800 border-1 light:border-gray-400";
@@ -34,7 +38,11 @@ const WatchlistTableProgress = ({
           <Plus />
         </Button>
       </div>
-      <span>{`${currentEpisode}/${totalEpisodes}`}</span>
+      <span>
+        {status == "completed"
+          ? totalEpisodes
+          : `${currentEpisode}/${totalEpisodes}`}
+      </span>
     </div>
   );
 };

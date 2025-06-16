@@ -1,6 +1,6 @@
 import { TableBody, TableCell, TableRow } from "@/components/ui/table";
 import WatchlistTableImage from "./watchlist-table-image";
-import WatchlistTableTitle from "./watchlist-table-title";
+import WatchlistTableTitle from "./watchlist-table-title/watchlist-table-title";
 import WatchlistTableProgress from "./watchlist-table-progress";
 import res from "@/lib/mock-data/beantrack-mock-data.json";
 import WatchlistTableStatus from "./watchlist-table-status";
@@ -11,7 +11,7 @@ export interface MockDataInsideProps {
   image: string;
   title: string;
   imdb: string;
-  score: Float16Array;
+  score: number;
   type: string;
   currentEpisode: number;
   totalEpisodes: number;
@@ -45,7 +45,7 @@ const WatchlistTableBody = ({ screenSize }: { screenSize: string }) => {
 
           {/* Watchlist Table Title */}
           <TableCell className="max-w-[180px] sm:max-w-none whitespace-nowrap overflow-hidden text-ellipsis">
-            <WatchlistTableTitle imdb={item.imdb} title={item.title} />
+            <WatchlistTableTitle item={item} />
           </TableCell>
 
           {/* Watchlist Table Score: Desktop/Tablet Only*/}
@@ -60,6 +60,7 @@ const WatchlistTableBody = ({ screenSize }: { screenSize: string }) => {
             <WatchlistTableProgress
               currentEpisode={item.currentEpisode}
               totalEpisodes={item.totalEpisodes}
+              status={item.status}
             />
           </TableCell>
         </TableRow>

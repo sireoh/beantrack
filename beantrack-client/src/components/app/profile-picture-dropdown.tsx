@@ -28,7 +28,7 @@ const ProfilePictureDropdown = () => {
         </div>
       </DropdownMenuTrigger>
 
-      <DropdownMenuContent className="w-72">
+      <DropdownMenuContent className="w-48">
         <DropdownMenuItem asChild>
           <Link href={`/tvlist/${process.env.NEXT_PUBLIC_USERNAME}`}>
             <Tv />

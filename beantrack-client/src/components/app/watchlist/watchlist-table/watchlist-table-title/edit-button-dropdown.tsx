@@ -11,8 +11,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { MockDataInsideProps } from "../watchlist-table-body";
 import axios from "axios";
-
-// ---------- Temp --------------------
 import {
   TvMinimalPlay,
   SquareCheckBig,
@@ -21,8 +19,10 @@ import {
   NotebookPen,
   Trash2,
 } from "lucide-react";
-import { toast } from "sonner";
 import { Fragment } from "react";
+
+// ---------- Temp --------------------
+import { toast } from "sonner";
 // ---------- End: Temp ---------------
 
 export function EditButton({ item }: { item: MockDataInsideProps }) {
@@ -59,7 +59,7 @@ function EditButtonDropdownContent({ item }: { item: MockDataInsideProps }) {
 
   const handleSelect = async (action: string) => {
     try {
-      const url = `http://localhost:3001/api/${item.id}/edit/${action}`;
+      const url = `http://localhost:3001/api/${item.id}/edit/status/${action}`;
       await axios.post(url);
       toast.success(`Updated to "${action}"`);
     } catch (error) {

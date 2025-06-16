@@ -57,11 +57,7 @@ const WatchlistTableBody = ({ screenSize }: { screenSize: string }) => {
 
           {/* Watchlist Table Progress */}
           <TableCell className="text-center">
-            <WatchlistTableProgress
-              currentEpisode={item.currentEpisode}
-              totalEpisodes={item.totalEpisodes}
-              status={item.status}
-            />
+            <WatchlistTableProgress item={item} />
           </TableCell>
         </TableRow>
       ))}

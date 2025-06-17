@@ -59,8 +59,8 @@ function EditButtonDropdownContent({ item }: { item: MockDataInsideProps }) {
 
   const handleSelect = async (action: string) => {
     try {
-      const url = `http://localhost:3001/api/${item.id}/edit/status/${action}`;
-      await axios.post(url);
+      const url = `http://localhost:3001/api/${item.imdb}/edit/status/${action}`;
+      await axios.patch(url);
       toast.success(`Updated to "${action}"`);
     } catch (error) {
       console.error(error);

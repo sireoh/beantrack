@@ -22,8 +22,8 @@ const WatchlistTableProgress = ({ item }: { item: MockDataInsideProps }) => {
 
   const handleSelect = async (action: string) => {
     try {
-      const url = `http://localhost:3001/api/${item.id}/edit/progress/${action}`;
-      await axios.post(url);
+      const url = `http://localhost:3001/api/${item.imdb}/edit/progress/${action}`;
+      await axios.patch(url);
       toast.success(`Updated to "${action}"`);
     } catch (error) {
       console.error(error);

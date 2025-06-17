@@ -7,7 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, FormField, FormItem, FormControl } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useRouter } from "next/navigation";
-import TVMovieTypeSwitchDropdown from "./tv-movie-type-switch-dropdown";
+import SearchTypeSwitchDropdown from "./search-type-switch-dropdown";
 
 export const formSchema = z.object({
   q: z.string().min(1, { message: "Please enter a search term." }),
@@ -52,7 +52,7 @@ export function SearchbarDesktop() {
               </FormItem>
             )}
           />
-          <TVMovieTypeSwitchDropdown />
+          <SearchTypeSwitchDropdown />
         </div>
       </form>
     </Form>

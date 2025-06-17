@@ -16,7 +16,7 @@ const options = [
   { label: "Movies", type: "movies", icon: <Clapperboard /> },
 ];
 
-export default function TVMovieTypeSwitchDropdown() {
+export default function SearchTypeSwitchDropdown() {
   const search = useStore((state) => state.search);
   const _padding = "py-0.5 px-1 m-0 h-auto w-auto min-h-0 min-w-0";
   const _main =

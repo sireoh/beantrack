@@ -10,7 +10,7 @@ import { Search } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { formSchema } from "./searchbar-desktop";
 import { useStore } from "@/store";
-import TVMovieTypeSwitchDropdown from "./tv-movie-type-switch-dropdown";
+import SearchTypeSwitchDropdown from "./search-type-switch-dropdown";
 
 /**
  * Toggles the mobile searchbar visibility.
@@ -72,7 +72,7 @@ export function MobileSearchbar() {
                 </FormItem>
               )}
             />
-            <TVMovieTypeSwitchDropdown />
+            <SearchTypeSwitchDropdown />
           </form>
         </Form>
       </div>

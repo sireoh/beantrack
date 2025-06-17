@@ -1,9 +1,9 @@
 import Link from "next/link";
 import React from "react";
 import { EditButton } from "./edit-button-dropdown";
-import { MockDataInsideProps } from "../watchlist-table-body";
+import { WatchlistItem } from "@/models";
 
-const WatchlistTableTitle = ({ item }: { item: MockDataInsideProps }) => {
+const WatchlistTableTitle = ({ item }: { item: WatchlistItem }) => {
   return (
     <div className="flex justify-between items-center">
       <Link

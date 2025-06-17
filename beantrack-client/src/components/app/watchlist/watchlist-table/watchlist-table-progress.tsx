@@ -4,14 +4,14 @@ import { Button } from "@/components/ui/button";
 import React from "react";
 import { Minus, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { MockDataInsideProps } from "./watchlist-table-body";
 import axios from "axios";
 
 // ---------- Temp --------------------
 import { toast } from "sonner";
+import { WatchlistItem } from "@/models";
 // ---------- End: Temp ---------------
 
-const WatchlistTableProgress = ({ item }: { item: MockDataInsideProps }) => {
+const WatchlistTableProgress = ({ item }: { item: WatchlistItem }) => {
   const _padding = "p-0 m-0 h-auto w-auto min-h-0 min-w-0";
   const _main =
     "leading-none rounded-sm text-xs light:bg-white dark:text-sky-600 text-sky-800 border-1 light:border-gray-400";
@@ -22,7 +22,7 @@ const WatchlistTableProgress = ({ item }: { item: MockDataInsideProps }) => {
 
   const handleSelect = async (action: string) => {
     try {
-      const url = `http://localhost:3001/api/${item.imdb}/edit/progress/${action}`;
+      const url = `/api/${item.imdb}/edit/progress/${action}`;
       await axios.patch(url);
       toast.success(`Updated to "${action}"`);
     } catch (error) {

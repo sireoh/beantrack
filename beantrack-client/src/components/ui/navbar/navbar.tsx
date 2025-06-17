@@ -1,8 +1,8 @@
 import { Button } from "@/components/ui/button";
-import { SearchbarDesktop } from "../../app/watchlist/watchlist-table/search/searchbar-desktop";
+import { SearchbarDesktop } from "../../app/search/searchbar-desktop";
 import WelcomeMessage from "../../app/welcome-message";
 import ProfilePictureDropdown from "../../app/profile-picture-dropdown";
-import { SearchbarMobileToggleButton } from "../../app/watchlist/watchlist-table/search/search-mobile";
+import { SearchbarMobileToggleButton } from "../../app/search/search-mobile";
 import NavbarTitle, { NavbarTitleProps } from "./navbar-title";
 
 interface MenuItem {

@@ -1,27 +1,9 @@
 import { TableBody, TableCell, TableRow } from "@/components/ui/table";
 import WatchlistTableImage from "./watchlist-table-image";
-import WatchlistTableTitle from "./watchlist-table-title/watchlist-table-title";
+import WatchlistTableTitle from "./watchlist-table-title";
 import WatchlistTableProgress from "./watchlist-table-progress";
 import res from "@/lib/mock-data/beantrack-mock-data.json";
 import WatchlistTableStatus from "./watchlist-table-status";
-
-export interface MockDataInsideProps {
-  id: string;
-  status: string;
-  image: string;
-  title: string;
-  imdb: string;
-  score: number;
-  type: string;
-  currentEpisode: number;
-  totalEpisodes: number;
-}
-
-export interface MockDataOutsideProps {
-  _id: {
-    data: MockDataInsideProps[];
-  };
-}
 
 const WatchlistTableBody = ({ screenSize }: { screenSize: string }) => {
   return (

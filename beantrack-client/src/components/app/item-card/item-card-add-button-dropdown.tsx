@@ -9,9 +9,13 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { TvMinimalPlay, SquareCheckBig, NotebookPen } from "lucide-react";
-import { WatchlistItem } from "@/models";
+import { itemCardDataModel } from "./item-card";
 
-const ItemCardAddButtonDropdown = ({ item }: { item: WatchlistItem }) => {
+const ItemCardAddButtonDropdown = ({
+  itemCardData,
+}: {
+  itemCardData: itemCardDataModel;
+}) => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>

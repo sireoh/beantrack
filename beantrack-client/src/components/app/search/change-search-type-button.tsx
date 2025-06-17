@@ -13,7 +13,7 @@ import React from "react";
 
 const options = [
   { label: "TV Shows", type: "tv", icon: <Tv /> },
-  { label: "Movies", type: "movies", icon: <Clapperboard /> },
+  { label: "Movies", type: "movie", icon: <Clapperboard /> },
 ];
 
 export default function SearchTypeSwitchDropdown() {
@@ -40,25 +40,18 @@ export default function SearchTypeSwitchDropdown() {
           )}
         </Button>
       </DropdownMenuTrigger>
-      <TVMovieTypeSwitchDropdownContent searchState={search} />
+      <ChangeSearchTypeButton searchState={search} />
     </DropdownMenu>
   );
 }
 
-function TVMovieTypeSwitchDropdownContent({
-  searchState,
-}: {
-  searchState: SearchState;
-}) {
-  function updateCurrentType(new_type: string) {
-    searchState.updateCurrentType(new_type);
-  }
+function ChangeSearchTypeButton({ searchState }: { searchState: SearchState }) {
   return (
     <DropdownMenuContent className="w-48">
       {options.map(({ label, type, icon }) => (
         <DropdownMenuItem
           key={type}
-          onSelect={() => updateCurrentType(type)}
+          onSelect={() => searchState.updateCurrentType(type)}
           className="cursor-pointer">
           {icon}
           {label}

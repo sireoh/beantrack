@@ -10,7 +10,7 @@ import { Search } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { formSchema } from "./searchbar-desktop";
 import { useStore } from "@/store";
-import SearchTypeSwitchDropdown from "./search-type-switch-dropdown";
+import ChangeSearchTypeButton from "./change-search-type-button";
 
 /**
  * Toggles the mobile searchbar visibility.
@@ -72,7 +72,7 @@ export function MobileSearchbar() {
                 </FormItem>
               )}
             />
-            <SearchTypeSwitchDropdown />
+            <ChangeSearchTypeButton />
           </form>
         </Form>
       </div>

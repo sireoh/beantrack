@@ -5,14 +5,6 @@ import ProfilePictureDropdown from "../../app/profile-picture-dropdown";
 import { SearchbarMobileToggleButton } from "../../app/search/search-mobile";
 import NavbarTitle, { NavbarTitleProps } from "./navbar-title";
 
-interface MenuItem {
-  title: string;
-  url: string;
-  description?: string;
-  icon?: React.ReactNode;
-  items?: MenuItem[];
-}
-
 interface NavbarProps {
   navbarTitle?: NavbarTitleProps;
   navbarRight?: {

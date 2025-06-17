@@ -8,6 +8,11 @@ const nextConfig: NextConfig = {
         hostname: "static.tvmaze.com",
         pathname: "/**",
       },
+      {
+        protocol: "https",
+        hostname: "m.media-amazon.com",
+        pathname: "/**",
+      },
     ],
   },
 

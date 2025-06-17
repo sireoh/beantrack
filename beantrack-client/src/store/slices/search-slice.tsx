@@ -9,7 +9,7 @@ export const createSearchSlice: StateCreator<{
   search: SearchState;
 }> = (set) => ({
   search: {
-    currentType: "tv",
+    currentType: process.env.SEARCH_TYPE_BUTTON_DEFAULT_VALUE || "",
 
     updateCurrentType: (new_type: string) => {
       set((state) => ({

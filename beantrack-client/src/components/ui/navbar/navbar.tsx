@@ -1,8 +1,8 @@
 import { Button } from "@/components/ui/button";
-import { Searchbar } from "../../app/searchbar";
+import { SearchbarDesktop } from "../../app/watchlist/watchlist-table/search/searchbar-desktop";
 import WelcomeMessage from "../../app/welcome-message";
 import ProfilePictureDropdown from "../../app/profile-picture-dropdown";
-import { SearchbarMobile } from "../../app/search-mobile";
+import { SearchbarMobileToggleButton } from "../../app/watchlist/watchlist-table/search/search-mobile";
 import NavbarTitle, { NavbarTitleProps } from "./navbar-title";
 
 interface MenuItem {
@@ -45,7 +45,7 @@ const Navbar = ({
         <div className="flex items-center gap-4">
           {process.env.NEXT_PUBLIC_AUTHENTICATED === "true" ? (
             <>
-              <Searchbar />
+              <SearchbarDesktop />
               <WelcomeMessage />
               <ProfilePictureDropdown />
             </>
@@ -67,7 +67,7 @@ const Navbar = ({
           <div className="flex items-center gap-4">
             {process.env.NEXT_PUBLIC_AUTHENTICATED === "true" ? (
               <>
-                <SearchbarMobile />
+                <SearchbarMobileToggleButton />
                 <ProfilePictureDropdown />
               </>
             ) : (

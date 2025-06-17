@@ -8,10 +8,14 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { formSchema } from "./searchbar";
+import { formSchema } from "./searchbar-desktop";
 import { useStore } from "@/store";
+import TVMovieTypeSwitchDropdown from "./tv-movie-type-switch-dropdown";
 
-export function SearchbarMobile() {
+/**
+ * Toggles the mobile searchbar visibility.
+ */
+export function SearchbarMobileToggleButton() {
   const navbar = useStore((state) => state.navbar);
 
   return (
@@ -24,9 +28,11 @@ export function SearchbarMobile() {
   );
 }
 
-export function SearchbarMobileDropdown() {
+/**
+ * The searchbar exclusively used on mobile.
+ */
+export function MobileSearchbar() {
   const navbar = useStore((state) => state.navbar);
-
   const router = useRouter();
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -66,12 +72,7 @@ export function SearchbarMobileDropdown() {
                 </FormItem>
               )}
             />
-            <Button
-              type="submit"
-              variant="outline"
-              className="flex-none text-black dark:text-white">
-              <Search size={16} />
-            </Button>
+            <TVMovieTypeSwitchDropdown />
           </form>
         </Form>
       </div>

@@ -4,6 +4,7 @@ import "./globals.css";
 import { ThemeProvider } from "next-themes";
 import { Navbar } from "@/components/ui/navbar/navbar";
 import { SearchbarMobileDropdown } from "@/components/app/search-mobile";
+import ThemedToast from "@/components/app/themed-toast";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -35,12 +36,20 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange>
           <div className="min-h-screen flex flex-col">
+            {/* Navbar */}
             <Navbar />
+
+            {/* Modal */}
+
+            {/* Toast Notifications */}
+            <ThemedToast />
 
             {/* Search Mobile Dropdown */}
             <div className="lg:hidden">
               <SearchbarMobileDropdown />
             </div>
+
+            {/* Main Children */}
             <main className="flex-1 light:bg-gray-200">
               <section className="py-4">
                 <div className="container mx-auto px-4">{children}</div>

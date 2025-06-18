@@ -2,7 +2,13 @@ import uvicorn
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi import Path
-from tvlist_dal import decrement_progress, increment_progress, update_status
+from models import TVShow
+from tvlist_dal import (
+    add_tv_show,
+    decrement_progress,
+    increment_progress,
+    update_status,
+)
 
 app = FastAPI()
 
@@ -14,6 +20,13 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+@app.post("/api/add/tv_show")
+async def __add_tv_show(data: TVShow):
+    print(data)
+    add_tv_show(data)
+    return {"message": "Add TV Show endpoint hit", "data": data}
 
 
 @app.patch("/api/{imdb}/edit/status/{new_status}")

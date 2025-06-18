@@ -7,6 +7,7 @@ import ItemCardTitle from "./item-card-title";
 import { useStore } from "@/store";
 
 export interface ItemCardDataModel {
+  id?: number;
   imdb: string;
   title: string;
   Year?: string;
@@ -18,6 +19,7 @@ export interface ItemCardDataModel {
 }
 
 export default function ItemCard({
+  id,
   imdb,
   title,
   Year,
@@ -30,6 +32,7 @@ export default function ItemCard({
   const search = useStore((state) => state.search);
   const _link = `https://www.imdb.com/title/${imdb}`;
   const itemCardData: ItemCardDataModel = {
+    id: id,
     imdb: imdb,
     title: title,
     image: image,

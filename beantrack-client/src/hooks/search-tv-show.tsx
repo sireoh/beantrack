@@ -1,4 +1,3 @@
-import ItemCard from "@/components/app/item-card/item-card";
 import { SearchResult, TVMazeResults } from "@/models";
 import { useEffect, useState } from "react";
 

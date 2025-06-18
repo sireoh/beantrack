@@ -1,28 +1,13 @@
 from bson import ObjectId
 from database import db
+from models import TVShow
 
-tvlist_collection = db["tvlist_v2"]
-EO_TVLIST = ObjectId("6850a9b3434cf141ba0420bd")
+tvlist_collection = db["tvlist_v3"]
+EO_TVLIST = ObjectId("6852164c3da8e93b0fdc67b8")
 
 
-def add_tv_show(
-    status: str,
-    image: str,
-    title: str,
-    imdb: str,
-    score: float,
-    currentEpisode: int,
-    totalEpisodes: int,
-):
-    tv_show_data = {
-        "status": status,
-        "image": image,
-        "title": title,
-        "imdb": imdb,
-        "score": score,
-        "currentEpisode": currentEpisode,
-        "totalEpisodes": totalEpisodes,
-    }
+def add_tv_show(tv_show: TVShow):
+    tv_show_data = tv_show.model_dump()
     result = tvlist_collection.update_one(
         {"_id": EO_TVLIST},
         {"$push": {"data": tv_show_data}},

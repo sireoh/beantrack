@@ -9,6 +9,7 @@ export function TVShowsResultsGrid({ results }: { results: TVMazeResults }) {
       {results.map(({ show }) => (
         <ItemCard
           key={show.externals?.imdb ?? show.name}
+          id={show.id}
           imdb={show.externals?.imdb}
           title={show.name}
           premiered={show.premiered}

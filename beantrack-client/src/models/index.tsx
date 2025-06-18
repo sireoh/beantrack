@@ -23,6 +23,7 @@ export interface SearchResult<T> {
 }
 
 export interface TVMazeTVShowModel {
+  id: number;
   externals: { imdb: string };
   name: string;
   image: { original: string };
@@ -56,3 +57,9 @@ export interface OMDBResultsByIMDB {
 }
 
 export type TVMazeResults = TVMazeResultEntryModel[];
+
+export type TVMazeEpisodeModel = {
+  season: number;
+  number: number;
+  name: string;
+};

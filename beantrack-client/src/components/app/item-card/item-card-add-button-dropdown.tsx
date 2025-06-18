@@ -11,8 +11,10 @@ import {
 import { TvMinimalPlay, SquareCheckBig, NotebookPen } from "lucide-react";
 import { ItemCardDataModel } from "./item-card";
 import { useStore } from "@/store";
-import { OMDBResultsByIMDB } from "@/models";
-import { fetchMovieByIMDB } from "@/utils/search-movie-by-imdb";
+import { OMDBResultsByIMDB, TVMazeEpisodeModel } from "@/models";
+import { fetchMovieByIMDB } from "@/utils/fetch-movie-by-imdb";
+import { fetchTVShowByTVMazeID } from "@/utils/fetch-tv-show-by-tv-maze-id";
+import { handleTVSelect } from "@/utils/handle-tv-select";
 
 const ItemCardAddButtonDropdown = ({
   itemCardData,
@@ -38,6 +40,13 @@ function ItemCardAddButtonDropdownContent({
 }) {
   const search = useStore((state) => state.search);
 
+  async function _t(action: string) {
+    const results: TVMazeEpisodeModel[] = await fetchTVShowByTVMazeID(
+      itemCardData.id!
+    );
+    handleTVSelect(itemCardData, action, results);
+  }
+
   async function _m(action: string) {
     const results = await fetchMovieByIMDB(itemCardData.imdb);
     __handleMovieSelect(itemCardData, action, results);
@@ -54,9 +63,7 @@ function ItemCardAddButtonDropdownContent({
   ];
 
   const handleSelect = async (action: string) => {
-    search.currentType == "tv"
-      ? __handleTVSelect(itemCardData, action)
-      : _m(action);
+    search.currentType == "tv" ? _t(action) : _m(action);
   };
 
   return (
@@ -74,18 +81,6 @@ function ItemCardAddButtonDropdownContent({
   );
 }
 
-function __handleTVSelect(itemCardData: ItemCardDataModel, action: string) {
-  const truncatedImage =
-    itemCardData.image.match(/original_untouched\/(.*?)\.jpg/)?.[1] ??
-    itemCardData.image; // fallback in case match fails
-
-  console.log("[ItemCardAddButtonDropdownContent] handleSelect: ", {
-    ...itemCardData,
-    image: truncatedImage,
-    action,
-  });
-}
-
 function __handleMovieSelect(
   itemCardData: ItemCardDataModel,
   action: string,
@@ -93,13 +88,6 @@ function __handleMovieSelect(
 ) {
   const truncatedImage =
     itemCardData.image.match(/\/(MV5B[^\/]+)\.jpg/)?.[1] ?? itemCardData.image;
-
-  console.log("[ItemCardAddButtonDropdownContent] handleSelect: ", {
-    ...itemCardData,
-    image: truncatedImage,
-    action,
-    score: results.imdbRating,
-  });
 }
 
 export default ItemCardAddButtonDropdown;

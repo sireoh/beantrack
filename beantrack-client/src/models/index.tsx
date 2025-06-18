@@ -28,6 +28,8 @@ export interface TVMazeTVShowModel {
   image: { original: string };
   rating: { average: number };
   summary: string;
+  premiered: string;
+  ended: string;
 }
 
 export interface TVMazeResultEntryModel {

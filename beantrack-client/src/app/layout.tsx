@@ -45,12 +45,12 @@ export default function RootLayout({
             <ThemedToast />
 
             {/* Search Mobile Dropdown */}
-            <div className="lg:hidden">
+            <div className="lg:hidden pt-15">
               <MobileSearchbar />
             </div>
 
             {/* Main Children */}
-            <main className="flex-1 light:bg-gray-200 pt-15">
+            <main className="flex-1 light:bg-gray-200 lg:pt-15">
               <section className="py-4">
                 <div className="container mx-auto px-4">{children}</div>
               </section>

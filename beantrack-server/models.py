@@ -15,3 +15,8 @@ class TVShow(BaseModel):
     score: Union[float, str]
     currentEpisodeIndex: int
     episodes: List[Episode]
+
+
+class User(BaseModel):
+    username: str
+    password: str

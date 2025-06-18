@@ -6,6 +6,10 @@ tvlist_collection = db["tvlist_v3"]
 EO_TVLIST = ObjectId("6852164c3da8e93b0fdc67b8")
 
 
+def get_user_tv_list():
+    pass
+
+
 def add_tv_show(tv_show: TVShow):
     tv_show_data = tv_show.model_dump()
     result = tvlist_collection.update_one(

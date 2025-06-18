@@ -2,13 +2,14 @@ import uvicorn
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi import Path
-from models import TVShow
+from models import TVShow, User
 from tvlist_dal import (
     add_tv_show,
     decrement_progress,
     increment_progress,
     update_status,
 )
+from user_dal.user_dal import add_user
 
 app = FastAPI()
 
@@ -20,6 +21,13 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+@app.post("/api/add/user")
+async def __add_user(data: User):
+    print(data)
+    add_user(data)
+    return {"message": "Add TV Show endpoint hit", "data": data}
 
 
 @app.post("/api/add/tv_show")

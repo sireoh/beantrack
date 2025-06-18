@@ -9,13 +9,11 @@ export function MoviesResultsGrid({ results }: { results: OMDBResults }) {
 
   if (!results) return null;
 
-  const _s = [...(results.Search ?? [])]
-    .filter((item) => !!item.imdbID)
-    .sort((a, b) => {
-      if (a.Type === "movie" && b.Type !== "movie") return -1;
-      if (a.Type !== "movie" && b.Type === "movie") return 1;
-      return 0;
-    });
+  const _s = [...(results.Search ?? [])].sort((a, b) => {
+    if (a.Type === "movie" && b.Type !== "movie") return -1;
+    if (a.Type !== "movie" && b.Type === "movie") return 1;
+    return 0;
+  });
 
   return (
     <>

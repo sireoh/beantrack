@@ -41,7 +41,9 @@ export default function Home() {
     <div className="col-lg-8 col-md-8">
       <div className="m-t nav-active-border b-primary grid lg:grid-cols-2 gap-4">
         {search.currentType === "tv" ? (
-          (resultsTVShow as TVMazeResultEntryModel[]).length > 0 ? (
+          (resultsTVShow as TVMazeResultEntryModel[]).filter(
+            (item) => !!item.show.externals?.imdb
+          ).length > 0 ? (
             <TVShowsResultsGrid results={resultsTVShow} />
           ) : (
             "No TV Shows Found."

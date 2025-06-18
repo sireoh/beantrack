@@ -1,4 +1,4 @@
-from typing import List, Literal
+from typing import List, Literal, Union
 from pydantic import BaseModel
 
 
@@ -12,6 +12,6 @@ class TVShow(BaseModel):
     image: str
     title: str
     imdb: str
-    score: float
+    score: Union[float, str]
     currentEpisodeIndex: int
     episodes: List[Episode]

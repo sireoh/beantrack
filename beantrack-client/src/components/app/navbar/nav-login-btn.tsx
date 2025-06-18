@@ -3,9 +3,9 @@ import { LogIn } from "lucide-react";
 import Link from "next/link";
 import React from "react";
 
-const NavbarLoginButton = () => {
+const NavLoginButton = () => {
   return (
-    <Button asChild variant="outline" size="sm">
+    <Button asChild variant="outline" size="sm" className="mr-3">
       <Link href="/login">
         <LogIn />
         Log In
@@ -14,4 +14,4 @@ const NavbarLoginButton = () => {
   );
 };
 
-export default NavbarLoginButton;
+export default NavLoginButton;

@@ -1,15 +1,19 @@
+from dotenv import load_dotenv
 import uvicorn
-from fastapi import FastAPI, HTTPException
+from fastapi import Cookie, FastAPI, HTTPException, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi import Path
+from helpers import Helpers
 from models import TVShow, User
+from sessions_dal import add_session, delete_session
 from tvlist_dal import (
     add_tv_show,
     decrement_progress,
     increment_progress,
     update_status,
 )
-from user_dal.user_dal import add_user, delete_user
+from user_dal import add_user, delete_user
+import os
 
 app = FastAPI()
 
@@ -22,6 +26,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+load_dotenv()
+DEBUG = os.environ["DEBUG"] == "true"
+
 # ===============================================
 # ============== USERS ==========================
 # ===============================================
@@ -31,14 +38,46 @@ app.add_middleware(
 async def __add_user(data: User):
     print(data)
     add_user(data)
-    return {"message": "Add TV Show endpoint hit", "data": data}
+    return {"message": "Add User endpoint hit", "data": data}
 
 
 @app.delete("/api/delete/user")
 async def __delete_user(data: User):
     print(data)
     delete_user(data)
-    return {"message": "Add TV Show endpoint hit", "data": data}
+    return {"message": "Delete User endpoint hit", "data": data}
+
+
+# ===============================================
+# ============== SESSIONS =======================
+# ===============================================
+
+
+@app.post("/api/login")
+async def __login(data: User, response: Response):
+    _r = add_session(data)
+
+    if _r.get("is_logged_in"):
+        return {"message": "User is already logged in", "data": data}
+
+    session_id = _r["session_id"]
+    signed_session = Helpers.sign_session_id(session_id)
+
+    response.set_cookie(
+        key="session_token",
+        value=signed_session,
+        httponly=True,  # Prevents JS access
+        secure=True if not DEBUG else False,  # Only sent over HTTPS
+        samesite="lax",  # Good default; prevents CSRF in most cases
+        max_age=60 * 60 * 24,  # 1 day, Gets restored when browser comes back anyways
+    )
+
+    return {"message": "User logged in", "data": data}
+
+
+@app.post("/api/logout")
+async def __logout(response: Response, session_token: str = Cookie(None)):
+    return delete_session(response, session_token)
 
 
 # ===============================================

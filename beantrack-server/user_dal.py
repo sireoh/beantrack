@@ -1,9 +1,10 @@
 import bcrypt
 from bson import ObjectId
 from database import db
+from helpers import Helpers
 from models import User
-from user_dal.helpers import create_empty_list_doc
-from fastapi import APIRouter, HTTPException, status
+
+from fastapi import HTTPException, status
 
 users_collection = db["users"]
 tvlist_collection = db["tvlist"]
@@ -15,14 +16,15 @@ def add_user(_u: User):
     hashed_password = bcrypt.hashpw(_u.password.encode(), bcrypt.gensalt()).decode()
 
     # Create empty tvlist and movielist docs first
-    tvlist_id = create_empty_list_doc(tvlist_collection)
-    movielist_id = create_empty_list_doc(movielist_collection)
+    tvlist_id = Helpers.create_empty_list_doc(tvlist_collection)
+    movielist_id = Helpers.create_empty_list_doc(movielist_collection)
 
     user_doc = {
         "username": _u.username,
         "password": hashed_password,
         "tvlist": tvlist_id,
         "movielist": movielist_id,
+        "admin": False,
     }
 
     result = users_collection.insert_one(user_doc)

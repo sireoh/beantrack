@@ -1,5 +1,5 @@
 import ItemCard from "@/components/app/item-card/item-card";
-import { TVMazeResults, TVMazeTVShowModel } from "@/models";
+import { TVMazeResults } from "@/models";
 
 export function TVShowsResultsGrid({ results }: { results: TVMazeResults }) {
   if (!results) return null;
@@ -10,7 +10,9 @@ export function TVShowsResultsGrid({ results }: { results: TVMazeResults }) {
         <ItemCard
           key={show.externals?.imdb ?? show.name}
           imdb={show.externals?.imdb}
-          title={__formatTitleWithYear(show)}
+          title={show.name}
+          premiered={show.premiered}
+          ended={show.ended}
           image={show.image?.original ?? "/images/item-card-no-image.png"}
           score={show.rating?.average ?? "No Rating"}
           description={show.summary ?? "No description available."}
@@ -18,17 +20,4 @@ export function TVShowsResultsGrid({ results }: { results: TVMazeResults }) {
       ))}
     </>
   );
-}
-
-export function __formatTitleWithYear({
-  name,
-  premiered,
-  ended,
-}: TVMazeTVShowModel): string {
-  const startYear = premiered?.split("-")[0] ?? "N/A";
-  const endYear = ended?.split("-")[0] ?? "";
-
-  if (startYear === endYear) return `${name} (${startYear})`;
-
-  return `${name} (${startYear}${endYear ? `–${endYear}` : ""})`;
 }

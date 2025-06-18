@@ -1,12 +1,7 @@
-import useIsMobile, { ScreenSize } from "@/hooks/is-mobile";
 import ItemCard from "../../item-card/item-card";
 import { OMDBResults } from "@/models";
 
 export function MoviesResultsGrid({ results }: { results: OMDBResults }) {
-  const isMobile = useIsMobile(ScreenSize.MOBILE);
-
-  const MAX_LENGTH = isMobile === null ? 0 : isMobile ? 45 : Infinity;
-
   if (!results) return null;
 
   const _s = [...(results.Search ?? [])].sort((a, b) => {
@@ -21,7 +16,8 @@ export function MoviesResultsGrid({ results }: { results: OMDBResults }) {
         <ItemCard
           key={item.imdbID}
           imdb={item.imdbID}
-          title={__truncateLongTitle(item.Title, item.Year, MAX_LENGTH)}
+          title={item.Title}
+          Year={item.Year}
           image={
             item.Poster !== "N/A"
               ? item.Poster
@@ -31,20 +27,4 @@ export function MoviesResultsGrid({ results }: { results: OMDBResults }) {
       ))}
     </>
   );
-}
-
-function __truncateLongTitle(
-  title: string,
-  year: string,
-  maxCharacters: number
-): string {
-  const yearPart = ` (${year})`;
-  const maxTitleLength = maxCharacters - yearPart.length;
-
-  if (title.length <= maxTitleLength) {
-    return `${title}${yearPart}`;
-  }
-
-  const truncatedTitle = title.slice(0, maxTitleLength - 3).trimEnd(); // -3 for "..."
-  return `${truncatedTitle} ...${yearPart}`;
 }

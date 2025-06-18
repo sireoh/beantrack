@@ -50,4 +50,9 @@ export interface OMDBResults {
   Response: string;
 }
 
+export interface OMDBResultsByIMDB {
+  imdbRating?: string;
+  Response: string;
+}
+
 export type TVMazeResults = TVMazeResultEntryModel[];

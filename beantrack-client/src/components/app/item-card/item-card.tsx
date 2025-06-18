@@ -1,13 +1,17 @@
-import Image from "next/image";
 import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
 import ItemCardDescription from "./item-card-description";
 import ItemCardAddButtonDropdown from "./item-card-add-button-dropdown";
 import SafeImage from "./safe-image";
+import ItemCardTitle from "./item-card-title";
+import { useStore } from "@/store";
 
-export interface itemCardDataModel {
+export interface ItemCardDataModel {
   imdb: string;
   title: string;
+  Year?: string;
+  premiered?: string;
+  ended?: string;
   image: string;
   score?: number;
   description?: string;
@@ -16,17 +20,20 @@ export interface itemCardDataModel {
 export default function ItemCard({
   imdb,
   title,
+  Year,
+  premiered,
+  ended,
   image,
   score,
   description,
-}: itemCardDataModel) {
+}: ItemCardDataModel) {
+  const search = useStore((state) => state.search);
   const _link = `https://www.imdb.com/title/${imdb}`;
-  const itemCardData: itemCardDataModel = {
+  const itemCardData: ItemCardDataModel = {
     imdb: imdb,
     title: title,
     image: image,
     score: score,
-    description: description,
   };
 
   return (
@@ -41,7 +48,14 @@ export default function ItemCard({
         <div className="flex justify-between items-start">
           <div className="flex items-center justify-between gap-x-4">
             <h2 className="text-xl font-semibold text-primary">
-              <Link href={_link}>{title}</Link>
+              <ItemCardTitle
+                title={title}
+                link={_link}
+                Year={Year}
+                premiered={premiered}
+                ended={ended}
+                isTV={search.currentType == "tv"}
+              />
             </h2>
             {score && <span className="text-sm font-medium">{score}</span>}
             <ItemCardAddButtonDropdown itemCardData={itemCardData} />

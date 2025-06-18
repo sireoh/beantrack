@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "next-themes";
-import { Navbar } from "@/components/ui/navbar/navbar";
+import { Navbar } from "@/components/app/navbar/navbar";
 import { MobileSearchbar } from "@/components/app/search/search-mobile";
 import ThemedToast from "@/components/app/themed-toast";
 

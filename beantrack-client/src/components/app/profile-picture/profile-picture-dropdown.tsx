@@ -1,32 +1,18 @@
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { ChevronDown, Clapperboard, LogOut, Settings, Tv } from "lucide-react";
+import { Clapperboard, LogOut, Settings, Tv } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuTrigger,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import Link from "next/link";
-import DarkModeToggleButton from "./dark-mode-toggle-button";
+import DarkModeToggleButton from "../dark-mode-toggle-button";
+import ProfilePicture from "./profile-picture";
 
 const ProfilePictureDropdown = () => {
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <div className="flex items-center cursor-pointer space-x-2">
-          <Avatar className="w-8 h-8">
-            <AvatarImage
-              src={
-                process.env.NEXT_PUBLIC_USER_AVATAR_URL || "/default-avatar.png"
-              }
-              alt="User avatar"
-            />
-            <AvatarFallback>U</AvatarFallback>
-          </Avatar>
-          <ChevronDown className="w-4 h-4 text-white" />
-        </div>
-      </DropdownMenuTrigger>
+      <ProfilePicture />
 
       <DropdownMenuContent className="w-48">
         <DropdownMenuItem asChild>

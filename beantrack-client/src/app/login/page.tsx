@@ -1,97 +1,58 @@
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import Link from "next/link";
+import { Power } from "lucide-react";
+import LoginPassword from "@/components/app/login/login-password";
+import LoginDescription from "@/components/app/login/login-description";
 
 export default function Home() {
+  const _l = ["Log on", "Continue"];
+
   return (
-    <div className="flex items-center justify-center h-[calc(80vh)] lg:h-[calc(90vh)]">
-      <div className="w-full max-w-7xl shadow-lg rounded-lg overflow-hidden">
-        <div className="grid grid-cols-1 lg:grid-cols-2">
+    <div className="flex items-center justify-center h-[calc(48vh)] lg:h-[calc(90vh)]">
+      <div className="shadow-lg rounded-xs">
+        <div className="grid grid-cols-1 lg:grid-cols-2 md:w-[calc(80vw)]">
           {/* Sign-in Form */}
           <div className="flex items-center justify-center p-8 lg:border-r">
-            <div className="w-full max-w-md space-y-6">
-              <h5 className="text-2xl font-semibold">Sign in</h5>
+            <div className="w-full space-y-6">
+              <h1 className="flex justify-center items-center">
+                <span className="flex row gap-2 text-4xl font-black lg:text-5xl mr-12">
+                  <Power
+                    size={32}
+                    className="mt-1 lg:mt-3 text-sky-800 dark:text-sky-600"
+                    strokeWidth={4}
+                  />
+                  {_l[0]}
+                </span>
+              </h1>
 
-              <form method="post" action="/signin" className="space-y-4">
+              <form method="post" action="/api/login" className="space-y-2">
                 <div className="space-y-2">
-                  <Label htmlFor="email">E-mail address</Label>
+                  <Label htmlFor="username" className="font-bold">
+                    Username:
+                  </Label>
                   <Input
-                    id="email"
+                    id="username"
                     name="username"
-                    type="email"
-                    placeholder="Your e-mail address"
+                    type="text"
+                    placeholder="username ..."
                   />
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="password">Password</Label>
-                  <Input
-                    id="password"
-                    name="password"
-                    type="password"
-                    placeholder="Your password"
-                  />
-                </div>
+                <LoginPassword />
 
-                <div className="flex items-center space-x-2">
-                  <Checkbox id="remember" name="remember" />
-                  <Label htmlFor="remember">Remember me</Label>
-                </div>
-
-                <input
-                  type="hidden"
-                  name="g-recaptcha-response"
-                  value="[g-recaptcha-token]"
-                />
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4">
-                  <Button type="submit" className="w-full">
-                    Sign in
+                <div className="flex justify-center mt-5">
+                  <Button
+                    type="submit"
+                    className="md:w-100 lg:w-25 font-black bg-sky-800 dark:bg-sky-600">
+                    {_l[1]}
                   </Button>
-                  <Link
-                    href="/signin/forgot_password"
-                    className="text-sm text-blue-600 hover:underline self-center text-center">
-                    Forgot your password?
-                  </Link>
                 </div>
               </form>
             </div>
           </div>
 
-          {/* Signup Description */}
-          <div className="hidden lg:flex items-center justify-center p-8">
-            <div className="w-full max-w-md space-y-6">
-              <h5 className="text-2xl font-semibold">Don't have an account?</h5>
-              <p className="font-medium">
-                Sign up for MyDramaList and gain access to a world of Asian
-                dramas and movies. It's quick, easy, and completely free!
-              </p>
-              <p>
-                By creating an account, you can enjoy the following features:
-              </p>
-              <ul className="list-disc list-inside space-y-1 text-sm">
-                <li>Create your own personalized drama list</li>
-                <li>Join in discussions with other fans</li>
-                <li>Contribute to the ever-growing database</li>
-                <li>Rate and review dramas and movies</li>
-                <li>Keep track of your favorite actors and actresses</li>
-                <li>Discover new and exciting content</li>
-                <li>Less advertisements</li>
-                <li>And much more!</li>
-              </ul>
-              <p>
-                Don't miss out — sign up now and start enjoying all the benefits
-                of MyDramaList.
-              </p>
-              <Link href="/signup">
-                <Button variant="outline" className="w-fit">
-                  Sign up
-                </Button>
-              </Link>
-            </div>
-          </div>
+          <LoginDescription />
         </div>
       </div>
     </div>

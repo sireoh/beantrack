@@ -42,9 +42,19 @@ export default function Home() {
       <div className="m-t nav-active-border b-primary grid lg:grid-cols-2 gap-4">
         {search.currentType === "tv" ? (
           (resultsTVShow as TVMazeResultEntryModel[]).filter(
-            (item) => !!item.show.externals?.imdb
+            (item) =>
+              item.show.externals?.imdb !== null &&
+              item.show.externals?.imdb !== undefined &&
+              item.show.externals?.imdb.trim() !== ""
           ).length > 0 ? (
-            <TVShowsResultsGrid results={resultsTVShow} />
+            <TVShowsResultsGrid
+              results={resultsTVShow.filter(
+                (item) =>
+                  item.show.externals?.imdb !== null &&
+                  item.show.externals?.imdb !== undefined &&
+                  item.show.externals?.imdb.trim() !== ""
+              )}
+            />
           ) : (
             "No TV Shows Found."
           )

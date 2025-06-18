@@ -22,7 +22,7 @@ export async function handleTVSelect(
     episodes: __handleResultsFormat(results),
   };
 
-  console.log("[score]:", itemCardData.score);
+  console.log("[id]:", itemCardData.id, tvShowData);
 
   try {
     const res = await axios.post("/api/add/tv_show", tvShowData);

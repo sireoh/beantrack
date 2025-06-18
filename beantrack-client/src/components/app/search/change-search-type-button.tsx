@@ -1,3 +1,5 @@
+"use client";
+
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -9,7 +11,7 @@ import { cn } from "@/lib/utils";
 import { useStore } from "@/store";
 import { SearchState } from "@/store/slices/search-slice";
 import { Clapperboard, Tv } from "lucide-react";
-import React from "react";
+import { useRouter } from "next/navigation";
 
 const options = [
   { label: "TV Shows", type: "tv", icon: <Tv /> },
@@ -46,12 +48,20 @@ export default function SearchTypeSwitchDropdown() {
 }
 
 function ChangeSearchTypeButton({ searchState }: { searchState: SearchState }) {
+  const router = useRouter();
+
+  function handleOnSelect(new_type: string) {
+    searchState.updateCurrentType(new_type);
+    if (searchState.value.length > 0)
+      router.push(`/search?q=${searchState.value}`);
+  }
+
   return (
     <DropdownMenuContent className="w-48">
       {options.map(({ label, type, icon }) => (
         <DropdownMenuItem
           key={type}
-          onSelect={() => searchState.updateCurrentType(type)}
+          onSelect={() => handleOnSelect(type)}
           className="cursor-pointer">
           {icon}
           {label}

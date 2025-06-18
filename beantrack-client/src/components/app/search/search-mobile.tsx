@@ -33,6 +33,8 @@ export function SearchbarMobileToggleButton() {
  */
 export function MobileSearchbar() {
   const navbar = useStore((state) => state.navbar);
+  const search = useStore((state) => state.search);
+
   const router = useRouter();
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -64,9 +66,19 @@ export function MobileSearchbar() {
                 <FormItem className="flex-1">
                   <FormControl>
                     <Input
-                      placeholder="Search ..."
+                      placeholder={
+                        search.currentType !== "tv"
+                          ? "Search Movies ..."
+                          : "Search TV Shows ..."
+                      }
+                      onChange={(e) => {
+                        field.onChange(e); // update react-hook-form
+                        search.setValue(e.target.value); // update zustand
+                      }}
+                      value={field.value}
+                      name={field.name}
+                      ref={field.ref}
                       className="flex-1"
-                      {...field}
                     />
                   </FormControl>
                 </FormItem>

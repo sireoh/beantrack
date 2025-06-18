@@ -21,7 +21,7 @@ export function searchMovies(query: string): SearchResult<OMDBResults> {
       try {
         const url = `${MOVIES_API_ENDPOINT}${encodeURIComponent(query)}`;
         const res = await fetch(url);
-        if (!res.ok) throw new Error("Failed to fetch shows");
+        if (!res.ok) throw new Error("Failed to fetch movies");
         const data = await res.json();
 
         setResults(__removeDuplicates(data));

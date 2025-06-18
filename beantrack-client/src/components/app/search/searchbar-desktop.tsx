@@ -8,6 +8,7 @@ import { Form, FormField, FormItem, FormControl } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useRouter } from "next/navigation";
 import ChangeSearchTypeButton from "./change-search-type-button";
+import { useStore } from "@/store";
 
 export const formSchema = z.object({
   q: z.string().min(1, { message: "Please enter a search term." }),
@@ -15,6 +16,7 @@ export const formSchema = z.object({
 
 export function SearchbarDesktop() {
   const router = useRouter();
+  const search = useStore((state) => state.search);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -44,9 +46,19 @@ export function SearchbarDesktop() {
               <FormItem className="h-full">
                 <FormControl>
                   <Input
-                    placeholder="Search ..."
+                    placeholder={
+                      search.currentType !== "tv"
+                        ? "Search Movies ..."
+                        : "Search TV Shows ..."
+                    }
+                    onChange={(e) => {
+                      field.onChange(e); // update react-hook-form
+                      search.setValue(e.target.value); // update zustand
+                    }}
+                    value={field.value}
+                    name={field.name}
+                    ref={field.ref}
                     className="h-full px-2 rounded-none border-l border-y placeholder:text-white selection:bg-sky-600 selection:text-white text-white border-gray-400"
-                    {...field}
                   />
                 </FormControl>
               </FormItem>

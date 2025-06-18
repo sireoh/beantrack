@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
 import ItemCardDescription from "./item-card-description";
 import ItemCardAddButtonDropdown from "./item-card-add-button-dropdown";
+import SafeImage from "./safe-image";
 
 export interface itemCardDataModel {
   imdb: string;
@@ -19,6 +20,7 @@ export default function ItemCard({
   score,
   description,
 }: itemCardDataModel) {
+  const _link = `https://www.imdb.com/title/${imdb}`;
   const itemCardData: itemCardDataModel = {
     imdb: imdb,
     title: title,
@@ -30,8 +32,8 @@ export default function ItemCard({
   return (
     <Card className="flex flex-row rounded-sm p-2 gap-x-2">
       <div className="w-[90px] flex-shrink-0">
-        <Link href="/40257-round-six">
-          <Image src={image} alt={title} width={90} height={128} />
+        <Link href={_link}>
+          <SafeImage src={image} alt={title} />
         </Link>
       </div>
 
@@ -39,7 +41,7 @@ export default function ItemCard({
         <div className="flex justify-between items-start">
           <div className="flex items-center justify-between gap-x-4">
             <h2 className="text-xl font-semibold text-primary">
-              <Link href="/40257-round-six">{title}</Link>
+              <Link href={_link}>{title}</Link>
             </h2>
             {score && <span className="text-sm font-medium">{score}</span>}
             <ItemCardAddButtonDropdown itemCardData={itemCardData} />

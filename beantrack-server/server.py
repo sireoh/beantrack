@@ -9,7 +9,7 @@ from tvlist_dal import (
     increment_progress,
     update_status,
 )
-from user_dal.user_dal import add_user
+from user_dal.user_dal import add_user, delete_user
 
 app = FastAPI()
 
@@ -22,12 +22,28 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# ===============================================
+# ============== USERS ==========================
+# ===============================================
+
 
 @app.post("/api/add/user")
 async def __add_user(data: User):
     print(data)
     add_user(data)
     return {"message": "Add TV Show endpoint hit", "data": data}
+
+
+@app.delete("/api/delete/user")
+async def __delete_user(data: User):
+    print(data)
+    delete_user(data)
+    return {"message": "Add TV Show endpoint hit", "data": data}
+
+
+# ===============================================
+# ============== TV SHOWS =======================
+# ===============================================
 
 
 @app.post("/api/add/tv_show")

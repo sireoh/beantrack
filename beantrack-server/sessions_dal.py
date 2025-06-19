@@ -1,6 +1,6 @@
 from datetime import datetime
 from bson import ObjectId
-from fastapi import HTTPException, status, Response, Cookie
+from fastapi import HTTPException, Request, status, Response, Cookie
 from database import db  # assuming you're importing db from your database setup
 from helpers import Helpers
 from models import User

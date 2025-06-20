@@ -1,6 +1,6 @@
 from datetime import datetime
 from bson import ObjectId
-from fastapi import HTTPException, Request, status, Response, Cookie
+from fastapi import HTTPException, status, Response, Cookie
 from database import db  # assuming you're importing db from your database setup
 from helpers import Helpers
 from models import User
@@ -8,6 +8,10 @@ import bcrypt
 
 sessions_collection = db["sessions"]
 users_collection = db["users"]
+
+# ===============================================
+# ============== SESSIONS =======================
+# ===============================================
 
 
 def add_session(data: User):
@@ -45,23 +49,18 @@ def add_session(data: User):
 
 def delete_session(response: Response, session_token: str = Cookie(None)):
     if not session_token:
-        raise HTTPException(status_code=400, detail="No session token provided")
+        response.delete_cookie("session_token")
+        print("[logout] No session token provided, but cookie cleared")
+        return {"message": "Already logged out"}
 
     try:
         session_id = Helpers.verify_signed_token(session_token)
     except HTTPException:
-        # Optional: still clear cookie if invalid
         response.delete_cookie("session_token")
-        raise
+        print("[logout] Invalid session token, cookie cleared")
+        return {"message": "User logged out (invalid token)"}
 
-    # Delete session from DB
     result = sessions_collection.delete_one({"_id": ObjectId(session_id)})
-
-    if result.deleted_count == 0:
-        raise HTTPException(status_code=404, detail="Session not found")
-
-    # Clear cookie
     response.delete_cookie("session_token")
 
-    print(f"[logout] session {session_id} deleted")
     return {"message": "User logged out"}

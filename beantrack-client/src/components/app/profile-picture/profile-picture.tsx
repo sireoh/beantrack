@@ -1,15 +1,22 @@
-import React from "react";
+"use client";
+
+import { useAuth } from "@/hooks/use-auth";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ChevronDown, User } from "lucide-react";
 import { DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 const ProfilePicture = () => {
+  const { user, loading } = useAuth();
+  const url = `https://res.cloudinary.com/beantrack/image/upload/${user?.avatar}.gif`;
+
+  console.log(user?.avatar);
+
   return (
     <DropdownMenuTrigger asChild>
       <div className="flex items-center cursor-pointer space-x-2">
         <Avatar className="w-8 h-8">
           <AvatarImage
-            src={process.env.NEXT_PUBLIC_USER_AVATAR_URL}
+            src={loading ? "..." : url || "Guest"}
             alt="User avatar"
           />
           <AvatarFallback className="text-gray-300 bg-gray-700 dark:text-gray-700 dark:bg-gray-300">

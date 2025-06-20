@@ -1,14 +1,16 @@
 from dotenv import load_dotenv
 import uvicorn
-from fastapi import Cookie, FastAPI, HTTPException, Response
+from fastapi import Cookie, FastAPI, HTTPException, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi import Path
+from auth_dal import get_me
 from helpers import Helpers
 from models import TVShow, User
 from sessions_dal import add_session, delete_session
 from tvlist_dal import (
     add_tv_show,
     decrement_progress,
+    get_user_tv_list,
     increment_progress,
     update_status,
 )
@@ -84,30 +86,46 @@ async def __logout(response: Response, session_token: str = Cookie(None)):
 # ============== AUTH ===========================
 # ===============================================
 
+
+@app.get("/api/me")
+def __get_me(request: Request):
+    return get_me(request)
+
+
 # ===============================================
 # ============== TV SHOWS =======================
 # ===============================================
 
 
+@app.post("/api/tv_show")
+async def __get_user_tv_list(request: Request):
+    get_user_tv_list(request)
+    return {"message": "GET TV Show List endpoint hit"}
+
+
 @app.post("/api/add/tv_show")
-async def __add_tv_show(data: TVShow):
+async def __add_tv_show(request: Request, data: TVShow):
     print(data)
-    add_tv_show(data)
+    add_tv_show(request, data)
     return {"message": "Add TV Show endpoint hit", "data": data}
 
 
 @app.patch("/api/{imdb}/edit/status/{new_status}")
-async def __update_status(imdb: str = Path(...), new_status: str = Path(...)):
-    update_status(imdb, new_status)
+async def __update_status(
+    request: Request, imdb: str = Path(...), new_status: str = Path(...)
+):
+    update_status(request, imdb, new_status)
     return {"message": "Status endpoint hit", "imdb": imdb, "new_status": new_status}
 
 
 @app.patch("/api/{imdb}/edit/progress/{action}")
-async def __update_progress(imdb: str = Path(...), action: str = Path(...)):
+async def __update_progress(
+    request: Request, imdb: str = Path(...), action: str = Path(...)
+):
     if action == "increment":
-        increment_progress(imdb)
+        increment_progress(request, imdb)
     elif action == "decrement":
-        decrement_progress(imdb)
+        decrement_progress(request, imdb)
     else:
         raise HTTPException(
             status_code=400,

@@ -4,9 +4,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import LoginPassword from "@/components/app/login/login-password";
-import { logToServer } from "@/lib/devlog/helpers";
+import { logToServer } from "@/utils/devlog-helper";
+import { hydrateWatchlists } from "@/utils/hydrate-watchlists";
+import { useStore } from "@/store";
 
 const LoginForm = () => {
+  const watchlists = useStore((state) => state.watchlists);
+
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
@@ -27,11 +31,6 @@ const LoginForm = () => {
       });
 
       if (res.ok) {
-        const json = await res.json();
-
-        // Send To Server Logs
-        await logToServer(json);
-
         window.location.href = "/";
       } else {
         alert("Login failed");

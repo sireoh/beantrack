@@ -1,15 +1,21 @@
-import React from "react";
+"use client";
+
 import { WatchlistStatusTabs } from "./watchlist-status-tabs";
 import WatchlistTable from "./watchlist-table/watchlist-table";
+import { useAuth } from "@/hooks/use-auth";
 
 const WatchlistTemplate = ({ type }: { type: string }) => {
+  const { user, loading } = useAuth();
+
   return (
     <>
       {/* Title */}
       <h1 className="mdl-style-header text-lg font-bold">
         Welcome to&nbsp;
-        <span className="text-sky-400">{process.env.NEXT_PUBLIC_USERNAME}</span>
-        's {type == "tv" ? "TV" : "Movie"} List
+        <span className="text-sky-400">
+          {loading ? "..." : user?.username || "Guest"}
+        </span>
+        &apos;s {type === "tv" ? "TV" : "Movie"} List
       </h1>
       {/* End Title */}
 

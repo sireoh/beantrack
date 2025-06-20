@@ -1,4 +1,6 @@
-import { Clapperboard, LogOut, Settings, Tv } from "lucide-react";
+"use client";
+
+import { Clapperboard, Settings, Tv } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -8,26 +10,34 @@ import {
 import Link from "next/link";
 import DarkModeToggleButton from "../dark-mode-toggle-button";
 import ProfilePicture from "./profile-picture";
+import LogoutButton from "./logout-button";
+import { useAuth } from "@/hooks/use-auth";
 
 const ProfilePictureDropdown = () => {
+  const { user, loading } = useAuth();
+
   return (
     <DropdownMenu>
       <ProfilePicture />
 
       <DropdownMenuContent className="w-48">
-        <DropdownMenuItem asChild>
-          <Link href={`/tvlist/${process.env.NEXT_PUBLIC_USERNAME}`}>
-            <Tv />
-            TV List
-          </Link>
-        </DropdownMenuItem>
+        {!loading && user?.username && (
+          <>
+            <DropdownMenuItem asChild>
+              <Link href={`/tvlist/${user.username}`}>
+                <Tv />
+                TV List
+              </Link>
+            </DropdownMenuItem>
 
-        <DropdownMenuItem asChild>
-          <Link href={`/movielist/${process.env.NEXT_PUBLIC_USERNAME}`}>
-            <Clapperboard />
-            Movie List
-          </Link>
-        </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <Link href={`/movielist/${user.username}`}>
+                <Clapperboard />
+                Movie List
+              </Link>
+            </DropdownMenuItem>
+          </>
+        )}
 
         <DropdownMenuItem asChild>
           <Link href="/settings">
@@ -40,12 +50,7 @@ const ProfilePictureDropdown = () => {
 
         <DropdownMenuSeparator />
 
-        <DropdownMenuItem asChild>
-          <Link href="/logout">
-            <LogOut />
-            Logout
-          </Link>
-        </DropdownMenuItem>
+        <LogoutButton />
       </DropdownMenuContent>
     </DropdownMenu>
   );

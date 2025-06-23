@@ -1,3 +1,8 @@
+interface Episode {
+  code: string;
+  name: string;
+}
+
 export interface WatchlistItem {
   id: string;
   status: string;
@@ -5,9 +10,8 @@ export interface WatchlistItem {
   title: string;
   imdb: string;
   score: number;
-  type: string;
-  currentEpisode: number;
-  totalEpisodes: number;
+  currentEpisodeIndex: number;
+  episodes: Episode[];
 }
 
 export interface CollectionModel {

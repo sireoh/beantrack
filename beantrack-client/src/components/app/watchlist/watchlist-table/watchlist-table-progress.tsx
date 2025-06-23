@@ -51,8 +51,8 @@ const WatchlistTableProgress = ({ item }: { item: WatchlistItem }) => {
       </div>
       <span>
         {item.status == "completed"
-          ? item.totalEpisodes
-          : `${item.currentEpisode}/${item.totalEpisodes}`}
+          ? item.episodes.length
+          : `${item.currentEpisodeIndex}/${item.episodes.length}`}
       </span>
     </div>
   );

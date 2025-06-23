@@ -10,6 +10,7 @@ from sessions_dal import add_session, delete_session
 from tvlist_dal import (
     add_tv_show,
     decrement_progress,
+    delete_tv_show,
     get_user_tv_list,
     increment_progress,
     update_status,
@@ -99,8 +100,8 @@ def __get_me(request: Request):
 
 @app.post("/api/tv_show")
 async def __get_user_tv_list(request: Request):
-    get_user_tv_list(request)
-    return {"message": "GET TV Show List endpoint hit"}
+    data = get_user_tv_list(request)
+    return {"watchlist": data}
 
 
 @app.post("/api/add/tv_show")
@@ -108,6 +109,12 @@ async def __add_tv_show(request: Request, data: TVShow):
     print(data)
     add_tv_show(request, data)
     return {"message": "Add TV Show endpoint hit", "data": data}
+
+
+@app.delete("/api/delete/{imdb}/tv_show")
+async def __delete_tv_show(request: Request, imdb: str = Path(...)):
+    delete_tv_show(request, imdb)
+    return {"message": "Delete TV Show endpoint hit", "imdb": imdb}
 
 
 @app.patch("/api/{imdb}/edit/status/{new_status}")

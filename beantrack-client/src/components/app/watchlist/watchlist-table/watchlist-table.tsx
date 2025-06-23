@@ -16,7 +16,10 @@ const WatchlistTable = ({ type }: { type: string }) => {
         type={type}
         screenSize={isMobile ? "mobile" : "desktop"}
       />
-      <WatchlistTableBody screenSize={isMobile ? "mobile" : "desktop"} />
+      <WatchlistTableBody
+        screenSize={isMobile ? "mobile" : "desktop"}
+        type={type}
+      />
     </Table>
   );
 };

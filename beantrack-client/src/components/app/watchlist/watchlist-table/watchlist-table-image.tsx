@@ -1,12 +1,19 @@
 import Link from "next/link";
 import Image from "next/image";
-import { WatchlistItem } from "@/models";
 
 const WatchlistTableImage = ({
   image,
   title,
-}: Pick<WatchlistItem, "image" | "title">) => {
-  const _url = `https://static.tvmaze.com/uploads/images/original_untouched${image}.jpg`;
+  type,
+}: {
+  image: string;
+  title: string;
+  type: string;
+}) => {
+  const _url =
+    type == "tv"
+      ? `https://static.tvmaze.com/uploads/images/original_untouched/${image}.jpg`
+      : `https://m.media-amazon.com/images/${image}.jpg`;
 
   return (
     <div className="flex justify-center items-center">

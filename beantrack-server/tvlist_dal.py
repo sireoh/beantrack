@@ -4,6 +4,7 @@ from database import db
 from helpers import Helpers
 from models import TVShow
 
+users_collection = db["users"]
 tvlist_collection = db["tvlist"]
 
 # ===============================================
@@ -13,8 +14,28 @@ tvlist_collection = db["tvlist"]
 
 def get_user_tv_list(request: Request):
     user_id = Helpers.get_current_user_id_from_session(request)
-    doc = tvlist_collection.find_one({"user": ObjectId(user_id)})
-    return doc.get("data", []) if doc else []
+    print(f"User ID from session: {user_id}")
+
+    user_doc = users_collection.find_one({"_id": ObjectId(user_id)})
+    print(f"User doc: {user_doc}")
+
+    if not user_doc or "tvlist" not in user_doc:
+        print("No tvlist found for user")
+        return []
+
+    tvlist_id = user_doc["tvlist"]
+    print(f"tvlist ObjectId: {tvlist_id}")
+
+    tvlist_doc = tvlist_collection.find_one({"_id": tvlist_id})
+    print(f"tvlist doc: {tvlist_doc}")
+
+    if not tvlist_doc:
+        print("No tvlist document found")
+        return []
+
+    data = tvlist_doc.get("data", [])
+    print(f"Data returned: {data}")
+    return data
 
 
 # ===============================================
@@ -24,10 +45,12 @@ def get_user_tv_list(request: Request):
 
 def add_tv_show(request: Request, tv_show: TVShow):
     user_id = Helpers.get_current_user_id_from_session(request)
+    tvlist_id = Helpers.get_current_tvlist_id(user_id)
+
     _t = tv_show.model_dump()
-    result = tvlist_collection.update_one(
-        {"user": ObjectId(user_id)}, {"$push": {"data": _t}}, upsert=True
-    )
+
+    result = tvlist_collection.update_one({"_id": tvlist_id}, {"$push": {"data": _t}})
+
     print(
         f"[added tv show] user_id: {user_id}, title: {tv_show.title}, matched: {result.matched_count}, modified: {result.modified_count}"
     )
@@ -35,12 +58,15 @@ def add_tv_show(request: Request, tv_show: TVShow):
 
 def delete_tv_show(request: Request, imdb: str):
     user_id = Helpers.get_current_user_id_from_session(request)
+    tvlist_id = Helpers.get_current_tvlist_id(user_id)
+
     result = tvlist_collection.update_one(
-        {"user": ObjectId(user_id)},
+        {"_id": tvlist_id},
         {"$pull": {"data": {"imdb": imdb}}},
     )
+
     print(
-        f"[deleted show] imdb: {imdb}, matched: {result.matched_count}, modified: {result.modified_count}"
+        f"[deleted show] user_id: {user_id}, imdb: {imdb}, matched: {result.matched_count}, modified: {result.modified_count}"
     )
 
 
@@ -51,12 +77,15 @@ def delete_tv_show(request: Request, imdb: str):
 
 def update_status(request: Request, imdb: str, new_status: str):
     user_id = Helpers.get_current_user_id_from_session(request)
+    tvlist_id = Helpers.get_current_tvlist_id(user_id)
+
     result = tvlist_collection.update_one(
-        {"user": ObjectId(user_id), "data.imdb": imdb},
+        {"_id": tvlist_id, "data.imdb": imdb},
         {"$set": {"data.$.status": new_status}},
     )
+
     print(
-        f"[updated status] imdb: {imdb}, new_status: {new_status}, matched: {result.matched_count}, modified: {result.modified_count}"
+        f"[updated status] user_id: {user_id}, imdb: {imdb}, new_status: {new_status}, matched: {result.matched_count}, modified: {result.modified_count}"
     )
 
 
@@ -67,19 +96,21 @@ def update_status(request: Request, imdb: str, new_status: str):
 
 def decrement_progress(request: Request, imdb: str):
     user_id = Helpers.get_current_user_id_from_session(request)
-    # Fetch current progress first to avoid negative values
+    tvlist_id = Helpers.get_current_tvlist_id(user_id)
+
     doc = tvlist_collection.find_one(
-        {"user": ObjectId(user_id), "data.imdb": imdb}, {"data.$": 1}
+        {"_id": tvlist_id, "data.imdb": imdb}, {"data.$": 1}
     )
+
     if not doc or "data" not in doc or len(doc["data"]) == 0:
         print(f"[decremented progress] imdb: {imdb} not found")
         return
 
-    current = doc["data"][0]["currentEpisode"]
+    current = doc["data"][0].get("currentEpisodeIndex", 0)
     if current > 0:
         result = tvlist_collection.update_one(
-            {"user": ObjectId(user_id), "data.imdb": imdb},
-            {"$inc": {"data.$.currentEpisode": -1}},
+            {"_id": tvlist_id, "data.imdb": imdb},
+            {"$inc": {"data.$.currentEpisodeIndex": -1}},
         )
         print(
             f"[decremented progress] imdb: {imdb}, matched: {result.matched_count}, modified: {result.modified_count}"
@@ -90,22 +121,27 @@ def decrement_progress(request: Request, imdb: str):
 
 def increment_progress(request: Request, imdb: str):
     user_id = Helpers.get_current_user_id_from_session(request)
-    # Fetch current progress and totalEpisodes first to avoid exceeding totalEpisodes
+    tvlist_id = Helpers.get_current_tvlist_id(user_id)
+
     doc = tvlist_collection.find_one(
-        {"user": ObjectId(user_id), "data.imdb": imdb}, {"data.$": 1}
+        {"_id": tvlist_id, "data.imdb": imdb}, {"data.$": 1}
     )
+
     if not doc or "data" not in doc or len(doc["data"]) == 0:
         print(f"[incremented progress] imdb: {imdb} not found")
         return
 
     show = doc["data"][0]
-    if show["currentEpisode"] < show["totalEpisodes"]:
+    current = show.get("currentEpisodeIndex", 0)
+    total = len(show.get("episodes", []))
+
+    if current < total - 1:
         result = tvlist_collection.update_one(
-            {"user": ObjectId(user_id), "data.imdb": imdb},
-            {"$inc": {"data.$.currentEpisode": 1}},
+            {"_id": tvlist_id, "data.imdb": imdb},
+            {"$inc": {"data.$.currentEpisodeIndex": 1}},
         )
         print(
             f"[incremented progress] imdb: {imdb}, matched: {result.matched_count}, modified: {result.modified_count}"
         )
     else:
-        print(f"[incremented progress] imdb: {imdb} already at totalEpisodes")
+        print(f"[incremented progress] imdb: {imdb} already at last episode ({total})")

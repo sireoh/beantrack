@@ -25,7 +25,9 @@ export async function handleTVSelect(
   console.log("[id]:", itemCardData.id, tvShowData);
 
   try {
-    const res = await axios.post("/api/add/tv_show", tvShowData);
+    const res = await axios.post("/api/add/tv_show", tvShowData, {
+      withCredentials: true,
+    });
     toast.success(`Added TV Show "${itemCardData.title}" to the database.`);
     console.log(res.data);
   } catch (error) {

@@ -2,14 +2,49 @@ import { TableBody, TableCell, TableRow } from "@/components/ui/table";
 import WatchlistTableImage from "./watchlist-table-image";
 import WatchlistTableTitle from "./watchlist-table-title";
 import WatchlistTableProgress from "./watchlist-table-progress";
-import res from "@/lib/mock-data/beantrack-mock-data.json";
 import WatchlistTableStatus from "./watchlist-table-status";
+import { useEffect, useState } from "react";
+import { WatchlistItem } from "@/models";
 
-const WatchlistTableBody = ({ screenSize }: { screenSize: string }) => {
+const WatchlistTableBody = ({
+  screenSize,
+  type,
+}: {
+  screenSize: string;
+  type: string;
+}) => {
+  const [watchlist, setWatchlist] = useState<WatchlistItem[]>([]);
+
+  useEffect(() => {
+    async function fetchWatchlist() {
+      try {
+        const res = await fetch("/api/tv_show", {
+          method: "POST",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({}),
+        });
+
+        if (!res.ok) {
+          console.error("Failed to fetch TV show list");
+          return;
+        }
+
+        const data = await res.json();
+        console.log("Fetched watchlist:", data.watchlist || []);
+        setWatchlist(data.watchlist || []);
+      } catch (err) {
+        console.error("Error fetching watchlist:", err);
+      }
+    }
+
+    fetchWatchlist();
+  }, []);
+
   return (
     <TableBody>
-      {res.data.map((item, index) => (
-        <TableRow key={item.id}>
+      {watchlist.map((item, index) => (
+        <TableRow key={item.id + item.image}>
           {/* Watchlist Table Status */}
           <WatchlistTableStatus status={item.status} />
 
@@ -22,7 +57,11 @@ const WatchlistTableBody = ({ screenSize }: { screenSize: string }) => {
 
           {/* Watchlist Table Image */}
           <TableCell className="w-[1px] p-0">
-            <WatchlistTableImage image={item.image} title={item.title} />
+            <WatchlistTableImage
+              image={item.image}
+              title={item.title}
+              type={type}
+            />
           </TableCell>
 
           {/* Watchlist Table Title */}

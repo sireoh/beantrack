@@ -55,6 +55,10 @@ function EditButtonDropdownContent({ item }: { item: WatchlistItem }) {
   ];
 
   const handleSelect = async (action: string) => {
+    if (action === "delete") {
+      return handleDelete();
+    }
+
     try {
       const url = `/api/${item.imdb}/edit/status/${action}`;
       await axios.patch(url);
@@ -62,6 +66,18 @@ function EditButtonDropdownContent({ item }: { item: WatchlistItem }) {
     } catch (error) {
       console.error(error);
       toast.error("Failed to update item.");
+    }
+  };
+
+  const handleDelete = async () => {
+    try {
+      const url = `/api/delete/${item.imdb}/tv_show`;
+      await axios.delete(url);
+      toast.success("TV show deleted.");
+      // Optionally trigger a refresh or remove item from local state
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to delete item.");
     }
   };
 

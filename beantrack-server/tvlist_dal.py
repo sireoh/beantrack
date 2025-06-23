@@ -34,8 +34,9 @@ def get_user_tv_list(request: Request):
         return []
 
     data = tvlist_doc.get("data", [])
-    print(f"Data returned: {data}")
-    return data
+    sorted_data = sorted(data, key=lambda x: x.get("title", "").lower())
+    print(f"Data returned (sorted): {sorted_data}")
+    return sorted_data
 
 
 def get_user_tv_list_by_status(request: Request, status: str):
@@ -77,7 +78,10 @@ def get_user_tv_list_by_status(request: Request, status: str):
         return []
 
     print(f"Filtered data: {tvlist_doc.get('data', [])}")
-    return tvlist_doc.get("data", [])
+    data = tvlist_doc.get("data", [])
+    sorted_data = sorted(data, key=lambda x: x.get("title", "").lower())
+    print(f"Data returned (sorted): {sorted_data}")
+    return sorted_data
 
 
 # ===============================================

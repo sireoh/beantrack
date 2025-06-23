@@ -9,8 +9,6 @@ const ProfilePicture = () => {
   const { user, loading } = useAuth();
   const url = `https://res.cloudinary.com/beantrack/image/upload/${user?.avatar}.gif`;
 
-  console.log(user?.avatar);
-
   return (
     <DropdownMenuTrigger asChild>
       <div className="flex items-center cursor-pointer space-x-2">

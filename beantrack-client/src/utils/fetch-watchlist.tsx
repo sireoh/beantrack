@@ -1,6 +1,14 @@
 import { WatchlistItem } from "@/models";
 import { Dispatch, SetStateAction } from "react";
 
+const sortOrder = {
+  watching: 0,
+  completed: 1,
+  on_hold: 2,
+  dropped: 3,
+  plan_to_watch: 4,
+};
+
 export async function fetchWatchlist(
   type: string,
   setWatchlist: Dispatch<SetStateAction<WatchlistItem[]>>,
@@ -31,6 +39,17 @@ async function fetchTVList(
 
     const data = await res.json();
     console.log("Fetched tvlist:", data.watchlist || []);
+
+    if (!status) {
+      // Sort by status priority
+      data.watchlist.sort((a: WatchlistItem, b: WatchlistItem) => {
+        return (
+          (sortOrder[a.status as keyof typeof sortOrder] ?? 999) -
+          (sortOrder[b.status as keyof typeof sortOrder] ?? 999)
+        );
+      });
+    }
+
     setWatchlist(data.watchlist || []);
   } catch (err) {
     console.error("Error fetching watchlist:", err);

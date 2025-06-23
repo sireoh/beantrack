@@ -4,7 +4,13 @@ import { WatchlistStatusTabs } from "./watchlist-status-tabs";
 import WatchlistTable from "./watchlist-table/watchlist-table";
 import { useAuth } from "@/hooks/use-auth";
 
-const WatchlistTemplate = ({ type }: { type: string }) => {
+const WatchlistTemplate = ({
+  type,
+  status,
+}: {
+  type: string;
+  status?: string | undefined;
+}) => {
   const { user, loading } = useAuth();
 
   return (
@@ -33,13 +39,13 @@ const WatchlistTemplate = ({ type }: { type: string }) => {
 
       {/* Watchlist Table: Desktop */}
       <div className="hidden lg:flex">
-        <WatchlistTable type={type} />
+        <WatchlistTable type={type} status={status} />
       </div>
       {/* End Watchlist Status Tabs: Desktop */}
 
       {/* Watchlist Table: Mobile */}
       <div className="block lg:hidden">
-        <WatchlistTable type={type} />
+        <WatchlistTable type={type} status={status} />
       </div>
       {/* End Watchlist Status Tabs: Mobile */}
     </>

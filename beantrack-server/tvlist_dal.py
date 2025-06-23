@@ -38,6 +38,48 @@ def get_user_tv_list(request: Request):
     return data
 
 
+def get_user_tv_list_by_status(request: Request, status: str):
+    user_id = Helpers.get_current_user_id_from_session(request)
+    print(f"User ID from session: {user_id}")
+
+    user_doc = users_collection.find_one({"_id": ObjectId(user_id)})
+    print(f"User doc: {user_doc}")
+
+    if not user_doc or "tvlist" not in user_doc:
+        print("No tvlist found for user")
+        return []
+
+    tvlist_id = user_doc["tvlist"]
+    print(f"tvlist ObjectId: {tvlist_id}")
+
+    try:
+        pipeline = [
+            {"$match": {"_id": ObjectId(tvlist_id)}},
+            {
+                "$project": {
+                    "data": {
+                        "$filter": {
+                            "input": "$data",
+                            "as": "item",
+                            "cond": {"$eq": ["$$item.status", status]},
+                        }
+                    }
+                }
+            },
+        ]
+        tvlist_doc = next(tvlist_collection.aggregate(pipeline), None)
+    except Exception as e:
+        print(f"Aggregation error: {e}")
+        return []
+
+    if not tvlist_doc:
+        print("No tvlist document found")
+        return []
+
+    print(f"Filtered data: {tvlist_doc.get('data', [])}")
+    return tvlist_doc.get("data", [])
+
+
 # ===============================================
 # ============== ADD / REMOVE SHOWS =============
 # ===============================================

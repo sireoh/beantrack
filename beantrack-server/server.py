@@ -10,6 +10,7 @@ from movielist_dal import (
     add_movie,
     delete_movie,
     get_user_movie_list,
+    get_user_movie_list_by_status,
     update_movie_status,
 )
 from sessions_dal import add_session, delete_session
@@ -18,6 +19,7 @@ from tvlist_dal import (
     decrement_tv_show_progress,
     delete_tv_show,
     get_user_tv_list,
+    get_user_tv_list_by_status,
     increment_tv_show_progress,
     update_tv_show_status,
 )
@@ -110,6 +112,13 @@ async def __get_user_tv_list(request: Request):
     return {"watchlist": data}
 
 
+@app.post("/api/tvlist/{status}")
+async def __get_user_tv_list_by_status(request: Request, status: str = Path(...)):
+    print(f"TV LIST ROUTE HIT with status: {status}")
+    data = get_user_tv_list_by_status(request, status)
+    return {"watchlist": data}
+
+
 @app.post("/api/add/tv_show")
 async def __add_tv_show(request: Request, data: TVShow):
     print(data)
@@ -155,6 +164,13 @@ async def __update_tv_show_progress(
 @app.post("/api/movielist")
 async def __get_user_movie_list(request: Request):
     data = get_user_movie_list(request)
+    return {"watchlist": data}
+
+
+@app.post("/api/movielist/{status}")
+async def __get_user_movie_list_by_status(request: Request, status: str = Path(...)):
+    print(f"TV LIST ROUTE HIT with status: {status}")
+    data = get_user_movie_list_by_status(request, status)
     return {"watchlist": data}
 
 

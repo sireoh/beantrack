@@ -5,7 +5,13 @@ import WatchlistTableHeader from "./watchlist-table-header";
 import WatchlistTableBody from "./watchlist-table-body";
 import useIsMobile, { ScreenSize } from "@/hooks/is-mobile";
 
-const WatchlistTable = ({ type }: { type: string }) => {
+const WatchlistTable = ({
+  type,
+  status,
+}: {
+  type: string;
+  status: string | undefined;
+}) => {
   const isMobile = useIsMobile(ScreenSize.TABLET);
 
   if (isMobile === null) return null; // optional: wait for screen size to be determined
@@ -19,6 +25,7 @@ const WatchlistTable = ({ type }: { type: string }) => {
       <WatchlistTableBody
         screenSize={isMobile ? "mobile" : "desktop"}
         type={type}
+        status={status}
       />
     </Table>
   );

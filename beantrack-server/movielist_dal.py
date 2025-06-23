@@ -38,6 +38,48 @@ def get_user_movie_list(request: Request):
     return data
 
 
+def get_user_movie_list_by_status(request: Request, status: str):
+    user_id = Helpers.get_current_user_id_from_session(request)
+    print(f"User ID from session: {user_id}")
+
+    user_doc = users_collection.find_one({"_id": ObjectId(user_id)})
+    print(f"User doc: {user_doc}")
+
+    if not user_doc or "movielist" not in user_doc:
+        print("No movielist found for user")
+        return []
+
+    movielist_id = user_doc["movielist"]
+    print(f"movielist ObjectId: {movielist_id}")
+
+    try:
+        pipeline = [
+            {"$match": {"_id": ObjectId(movielist_id)}},
+            {
+                "$project": {
+                    "data": {
+                        "$filter": {
+                            "input": "$data",
+                            "as": "item",
+                            "cond": {"$eq": ["$$item.status", status]},
+                        }
+                    }
+                }
+            },
+        ]
+        movielist_doc = next(movielist_collection.aggregate(pipeline), None)
+    except Exception as e:
+        print(f"Aggregation error: {e}")
+        return []
+
+    if not movielist_doc:
+        print("No movielist document found")
+        return []
+
+    print(f"Filtered data: {movielist_doc.get('data', [])}")
+    return movielist_doc.get("data", [])
+
+
 # ===============================================
 # ============== ADD / REMOVE MOVIES ============
 # ===============================================

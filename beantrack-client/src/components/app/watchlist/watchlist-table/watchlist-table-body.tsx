@@ -5,66 +5,21 @@ import WatchlistTableProgress from "./watchlist-table-progress";
 import WatchlistTableStatus from "./watchlist-table-status";
 import { useEffect, useState } from "react";
 import { WatchlistItem } from "@/models";
+import { fetchWatchlist } from "@/utils/fetch-watchlist";
 
 const WatchlistTableBody = ({
   screenSize,
   type,
+  status,
 }: {
   screenSize: string;
   type: string;
+  status?: string;
 }) => {
   const [watchlist, setWatchlist] = useState<WatchlistItem[]>([]);
 
   useEffect(() => {
-    async function fetchWatchlist() {
-      return type === "tv" ? fetchTVList() : fetchMovielist();
-    }
-
-    async function fetchTVList() {
-      try {
-        const res = await fetch("/api/tvlist", {
-          method: "POST",
-          credentials: "include",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({}),
-        });
-
-        if (!res.ok) {
-          console.error("Failed to fetch TV show list");
-          return;
-        }
-
-        const data = await res.json();
-        console.log("Fetched tvlist:", data.watchlist || []);
-        setWatchlist(data.watchlist || []);
-      } catch (err) {
-        console.error("Error fetching watchlist:", err);
-      }
-    }
-
-    async function fetchMovielist() {
-      try {
-        const res = await fetch("/api/movielist", {
-          method: "POST",
-          credentials: "include",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({}),
-        });
-
-        if (!res.ok) {
-          console.error("Failed to fetch TV show list");
-          return;
-        }
-
-        const data = await res.json();
-        console.log("Fetched watchlist:", data.watchlist || []);
-        setWatchlist(data.watchlist || []);
-      } catch (err) {
-        console.error("Error fetching watchlist:", err);
-      }
-    }
-
-    fetchWatchlist();
+    fetchWatchlist(type, setWatchlist, status);
   }, []);
 
   return (

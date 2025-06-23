@@ -3,7 +3,13 @@ import React from "react";
 import { EditButton } from "./edit-button-dropdown";
 import { WatchlistItem } from "@/models";
 
-const WatchlistTableTitle = ({ item }: { item: WatchlistItem }) => {
+const WatchlistTableTitle = ({
+  item,
+  type,
+}: {
+  item: WatchlistItem;
+  type: string;
+}) => {
   return (
     <div className="flex justify-between items-center">
       <Link
@@ -13,7 +19,7 @@ const WatchlistTableTitle = ({ item }: { item: WatchlistItem }) => {
         {item.title}
       </Link>
 
-      <EditButton item={item} />
+      <EditButton item={item} type={type} />
     </div>
   );
 };

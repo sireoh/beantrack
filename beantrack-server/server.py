@@ -5,15 +5,21 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi import Path
 from auth_dal import get_me
 from helpers import Helpers
-from models import TVShow, User
+from models import Movie, TVShow, User
+from movielist_dal import (
+    add_movie,
+    delete_movie,
+    get_user_movie_list,
+    update_movie_status,
+)
 from sessions_dal import add_session, delete_session
 from tvlist_dal import (
     add_tv_show,
-    decrement_progress,
+    decrement_tv_show_progress,
     delete_tv_show,
     get_user_tv_list,
-    increment_progress,
-    update_status,
+    increment_tv_show_progress,
+    update_tv_show_status,
 )
 from user_dal import add_user, delete_user
 import os
@@ -98,7 +104,7 @@ def __get_me(request: Request):
 # ===============================================
 
 
-@app.post("/api/tv_show")
+@app.post("/api/tvlist")
 async def __get_user_tv_list(request: Request):
     data = get_user_tv_list(request)
     return {"watchlist": data}
@@ -117,28 +123,60 @@ async def __delete_tv_show(request: Request, imdb: str = Path(...)):
     return {"message": "Delete TV Show endpoint hit", "imdb": imdb}
 
 
-@app.patch("/api/{imdb}/edit/status/{new_status}")
-async def __update_status(
+@app.patch("/api/{imdb}/edit/tv_show/status/{new_status}")
+async def __update_tv_show_status(
     request: Request, imdb: str = Path(...), new_status: str = Path(...)
 ):
-    update_status(request, imdb, new_status)
+    update_tv_show_status(request, imdb, new_status)
     return {"message": "Status endpoint hit", "imdb": imdb, "new_status": new_status}
 
 
-@app.patch("/api/{imdb}/edit/progress/{action}")
-async def __update_progress(
+@app.patch("/api/{imdb}/edit/tv_show/progress/{action}")
+async def __update_tv_show_progress(
     request: Request, imdb: str = Path(...), action: str = Path(...)
 ):
     if action == "increment":
-        increment_progress(request, imdb)
+        increment_tv_show_progress(request, imdb)
     elif action == "decrement":
-        decrement_progress(request, imdb)
+        decrement_tv_show_progress(request, imdb)
     else:
         raise HTTPException(
             status_code=400,
             detail="Invalid action. Must be 'increment' or 'decrement'.",
         )
     return {"message": "Progress endpoint hit", "imdb": imdb, "action": action}
+
+
+# ===============================================
+# ============== MOVIES =========================
+# ===============================================
+
+
+@app.post("/api/movielist")
+async def __get_user_movie_list(request: Request):
+    data = get_user_movie_list(request)
+    return {"watchlist": data}
+
+
+@app.post("/api/add/movie")
+async def __add_movie(request: Request, data: Movie):
+    print(data)
+    add_movie(request, data)
+    return {"message": "Add Movie endpoint hit", "data": data}
+
+
+@app.delete("/api/delete/{imdb}/movie")
+async def __delete_movie(request: Request, imdb: str = Path(...)):
+    delete_movie(request, imdb)
+    return {"message": "Delete Movie endpoint hit", "imdb": imdb}
+
+
+@app.patch("/api/{imdb}/edit/movie/status/{new_status}")
+async def __update_movie_status(
+    request: Request, imdb: str = Path(...), new_status: str = Path(...)
+):
+    update_movie_status(request, imdb, new_status)
+    return {"message": "Status endpoint hit", "imdb": imdb, "new_status": new_status}
 
 
 if __name__ == "__main__":

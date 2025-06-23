@@ -18,6 +18,14 @@ class TVShow(BaseModel):
     episodes: List[Episode]
 
 
+class Movie(BaseModel):
+    status: Literal["watching", "completed", "plan_to_watch"]
+    image: str
+    title: str
+    imdb: str
+    score: Union[float, str]
+
+
 class User(BaseModel):
     username: str
     password: str

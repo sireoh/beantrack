@@ -71,11 +71,11 @@ def delete_tv_show(request: Request, imdb: str):
 
 
 # ===============================================
-# =============== UPDATE STATUS =================
+# ============= UPDATE TV SHOW STATUS ===========
 # ===============================================
 
 
-def update_status(request: Request, imdb: str, new_status: str):
+def update_tv_show_status(request: Request, imdb: str, new_status: str):
     user_id = Helpers.get_current_user_id_from_session(request)
     tvlist_id = Helpers.get_current_tvlist_id(user_id)
 
@@ -90,11 +90,12 @@ def update_status(request: Request, imdb: str, new_status: str):
 
 
 # ===============================================
-# ======== INCREMENT / DECREMENT PROGRESS =======
+# =========== INCREMENT / DECREMENT =============
+# ============= TV SHOW PROGRESS ================
 # ===============================================
 
 
-def decrement_progress(request: Request, imdb: str):
+def decrement_tv_show_progress(request: Request, imdb: str):
     user_id = Helpers.get_current_user_id_from_session(request)
     tvlist_id = Helpers.get_current_tvlist_id(user_id)
 
@@ -119,7 +120,7 @@ def decrement_progress(request: Request, imdb: str):
         print(f"[decremented progress] imdb: {imdb} already at 0")
 
 
-def increment_progress(request: Request, imdb: str):
+def increment_tv_show_progress(request: Request, imdb: str):
     user_id = Helpers.get_current_user_id_from_session(request)
     tvlist_id = Helpers.get_current_tvlist_id(user_id)
 

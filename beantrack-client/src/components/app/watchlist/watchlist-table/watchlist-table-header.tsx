@@ -35,9 +35,11 @@ const WatchlistTableHeader = ({
           </TableHead>
         )}
 
-        <TableHead className="text-center w-[1px] p-0 text-white">
-          Progress
-        </TableHead>
+        {type == "tv" && (
+          <TableHead className="text-center w-[1px] p-0 text-white">
+            Progress
+          </TableHead>
+        )}
       </TableRow>
     </TableHeader>
   );

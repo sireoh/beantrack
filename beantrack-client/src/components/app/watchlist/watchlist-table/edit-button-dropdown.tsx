@@ -9,7 +9,6 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
-import axios from "axios";
 import {
   TvMinimalPlay,
   SquareCheckBig,
@@ -19,10 +18,16 @@ import {
   Trash2,
 } from "lucide-react";
 import { Fragment } from "react";
-import { toast } from "sonner";
 import { WatchlistItem } from "@/models";
+import { handleStatusUpdateAndDelete } from "@/utils/handle-status-update-and-delete";
 
-export function EditButton({ item }: { item: WatchlistItem }) {
+export function EditButton({
+  item,
+  type,
+}: {
+  item: WatchlistItem;
+  type: string;
+}) {
   const _padding = "py-0.5 px-1 m-0 h-auto w-auto min-h-0 min-w-0";
   const _main =
     "leading-none rounded-sm text-xs light:bg-white dark:text-sky-600 text-sky-800 border-1 light:border-gray-400";
@@ -35,12 +40,18 @@ export function EditButton({ item }: { item: WatchlistItem }) {
           edit
         </Button>
       </DropdownMenuTrigger>
-      <EditButtonDropdownContent item={item} />
+      <EditButtonDropdownContent item={item} type={type} />
     </DropdownMenu>
   );
 }
 
-function EditButtonDropdownContent({ item }: { item: WatchlistItem }) {
+function EditButtonDropdownContent({
+  item,
+  type,
+}: {
+  item: WatchlistItem;
+  type: string;
+}) {
   const actions = [
     {
       label: "Currently Watching",
@@ -54,40 +65,13 @@ function EditButtonDropdownContent({ item }: { item: WatchlistItem }) {
     { label: "Delete", action: "delete", icon: <Trash2 /> },
   ];
 
-  const handleSelect = async (action: string) => {
-    if (action === "delete") {
-      return handleDelete();
-    }
-
-    try {
-      const url = `/api/${item.imdb}/edit/status/${action}`;
-      await axios.patch(url);
-      toast.success(`Updated to "${action}"`);
-    } catch (error) {
-      console.error(error);
-      toast.error("Failed to update item.");
-    }
-  };
-
-  const handleDelete = async () => {
-    try {
-      const url = `/api/delete/${item.imdb}/tv_show`;
-      await axios.delete(url);
-      toast.success("TV show deleted.");
-      // Optionally trigger a refresh or remove item from local state
-    } catch (error) {
-      console.error(error);
-      toast.error("Failed to delete item.");
-    }
-  };
-
   return (
     <DropdownMenuContent className="w-48">
       {actions.map(({ label, action, icon }) =>
         action !== "delete" ? (
           <DropdownMenuItem
             key={action}
-            onSelect={() => handleSelect(action)}
+            onSelect={() => handleStatusUpdateAndDelete(action, type, item)}
             className="cursor-pointer">
             {icon}
             {label}
@@ -96,7 +80,7 @@ function EditButtonDropdownContent({ item }: { item: WatchlistItem }) {
           <Fragment key={action}>
             <DropdownMenuSeparator />
             <DropdownMenuItem
-              onSelect={() => handleSelect(action)}
+              onSelect={() => handleStatusUpdateAndDelete(action, type, item)}
               className="cursor-pointer">
               {icon}
               {label}

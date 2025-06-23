@@ -74,3 +74,12 @@ class Helpers:
             raise HTTPException(status_code=404, detail="TV list not found")
 
         return user_doc["tvlist"]
+
+    @staticmethod
+    def get_current_movielist_id(user_id: str) -> ObjectId:
+        user_doc = users_collection.find_one({"_id": ObjectId(user_id)})
+
+        if not user_doc or "movielist" not in user_doc:
+            raise HTTPException(status_code=404, detail="Movie list not found")
+
+        return user_doc["movielist"]

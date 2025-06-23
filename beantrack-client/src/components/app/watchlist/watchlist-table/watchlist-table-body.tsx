@@ -17,8 +17,34 @@ const WatchlistTableBody = ({
 
   useEffect(() => {
     async function fetchWatchlist() {
+      return type === "tv" ? fetchTVList() : fetchMovielist();
+    }
+
+    async function fetchTVList() {
       try {
-        const res = await fetch("/api/tv_show", {
+        const res = await fetch("/api/tvlist", {
+          method: "POST",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({}),
+        });
+
+        if (!res.ok) {
+          console.error("Failed to fetch TV show list");
+          return;
+        }
+
+        const data = await res.json();
+        console.log("Fetched tvlist:", data.watchlist || []);
+        setWatchlist(data.watchlist || []);
+      } catch (err) {
+        console.error("Error fetching watchlist:", err);
+      }
+    }
+
+    async function fetchMovielist() {
+      try {
+        const res = await fetch("/api/movielist", {
           method: "POST",
           credentials: "include",
           headers: { "Content-Type": "application/json" },
@@ -66,7 +92,7 @@ const WatchlistTableBody = ({
 
           {/* Watchlist Table Title */}
           <TableCell className="max-w-[180px] sm:max-w-none whitespace-nowrap overflow-hidden text-ellipsis">
-            <WatchlistTableTitle item={item} />
+            <WatchlistTableTitle item={item} type={type} />
           </TableCell>
 
           {/* Watchlist Table Score: Desktop/Tablet Only*/}
@@ -77,9 +103,11 @@ const WatchlistTableBody = ({
           )}
 
           {/* Watchlist Table Progress */}
-          <TableCell className="text-center">
-            <WatchlistTableProgress item={item} />
-          </TableCell>
+          {type == "tv" && (
+            <TableCell className="text-center">
+              <WatchlistTableProgress item={item} />
+            </TableCell>
+          )}
         </TableRow>
       ))}
     </TableBody>

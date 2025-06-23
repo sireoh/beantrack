@@ -14,7 +14,7 @@ import { useStore } from "@/store";
 import { OMDBResultsByIMDB, TVMazeEpisodeModel } from "@/models";
 import { fetchMovieByIMDB } from "@/utils/fetch-movie-by-imdb";
 import { fetchTVShowByTVMazeID } from "@/utils/fetch-tv-show-by-tv-maze-id";
-import { handleTVSelect } from "@/utils/handle-tv-select";
+import { handleTVSelect, handleMovieSelect } from "@/utils/handle-item-select";
 
 const ItemCardAddButtonDropdown = ({
   itemCardData,
@@ -48,8 +48,10 @@ function ItemCardAddButtonDropdownContent({
   }
 
   async function _m(action: string) {
-    const results = await fetchMovieByIMDB(itemCardData.imdb);
-    __handleMovieSelect(itemCardData, action, results);
+    const results: OMDBResultsByIMDB = await fetchMovieByIMDB(
+      itemCardData.imdb
+    );
+    handleMovieSelect(itemCardData, action, results);
   }
 
   const actions = [
@@ -79,15 +81,6 @@ function ItemCardAddButtonDropdownContent({
       ))}
     </DropdownMenuContent>
   );
-}
-
-function __handleMovieSelect(
-  itemCardData: ItemCardDataModel,
-  action: string,
-  results: OMDBResultsByIMDB
-) {
-  const truncatedImage =
-    itemCardData.image.match(/\/(MV5B[^\/]+)\.jpg/)?.[1] ?? itemCardData.image;
 }
 
 export default ItemCardAddButtonDropdown;

@@ -22,7 +22,7 @@ const WatchlistTableProgress = ({ item }: { item: WatchlistItem }) => {
 
   const handleSelect = async (action: string) => {
     try {
-      const url = `/api/${item.imdb}/edit/progress/${action}`;
+      const url = `/api/${item.imdb}/edit/tv_show/progress/${action}`;
       await axios.patch(url);
       toast.success(`Updated to "${action}"`);
     } catch (error) {

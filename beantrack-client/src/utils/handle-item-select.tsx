@@ -1,5 +1,5 @@
 import { ItemCardDataModel } from "@/components/app/item-card/item-card";
-import { TVMazeEpisodeModel } from "@/models";
+import { OMDBResultsByIMDB, TVMazeEpisodeModel } from "@/models";
 import axios from "axios";
 import { toast } from "sonner";
 
@@ -19,10 +19,8 @@ export async function handleTVSelect(
     imdb: itemCardData.imdb,
     score: itemCardData.score,
     currentEpisodeIndex: 0,
-    episodes: __handleResultsFormat(results),
+    episodes: __handleTVResultsFormat(results),
   };
-
-  console.log("[id]:", itemCardData.id, tvShowData);
 
   try {
     const res = await axios.post("/api/add/tv_show", tvShowData, {
@@ -36,9 +34,38 @@ export async function handleTVSelect(
   }
 }
 
-function __handleResultsFormat(results: TVMazeEpisodeModel[]) {
+function __handleTVResultsFormat(results: TVMazeEpisodeModel[]) {
   return results.map(({ season, number, name }) => ({
     code: `${season}x${String(number).padStart(2, "0")}`,
     name,
   }));
+}
+
+export async function handleMovieSelect(
+  itemCardData: ItemCardDataModel,
+  action: string,
+  results: OMDBResultsByIMDB
+) {
+  const truncatedImage =
+    itemCardData.image.match(/m\.media-amazon\.com\/images\/(.*?)\.jpg/)?.[1] ||
+    itemCardData.image;
+
+  const movieData = {
+    status: action,
+    image: truncatedImage,
+    title: itemCardData.title,
+    imdb: itemCardData.imdb,
+    score: results.imdbRating,
+  };
+
+  try {
+    const res = await axios.post("/api/add/movie", movieData, {
+      withCredentials: true,
+    });
+    toast.success(`Added Movie "${itemCardData.title}" to the database.`);
+    console.log(res.data);
+  } catch (error) {
+    console.error(error);
+    toast.error("Failed to add Movie.");
+  }
 }

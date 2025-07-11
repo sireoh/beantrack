@@ -39,6 +39,7 @@ app.add_middleware(
 
 load_dotenv()
 DEBUG = os.environ["DEBUG"] == "true"
+PORT = os.environ["PORT"]
 
 # ===============================================
 # ============== USERS ==========================
@@ -68,8 +69,8 @@ async def __delete_user(data: User):
 async def __login(data: User, response: Response):
     _r = add_session(data)
 
-    if _r.get("is_logged_in"):
-        return {"message": "User is already logged in", "data": data}
+    # if _r.get("is_logged_in"):
+    #     return {"message": "User is already logged in", "data": data}
 
     session_id = _r["session_id"]
     signed_session = Helpers.sign_session_id(session_id)
@@ -196,4 +197,4 @@ async def __update_movie_status(
 
 
 if __name__ == "__main__":
-    uvicorn.run("server:app", host="0.0.0.0", port=3001, reload=False)
+    uvicorn.run("server:app", host="0.0.0.0", port=int(PORT), reload=False)

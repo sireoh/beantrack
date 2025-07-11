@@ -1,7 +1,14 @@
 import { OMDBResults, SearchResult } from "@/models";
 import { useEffect, useState } from "react";
 
-const MOVIES_API_ENDPOINT = process.env.NEXT_PUBLIC_MOVIES_API_ENDPOINT;
+const OMDB_API_KEY = process.env.NEXT_PUBLIC_OMDB_API_KEY;
+let MOVIES_API_ENDPOINT = process.env.NEXT_PUBLIC_MOVIES_API_ENDPOINT;
+
+// Simple safety check and URL construction
+MOVIES_API_ENDPOINT =
+  OMDB_API_KEY && MOVIES_API_ENDPOINT
+    ? MOVIES_API_ENDPOINT.replace("{%s}", OMDB_API_KEY)
+    : "";
 
 export function searchMovies(query: string): SearchResult<OMDBResults> {
   const [results, setResults] = useState<OMDBResults>({

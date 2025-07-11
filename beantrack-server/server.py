@@ -3,7 +3,7 @@ import uvicorn
 from fastapi import Cookie, FastAPI, HTTPException, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi import Path
-from auth_dal import get_me
+from auth_dal import get_auth
 from helpers import Helpers
 from models import Movie, TVShow, User
 from movielist_dal import (
@@ -97,9 +97,9 @@ async def __logout(response: Response, session_token: str = Cookie(None)):
 # ===============================================
 
 
-@app.get("/api/me")
-def __get_me(request: Request):
-    return get_me(request)
+@app.get("/api/auth")
+def __get_auth(request: Request):
+    return get_auth(request)
 
 
 # ===============================================

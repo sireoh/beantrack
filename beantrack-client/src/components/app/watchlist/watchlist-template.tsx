@@ -1,8 +1,8 @@
 "use client";
 
+import { useStore } from "@/store";
 import { WatchlistStatusTabs } from "./watchlist-status-tabs";
 import WatchlistTable from "./watchlist-table/watchlist-table";
-import { useAuth } from "@/hooks/use-auth";
 
 const WatchlistTemplate = ({
   type,
@@ -11,7 +11,7 @@ const WatchlistTemplate = ({
   type: string;
   status?: string | undefined;
 }) => {
-  const { user, loading } = useAuth();
+  const { user, loading } = useStore((state) => state.session);
 
   return (
     <>

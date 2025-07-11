@@ -1,12 +1,12 @@
 "use client";
 
-import { useAuth } from "@/hooks/use-auth";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ChevronDown, User } from "lucide-react";
 import { DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { useStore } from "@/store";
 
 const ProfilePicture = () => {
-  const { user, loading } = useAuth();
+  const { user, loading } = useStore((state) => state.session);
   const url = `https://res.cloudinary.com/beantrack/image/upload/${user?.avatar}.gif`;
 
   return (

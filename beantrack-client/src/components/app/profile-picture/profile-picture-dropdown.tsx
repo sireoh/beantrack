@@ -11,10 +11,10 @@ import Link from "next/link";
 import DarkModeToggleButton from "./dark-mode-toggle-button";
 import ProfilePicture from "./profile-picture";
 import LogoutButton from "./logout-button";
-import { useAuth } from "@/hooks/use-auth";
+import { useStore } from "@/store";
 
 const ProfilePictureDropdown = () => {
-  const { user, loading } = useAuth();
+  const { user, loading } = useStore((state) => state.session);
 
   return (
     <DropdownMenu>

@@ -1,30 +1,33 @@
 // hooks/useAuth.ts
 "use client";
-import { useEffect, useState } from "react";
+import { useStore } from "@/store";
+import { useEffect } from "react";
 
-type User = {
+export type User = {
   username: string;
   avatar?: string;
+  admin: boolean;
 };
 
 export function useAuth() {
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { user, loading, setUser, setLoading } = useStore(
+    (state) => state.session
+  );
 
   useEffect(() => {
     async function checkAuth() {
       try {
-        const res = await fetch("/api/me", {
+        const res = await fetch("/api/auth", {
           credentials: "include",
         });
         if (res.ok) {
           const data = await res.json();
           setUser(data);
         } else {
-          setUser(null);
+          setUser(undefined);
         }
       } catch {
-        setUser(null);
+        setUser(undefined);
       } finally {
         setLoading(false);
       }

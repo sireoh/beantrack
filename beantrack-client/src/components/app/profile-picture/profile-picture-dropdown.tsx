@@ -8,7 +8,7 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import Link from "next/link";
-import DarkModeToggleButton from "../dark-mode-toggle-button";
+import DarkModeToggleButton from "./dark-mode-toggle-button";
 import ProfilePicture from "./profile-picture";
 import LogoutButton from "./logout-button";
 import { useAuth } from "@/hooks/use-auth";

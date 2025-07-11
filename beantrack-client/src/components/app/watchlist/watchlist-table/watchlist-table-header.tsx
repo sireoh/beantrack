@@ -30,7 +30,7 @@ const WatchlistTableHeader = ({
 
         {/* Score: Desktop Only */}
         {screenSize == "desktop" && (
-          <TableHead className="text-center w-[1px] p-0 text-white">
+          <TableHead className="text-center w-[1px] p-0 text-white pr-4">
             Score
           </TableHead>
         )}

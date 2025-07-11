@@ -1,9 +1,9 @@
 "use client";
 
-import { Button } from "../ui/button";
+import { Button } from "../../ui/button";
 import { cn } from "@/lib/utils";
 import { useTheme } from "next-themes";
-import { DropdownMenuItem } from "../ui/dropdown-menu";
+import { DropdownMenuItem } from "../../ui/dropdown-menu";
 import { Moon, Power, PowerOff } from "lucide-react";
 
 const DarkModeToggleButton = () => {
@@ -28,8 +28,8 @@ const DarkModeToggleButton = () => {
           className={cn(
             "ml-auto size-6 rounded-full",
             theme == "dark"
-              ? "bg-green-500 hover:bg-green-600"
-              : "bg-red-500 hover:bg-red-600"
+              ? "bg-red-500 hover:bg-red-600"
+              : "bg-green-500 hover:bg-green-600"
           )}>
           {theme == "dark" ? (
             <Power className={_iconColor} strokeWidth={_iconStrokeWidth} />

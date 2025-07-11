@@ -40,8 +40,8 @@ async function fetchTVList(
     const data = await res.json();
     console.log("Fetched tvlist:", data.watchlist || []);
 
+    // Sort the movielist by status
     if (!status) {
-      // Sort by status priority
       data.watchlist.sort((a: WatchlistItem, b: WatchlistItem) => {
         return (
           (sortOrder[a.status as keyof typeof sortOrder] ?? 999) -
@@ -76,6 +76,17 @@ async function fetchMovielist(
 
     const data = await res.json();
     console.log("Fetched watchlist:", data.watchlist || []);
+
+    // Sort the movielist by status
+    if (!status) {
+      data.watchlist.sort((a: WatchlistItem, b: WatchlistItem) => {
+        return (
+          (sortOrder[a.status as keyof typeof sortOrder] ?? 999) -
+          (sortOrder[b.status as keyof typeof sortOrder] ?? 999)
+        );
+      });
+    }
+
     setWatchlist(data.watchlist || []);
   } catch (err) {
     console.error("Error fetching watchlist:", err);

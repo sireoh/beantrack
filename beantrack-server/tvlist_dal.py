@@ -17,7 +17,7 @@ def get_user_tv_list(request: Request):
     print(f"User ID from session: {user_id}")
 
     user_doc = users_collection.find_one({"_id": ObjectId(user_id)})
-    print(f"User doc: {user_doc}")
+    # print(f"User doc: {user_doc}")
 
     if not user_doc or "tvlist" not in user_doc:
         print("No tvlist found for user")
@@ -27,7 +27,7 @@ def get_user_tv_list(request: Request):
     print(f"tvlist ObjectId: {tvlist_id}")
 
     tvlist_doc = tvlist_collection.find_one({"_id": tvlist_id})
-    print(f"tvlist doc: {tvlist_doc}")
+    # print(f"tvlist doc: {tvlist_doc}")
 
     if not tvlist_doc:
         print("No tvlist document found")
@@ -35,7 +35,7 @@ def get_user_tv_list(request: Request):
 
     data = tvlist_doc.get("data", [])
     sorted_data = sorted(data, key=lambda x: x.get("title", "").lower())
-    print(f"Data returned (sorted): {sorted_data}")
+    # print(f"Data returned (sorted): {sorted_data}")
     return sorted_data
 
 
@@ -44,7 +44,7 @@ def get_user_tv_list_by_status(request: Request, status: str):
     print(f"User ID from session: {user_id}")
 
     user_doc = users_collection.find_one({"_id": ObjectId(user_id)})
-    print(f"User doc: {user_doc}")
+    # print(f"User doc: {user_doc}")
 
     if not user_doc or "tvlist" not in user_doc:
         print("No tvlist found for user")
@@ -80,7 +80,7 @@ def get_user_tv_list_by_status(request: Request, status: str):
     print(f"Filtered data: {tvlist_doc.get('data', [])}")
     data = tvlist_doc.get("data", [])
     sorted_data = sorted(data, key=lambda x: x.get("title", "").lower())
-    print(f"Data returned (sorted): {sorted_data}")
+    # print(f"Data returned (sorted): {sorted_data}")
     return sorted_data
 
 

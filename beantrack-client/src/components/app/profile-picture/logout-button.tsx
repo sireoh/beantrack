@@ -27,7 +27,7 @@ const LogoutButton = () => {
 
   return (
     <DropdownMenuItem asChild onClick={handleLogout}>
-      <Link href="#">
+      <Link href="#" className="cursor-pointer">
         <LogOut />
         Logout
       </Link>

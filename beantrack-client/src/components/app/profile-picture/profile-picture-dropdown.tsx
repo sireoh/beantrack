@@ -24,14 +24,18 @@ const ProfilePictureDropdown = () => {
         {!loading && user?.username && (
           <>
             <DropdownMenuItem asChild>
-              <Link href={`/tvlist/${user.username}`}>
+              <Link
+                href={`/tvlist/${user.username}`}
+                className="cursor-pointer">
                 <Tv />
                 TV List
               </Link>
             </DropdownMenuItem>
 
             <DropdownMenuItem asChild>
-              <Link href={`/movielist/${user.username}`}>
+              <Link
+                href={`/movielist/${user.username}`}
+                className="cursor-pointer">
                 <Clapperboard />
                 Movie List
               </Link>
@@ -40,7 +44,7 @@ const ProfilePictureDropdown = () => {
         )}
 
         <DropdownMenuItem asChild>
-          <Link href="/settings">
+          <Link href="/settings" className="cursor-pointer">
             <Settings />
             Settings
           </Link>

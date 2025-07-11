@@ -30,7 +30,7 @@ export default function ItemCard({
   description,
 }: ItemCardDataModel) {
   const search = useStore((state) => state.search);
-  const _link = `https://www.imdb.com/title/${imdb}`;
+  const _href = `https://www.imdb.com/title/${imdb}`;
   const itemCardData: ItemCardDataModel = {
     id: id,
     imdb: imdb,
@@ -42,7 +42,7 @@ export default function ItemCard({
   return (
     <Card className="flex flex-row rounded-sm p-2 gap-x-2">
       <div className="w-[90px] flex-shrink-0">
-        <Link href={_link}>
+        <Link href={_href}>
           <SafeImage src={image} alt={title} />
         </Link>
       </div>
@@ -53,7 +53,7 @@ export default function ItemCard({
             <h2 className="text-xl font-semibold text-primary">
               <ItemCardTitle
                 title={title}
-                link={_link}
+                link={_href}
                 Year={Year}
                 premiered={premiered}
                 ended={ended}

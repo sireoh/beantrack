@@ -21,7 +21,7 @@ const DarkModeToggleButton = () => {
 
   return (
     <DropdownMenuItem asChild onClick={toggleDarkMode}>
-      <div className="flex justify-between items-center w-full text-info">
+      <div className="flex justify-between items-center w-full text-info cursor-pointer">
         <Moon />
         Dark Mode
         <Button

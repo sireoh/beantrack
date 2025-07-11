@@ -42,6 +42,7 @@ const WatchlistTableBody = ({
               image={item.image}
               title={item.title}
               type={type}
+              imdb={item.imdb}
             />
           </TableCell>
 

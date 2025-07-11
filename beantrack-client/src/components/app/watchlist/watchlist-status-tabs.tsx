@@ -99,8 +99,8 @@ const WatchlistStatusTabsDesktop = ({
             onClick={() => router.push(_hrefBase + tab.href)}
             className={
               activeTab === tab.href
-                ? "rounded-none"
-                : "text-white rounded-none dark:text-white bg-sky-500"
+                ? "rounded-none cursor-pointer"
+                : "text-white rounded-none dark:text-white bg-sky-500 cursor-pointer"
             }>
             {tab.label}
           </TabsTrigger>

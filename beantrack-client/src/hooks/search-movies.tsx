@@ -1,15 +1,6 @@
 import { OMDBResults, SearchResult } from "@/models";
 import { useEffect, useState } from "react";
 
-const OMDB_API_KEY = process.env.NEXT_PUBLIC_OMDB_API_KEY;
-let MOVIES_API_ENDPOINT = process.env.NEXT_PUBLIC_MOVIES_API_ENDPOINT;
-
-// Simple safety check and URL construction
-MOVIES_API_ENDPOINT =
-  OMDB_API_KEY && MOVIES_API_ENDPOINT
-    ? MOVIES_API_ENDPOINT.replace("{%s}", OMDB_API_KEY)
-    : "";
-
 export function searchMovies(query: string): SearchResult<OMDBResults> {
   const [results, setResults] = useState<OMDBResults>({
     Search: [],
@@ -23,18 +14,33 @@ export function searchMovies(query: string): SearchResult<OMDBResults> {
   useEffect(() => {
     if (!query) return;
 
-    const fetchData = async () => {
+    const fetchMovies = async () => {
       setLoading(true);
       try {
-        const url = `${MOVIES_API_ENDPOINT}${encodeURIComponent(query)}`;
-        const res = await fetch(url);
-        if (!res.ok) throw new Error("Failed to fetch movies");
+        const res = await fetch(
+          `/api/search/movie?q=${encodeURIComponent(query)}`,
+          {
+            method: "POST",
+            credentials: "include", // optional depending on auth/cookies
+          }
+        );
+
+        if (!res.ok)
+          throw new Error(`Failed to fetch movies: ${res.statusText}`);
         const data = await res.json();
 
-        setResults(__removeDuplicates(data));
+        setResults(
+          __removeDuplicates(
+            data.results || {
+              Search: [],
+              totalResults: "0",
+              Response: "",
+            }
+          )
+        );
         setError(null);
       } catch (err: any) {
-        setError(err.message);
+        setError(err.message || "Unknown error");
         setResults({
           Search: [],
           totalResults: "0",
@@ -45,7 +51,7 @@ export function searchMovies(query: string): SearchResult<OMDBResults> {
       }
     };
 
-    fetchData();
+    fetchMovies();
   }, [query]);
 
   return { results, error, loading };

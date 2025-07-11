@@ -10,7 +10,7 @@ from database import db
 load_dotenv()
 MONGODB_URI = os.environ["MONGODB_URI"]
 SECRET_KEY = os.environ["SECRET_KEY"]
-DEBUG = os.environ["DEBUG"]
+DEV_MODE = os.environ["DEV_MODE"]
 
 sessions_collection = db["sessions"]
 users_collection = db["users"]
@@ -28,7 +28,7 @@ class Helpers:
         key_bytes = SECRET_KEY.encode()  # Convert string to bytes
         signature = hmac.new(key_bytes, session_id.encode(), hashlib.sha256).digest()
         signed_token = f"{session_id}.{base64.urlsafe_b64encode(signature).decode()}"
-        if DEBUG == "true":
+        if DEV_MODE == "true":
             print(f"signed_token: {signed_token}")
         return signed_token
 

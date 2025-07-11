@@ -1,7 +1,5 @@
-import { SearchResult, TVMazeResults } from "@/models";
 import { useEffect, useState } from "react";
-
-const TV_SHOW_API_ENDPOINT = process.env.NEXT_PUBLIC_TV_SHOW_API_ENDPOINT;
+import { SearchResult, TVMazeResults } from "@/models";
 
 export function searchTVShow(query: string): SearchResult<TVMazeResults> {
   const [results, setResults] = useState<TVMazeResults>([]);
@@ -11,25 +9,33 @@ export function searchTVShow(query: string): SearchResult<TVMazeResults> {
   useEffect(() => {
     if (!query) return;
 
-    const fetchData = async () => {
+    async function fetchTVShows() {
       setLoading(true);
+      setError(null);
       try {
         const res = await fetch(
-          `${TV_SHOW_API_ENDPOINT}${encodeURIComponent(query)}`
+          `/api/search/tv_show?q=${encodeURIComponent(query)}`,
+          {
+            method: "POST",
+            credentials: "include", // optional, remove if not using cookies/auth
+          }
         );
-        if (!res.ok) throw new Error("Failed to fetch shows");
+
+        if (!res.ok) {
+          throw new Error(`Error: ${res.status}`);
+        }
+
         const data = await res.json();
-        setResults(data);
-        setError(null);
+        setResults(data.results || []);
       } catch (err: any) {
-        setError(err.message);
+        setError(err.message || "Unknown error");
         setResults([]);
       } finally {
         setLoading(false);
       }
-    };
+    }
 
-    fetchData();
+    fetchTVShows();
   }, [query]);
 
   return { results, error, loading };

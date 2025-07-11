@@ -1,6 +1,6 @@
 from dotenv import load_dotenv
 import uvicorn
-from fastapi import Cookie, FastAPI, HTTPException, Request, Response
+from fastapi import Cookie, FastAPI, HTTPException, Query, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi import Path
 from auth_dal import get_auth
@@ -12,6 +12,12 @@ from movielist_dal import (
     get_user_movie_list,
     get_user_movie_list_by_status,
     update_movie_status,
+)
+from search_dal import (
+    search_movie,
+    search_movie_by_imdb,
+    search_tv_show,
+    search_tv_show_by_tvmaze_id,
 )
 from sessions_dal import add_session, delete_session
 from tvlist_dal import (
@@ -38,7 +44,7 @@ app.add_middleware(
 )
 
 load_dotenv()
-DEBUG = os.environ["DEBUG"] == "true"
+DEV_MODE = os.environ["DEV_MODE"] == "true"
 PORT = os.environ["PORT"]
 
 # ===============================================
@@ -79,7 +85,7 @@ async def __login(data: User, response: Response):
         key="session_token",
         value=signed_session,
         httponly=True,  # Prevents JS access
-        secure=True if not DEBUG else False,  # Only sent over HTTPS
+        secure=True if not DEV_MODE else False,  # Only sent over HTTPS
         samesite="lax",  # Good default; prevents CSRF in most cases
         max_age=60 * 60 * 24,  # 1 day, Gets restored when browser comes back anyways
     )
@@ -90,6 +96,35 @@ async def __login(data: User, response: Response):
 @app.post("/api/logout")
 async def __logout(response: Response, session_token: str = Cookie(None)):
     return delete_session(response, session_token)
+
+
+# ===============================================
+# ============== SEARCH =========================
+# ===============================================
+
+
+@app.post("/api/search/tv_show")
+async def __search_tv_show(query: str = Query(..., alias="q")):
+    data = await search_tv_show(query)
+    return {"results": data}
+
+
+@app.post("/api/search/movie")
+async def __search_movie(query: str = Query(..., alias="q")):
+    data = await search_movie(query)
+    return {"results": data}
+
+
+@app.post("/api/search_by_tvmaze_id/tv_show")
+async def __search_tv_show_by_tvmaze_id(tvmaze_id: str = Query(..., alias="id")):
+    data = await search_tv_show_by_tvmaze_id(tvmaze_id)
+    return {"results": data}
+
+
+@app.post("/api/search_by_imdb/movie")
+async def __search_movie_by_imdb(imdb: str = Query(..., alias="i")):
+    data = await search_movie_by_imdb(imdb)
+    return {"results": data}
 
 
 # ===============================================

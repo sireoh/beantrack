@@ -2,6 +2,14 @@ import { WatchlistItem } from "@/models";
 import axios from "axios";
 import { toast } from "sonner";
 
+const notifs: Record<string, string> = {
+  watching: "Currently Watching",
+  completed: "Completed",
+  on_hold: "On Hold",
+  dropped: "Dropped",
+  plan_to_watch: "Plan to Watch",
+};
+
 export const handleStatusUpdateAndDelete = async (
   action: string,
   type: string,
@@ -28,7 +36,7 @@ const handleTVShowSelect = async (
   try {
     const url = `/api/${item.imdb}/edit/tv_show/status/${action}`;
     await axios.patch(url);
-    toast.success(`Updated to "${action}"`);
+    toast.success(action != "delete" ? `Updated to: ${notifs[action]}` : "");
   } catch (error) {
     console.error(error);
     toast.error("Failed to update tv show.");
@@ -47,7 +55,7 @@ const handleMovieSelect = async (
   try {
     const url = `/api/${item.imdb}/edit/movie/status/${action}`;
     await axios.patch(url);
-    toast.success(`Updated to "${action}"`);
+    toast.success(action != "delete" ? `Updated to: ${notifs[action]}` : "");
   } catch (error) {
     console.error(error);
     toast.error("Failed to update movie.");
@@ -62,11 +70,11 @@ const handleTVShowDelete = async (item: WatchlistItem) => {
   try {
     const url = `/api/delete/${item.imdb}/tv_show`;
     await axios.delete(url);
-    toast.success("TV show deleted.");
+    toast.success(`${item.title} removed from library.`);
     // Optionally trigger a refresh or remove item from local state
   } catch (error) {
     console.error(error);
-    toast.error("Failed to delete tv show.");
+    toast.error(`Failed to remove ${item.title}.`);
   }
 };
 
@@ -74,10 +82,10 @@ const handleMovieDelete = async (item: WatchlistItem) => {
   try {
     const url = `/api/delete/${item.imdb}/movie`;
     await axios.delete(url);
-    toast.success("TV show deleted.");
+    toast.success(`${item.title} removed from library.`);
     // Optionally trigger a refresh or remove item from local state
   } catch (error) {
     console.error(error);
-    toast.error("Failed to delete movie.");
+    toast.error(`Failed to remove ${item.title}.`);
   }
 };

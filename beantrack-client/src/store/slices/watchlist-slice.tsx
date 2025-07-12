@@ -1,10 +1,11 @@
+import { WatchlistItem } from "@/models";
 import { StateCreator } from "zustand";
 
 export interface WatchlistsState {
-  tvlist: any[];
-  movieslist: any[];
-  updateTVList: (tvlist: any[]) => void;
-  updateMoviesList: (movieslist: any[]) => void;
+  tvlist: WatchlistItem[];
+  movieslist: WatchlistItem[];
+  updateTVList: (tvlist: WatchlistItem[]) => void;
+  updateMoviesList: (movieslist: WatchlistItem[]) => void;
 }
 
 export const createWatchlistsSlice: StateCreator<{
@@ -14,7 +15,7 @@ export const createWatchlistsSlice: StateCreator<{
     tvlist: [],
     movieslist: [],
 
-    updateTVList: (tvlist: any[]) => {
+    updateTVList: (tvlist: WatchlistItem[]) => {
       set((state) => ({
         watchlists: {
           ...state.watchlists,
@@ -23,7 +24,7 @@ export const createWatchlistsSlice: StateCreator<{
       }));
     },
 
-    updateMoviesList: (movieslist: any[]) => {
+    updateMoviesList: (movieslist: WatchlistItem[]) => {
       set((state) => ({
         watchlists: {
           ...state.watchlists,

@@ -1,5 +1,4 @@
 import { WatchlistItem } from "@/models";
-import { Dispatch, SetStateAction } from "react";
 
 const sortOrder = {
   watching: 0,
@@ -11,16 +10,17 @@ const sortOrder = {
 
 export async function fetchWatchlist(
   type: string,
-  setWatchlist: Dispatch<SetStateAction<WatchlistItem[]>>,
+  updateTVList: (tvlist: WatchlistItem[]) => void,
+  updateMoviesList: (movieslist: WatchlistItem[]) => void,
   status: string | undefined
 ) {
   return type === "tv"
-    ? fetchTVList(setWatchlist, status)
-    : fetchMovielist(setWatchlist, status);
+    ? fetchTVList(updateTVList, status)
+    : fetchMovielist(updateMoviesList, status);
 }
 
 async function fetchTVList(
-  setWatchlist: Dispatch<SetStateAction<WatchlistItem[]>>,
+  updateTVList: (tvlist: WatchlistItem[]) => void,
   status: string | undefined
 ) {
   try {
@@ -50,14 +50,14 @@ async function fetchTVList(
       });
     }
 
-    setWatchlist(data.watchlist || []);
+    updateTVList(data.watchlist || []);
   } catch (err) {
     console.error("Error fetching watchlist:", err);
   }
 }
 
 async function fetchMovielist(
-  setWatchlist: Dispatch<SetStateAction<WatchlistItem[]>>,
+  updateMoviesList: (movieslist: WatchlistItem[]) => void,
   status: string | undefined
 ) {
   try {
@@ -87,7 +87,7 @@ async function fetchMovielist(
       });
     }
 
-    setWatchlist(data.watchlist || []);
+    updateMoviesList(data.watchlist || []);
   } catch (err) {
     console.error("Error fetching watchlist:", err);
   }

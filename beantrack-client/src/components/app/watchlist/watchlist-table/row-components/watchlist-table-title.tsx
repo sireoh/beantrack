@@ -1,13 +1,15 @@
 import Link from "next/link";
-import React from "react";
+import React, { SetStateAction } from "react";
 import { EditButton } from "./edit-button-dropdown";
 import { WatchlistItem } from "@/models";
 
 const WatchlistTableTitle = ({
   item,
+  currentProgress,
   type,
 }: {
   item: WatchlistItem;
+  currentProgress: number;
   type: string;
 }) => {
   return (
@@ -20,9 +22,9 @@ const WatchlistTableTitle = ({
           {item.title}
         </Link>
         {item.episodes &&
-          item.episodes[item.currentEpisodeIndex] &&
+          item.episodes[currentProgress] &&
           (() => {
-            const episode = item.episodes[item.currentEpisodeIndex];
+            const episode = item.episodes[currentProgress];
             const lastEpisode = item.episodes[item.episodes.length - 1];
             const code = episode.code;
             const name = episode.name;

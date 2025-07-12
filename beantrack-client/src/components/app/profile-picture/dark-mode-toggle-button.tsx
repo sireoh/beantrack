@@ -1,40 +1,49 @@
 "use client";
 
+import { useTheme } from "next-themes";
+import { useEffect, useState } from "react";
+import { Moon, Power, PowerOff } from "lucide-react";
+import { DropdownMenuItem } from "../../ui/dropdown-menu";
 import { Button } from "../../ui/button";
 import { cn } from "@/lib/utils";
-import { useTheme } from "next-themes";
-import { DropdownMenuItem } from "../../ui/dropdown-menu";
-import { Moon, Power, PowerOff } from "lucide-react";
 
 const DarkModeToggleButton = () => {
-  const { setTheme, theme } = useTheme();
-  const _iconColor = "text-white";
-  const _iconStrokeWidth = 4;
+  const { setTheme, resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
 
-  function toggleDarkMode() {
-    if (theme == "dark") {
-      setTheme("light");
-    } else {
-      setTheme("dark");
-    }
-  }
+  // Required to prevent hydration mismatch
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) return null;
+
+  const isDark = resolvedTheme === "dark";
+  const iconColor = "text-white";
+  const iconStrokeWidth = 4;
+
+  const toggleDarkMode = () => {
+    setTheme(isDark ? "light" : "dark");
+  };
 
   return (
-    <DropdownMenuItem asChild onClick={toggleDarkMode}>
-      <div className="flex justify-between items-center w-full text-info cursor-pointer">
+    <DropdownMenuItem asChild>
+      <div
+        className="flex justify-between items-center w-full text-info cursor-pointer"
+        onClick={toggleDarkMode}>
         <Moon />
         Dark Mode
         <Button
           className={cn(
             "ml-auto size-6 rounded-full",
-            theme == "dark"
-              ? "bg-red-500 hover:bg-red-600"
-              : "bg-green-500 hover:bg-green-600"
+            isDark
+              ? "bg-green-500 hover:bg-green-600"
+              : "bg-red-500 hover:bg-red-600"
           )}>
-          {theme == "dark" ? (
-            <Power className={_iconColor} strokeWidth={_iconStrokeWidth} />
+          {isDark ? (
+            <Power className={iconColor} strokeWidth={iconStrokeWidth} />
           ) : (
-            <PowerOff className={_iconColor} strokeWidth={_iconStrokeWidth} />
+            <PowerOff className={iconColor} strokeWidth={iconStrokeWidth} />
           )}
         </Button>
       </div>

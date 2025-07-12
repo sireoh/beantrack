@@ -12,12 +12,32 @@ const WatchlistTableTitle = ({
 }) => {
   return (
     <div className="flex justify-between items-center">
-      <Link
-        href={"https://www.imdb.com/title/" + item.imdb}
-        target="_blank"
-        className="text-primary font-semibold hover:underline">
-        {item.title}
-      </Link>
+      <div>
+        <Link
+          href={"https://www.imdb.com/title/" + item.imdb}
+          target="_blank"
+          className="text-primary font-semibold hover:underline">
+          {item.title}
+        </Link>
+        {item.episodes &&
+          item.episodes[item.currentEpisodeIndex] &&
+          (() => {
+            const episode = item.episodes[item.currentEpisodeIndex];
+            const lastEpisode = item.episodes[item.episodes.length - 1];
+            const code = episode.code;
+            const name = episode.name;
+
+            if (item.status === "completed") {
+              return (
+                <p className="text-sm text-muted-foreground">{`${lastEpisode.code} ${lastEpisode.name}`}</p>
+              );
+            }
+
+            return (
+              <p className="text-sm text-muted-foreground">{`${code} ${name}`}</p>
+            );
+          })()}
+      </div>
 
       <EditButton item={item} type={type} />
     </div>

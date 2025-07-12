@@ -9,6 +9,7 @@ import axios from "axios";
 // ---------- Temp --------------------
 import { toast } from "sonner";
 import { WatchlistItem } from "@/models";
+import { EditProgress } from "./edit-progress-dropdown";
 // ---------- End: Temp ---------------
 
 const WatchlistTableProgress = ({ item }: { item: WatchlistItem }) => {
@@ -49,11 +50,7 @@ const WatchlistTableProgress = ({ item }: { item: WatchlistItem }) => {
           <Plus />
         </Button>
       </div>
-      <span>
-        {item.status == "completed"
-          ? item.episodes.length
-          : `${item.currentEpisodeIndex}/${item.episodes.length}`}
-      </span>
+      <EditProgress item={item} />
     </div>
   );
 };

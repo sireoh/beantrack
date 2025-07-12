@@ -1,7 +1,7 @@
 import { TableBody, TableCell, TableRow } from "@/components/ui/table";
 import WatchlistTableImage from "./watchlist-table-image";
 import WatchlistTableTitle from "./watchlist-table-title";
-import WatchlistTableProgress from "./watchlist-table-progress";
+import WatchlistTableProgress from "./progress/watchlist-table-progress";
 import WatchlistTableStatus from "./watchlist-table-status";
 import { useEffect, useState } from "react";
 import { WatchlistItem } from "@/models";

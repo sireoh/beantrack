@@ -64,7 +64,6 @@ export default function ItemCard({
             <ItemCardAddButtonDropdown itemCardData={itemCardData} />
           </div>
         </div>
-
         {description && <ItemCardDescription description={description} />}
       </CardContent>
     </Card>

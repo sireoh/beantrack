@@ -123,7 +123,7 @@ const WatchlistStatusTabsMobile = ({
         onValueChange={(value) => {
           router.push(value == "all" ? _hrefBase : _hrefBase + value);
         }}>
-        <SelectTrigger className="w-full dark:bg-gray-700 rounded-none dark:[&>svg]:text-white dark:hover:bg-gray-600">
+        <SelectTrigger className="w-full dark:bg-gray-700 rounded-none dark:[&>svg]:text-white dark:hover:bg-gray-600 cursor-pointer">
           <SelectValue />
         </SelectTrigger>
         <SelectContent className="w-full dark:bg-gray-700 rounded-none dark:[&>svg]:text-white dark:hover:bg-gray-600">
@@ -131,7 +131,7 @@ const WatchlistStatusTabsMobile = ({
             <SelectItem
               key={tab.href}
               value={tab.href == "" ? "all" : tab.href}
-              className="w-full dark:bg-gray-600 rounded-none dark:[&>svg]:text-white dark:hover:bg-gray-700">
+              className="w-full dark:bg-gray-600 rounded-none dark:[&>svg]:text-white dark:hover:bg-gray-700 cursor-pointer">
               {tab.label}
             </SelectItem>
           ))}

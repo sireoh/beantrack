@@ -59,7 +59,7 @@ const LoginForm = () => {
       <div className="flex justify-center mt-5">
         <Button
           type="submit"
-          className="md:w-100 lg:w-25 font-black bg-sky-800 dark:bg-sky-600">
+          className="md:w-100 lg:w-25 font-black bg-sky-800 dark:bg-sky-600 cursor-pointer">
           Log on
         </Button>
       </div>

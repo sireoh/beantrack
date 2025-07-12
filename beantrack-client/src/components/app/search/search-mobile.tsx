@@ -21,7 +21,7 @@ export function SearchbarMobileToggleButton() {
   return (
     <Button
       variant="ghost"
-      className="text-white mr-2"
+      className="text-white mr-2 cursor-pointer"
       onClick={() => navbar.toggleExpand()}>
       <Search />
     </Button>

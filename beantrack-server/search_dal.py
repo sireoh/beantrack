@@ -25,20 +25,20 @@ async def search_movie(query: str):
             return {"error": str(e), "source": "omdb"}
 
 
-async def search_tv_show_by_tvmaze_id(query: str):
+async def search_tv_show_by_tvmaze_id(id: str):
     async with httpx.AsyncClient() as client:
         try:
-            url = f"https://api.tvmaze.com/search/shows?q={query}"
+            url = f"https://api.tvmaze.com/shows/{id}/episodes"
             res = await client.get(url)
             return res.json()
         except Exception as e:
             return {"error": str(e), "source": "tvmaze"}
 
 
-async def search_movie_by_imdb(query: str):
+async def search_movie_by_imdb(imdb: str):
     async with httpx.AsyncClient() as client:
         try:
-            url = f"https://www.omdbapi.com/?apikey={OMDB_API_KEY}&s={query}"
+            url = f"https://www.omdbapi.com/?apikey={OMDB_API_KEY}&i={imdb}"
             res = await client.get(url)
             return res.json()
         except Exception as e:

@@ -157,7 +157,6 @@ async def __get_user_tv_list_by_status(request: Request, status: str = Path(...)
 
 @app.post("/api/add/tv_show")
 async def __add_tv_show(request: Request, data: TVShow):
-    print(data)
     add_tv_show(request, data)
     return {"message": "Add TV Show endpoint hit", "data": data}
 

@@ -24,7 +24,7 @@ const ItemCardAddButtonDropdown = ({
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button size="icon" variant="outline" className="size-6">
+        <Button size="icon" variant="outline" className="size-6 cursor-pointer">
           <Plus />
         </Button>
       </DropdownMenuTrigger>

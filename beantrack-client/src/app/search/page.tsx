@@ -17,14 +17,6 @@ export default function Home() {
   const { tvlist, movieslist, updateTVList, updateMoviesList } = useStore(
     (state) => state.watchlists
   );
-  useEffect(() => {
-    fetchWatchlist(
-      search.currentType,
-      updateTVList,
-      updateMoviesList,
-      undefined
-    );
-  }, []);
 
   const {
     results: resultsTVShow,
@@ -37,6 +29,15 @@ export default function Home() {
     error: errorMovies,
     loading: loadingMovies,
   } = searchMovies(query);
+
+  useEffect(() => {
+    fetchWatchlist(
+      search.currentType == "movie" ? "movies" : "tv",
+      updateTVList,
+      updateMoviesList,
+      undefined
+    );
+  }, [search.currentType]);
 
   if (errorTVShow && errorMovies) {
     return (
@@ -69,10 +70,7 @@ export default function Home() {
           isAdded: tvlist.some((tv) => tv.imdb === item.show.externals?.imdb),
         },
       }));
-  } else if (
-    search.currentType === "movies" &&
-    resultsMovies?.Response === "True"
-  ) {
+  } else if (resultsMovies?.Response === "True") {
     filteredMoviesResults = {
       ...resultsMovies,
       Search: resultsMovies.Search?.map((item) => ({

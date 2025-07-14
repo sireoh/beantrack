@@ -52,7 +52,7 @@ async function fetchTVList(
 
     updateTVList(data.watchlist || []);
   } catch (err) {
-    console.error("Error fetching watchlist:", err);
+    console.error("Error fetching tvlist:", err);
   }
 }
 
@@ -75,7 +75,7 @@ async function fetchMovielist(
     }
 
     const data = await res.json();
-    console.log("Fetched watchlist:", data.watchlist || []);
+    console.log("Fetched movielist:", data.watchlist || []);
 
     // Sort the movielist by status
     if (!status) {
@@ -89,6 +89,6 @@ async function fetchMovielist(
 
     updateMoviesList(data.watchlist || []);
   } catch (err) {
-    console.error("Error fetching watchlist:", err);
+    console.error("Error fetching movielist:", err);
   }
 }

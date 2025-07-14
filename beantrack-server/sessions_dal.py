@@ -1,6 +1,6 @@
 from datetime import datetime
 from bson import ObjectId
-from fastapi import HTTPException, status, Response, Cookie
+from fastapi import HTTPException, Request, status, Response, Cookie
 from database import db  # assuming you're importing db from your database setup
 from helpers import Helpers
 from models import User
@@ -14,7 +14,7 @@ users_collection = db["users"]
 # ===============================================
 
 
-def add_session(data: User):
+def add_session(request: Request, data: User):
     found_user = users_collection.find_one({"username": data.username})
 
     if not found_user:
@@ -31,6 +31,8 @@ def add_session(data: User):
     session_doc = {
         "user": found_user["_id"],
         "date": datetime.now(),
+        "device": request.headers.get("User-Agent"),
+        "ip": request.client.host,  # type: ignore
     }
 
     result = sessions_collection.insert_one(session_doc)
@@ -55,7 +57,8 @@ def delete_session(response: Response, session_token: str = Cookie(None)):
         print("[logout] Invalid session token, cookie cleared")
         return {"message": "User logged out (invalid token)"}
 
-    result = sessions_collection.delete_one({"_id": ObjectId(session_id)})
+    # Removes the session from the database.
+    sessions_collection.delete_one({"_id": ObjectId(session_id)})
     response.delete_cookie("session_token")
 
     return {"message": "User logged out"}

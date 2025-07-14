@@ -72,11 +72,8 @@ async def __delete_user(data: User):
 
 
 @app.post("/api/login")
-async def __login(data: User, response: Response):
-    _r = add_session(data)
-
-    # if _r.get("is_logged_in"):
-    #     return {"message": "User is already logged in", "data": data}
+async def __login(data: User, response: Response, request: Request):
+    _r = add_session(request, data)
 
     session_id = _r["session_id"]
     signed_session = Helpers.sign_session_id(session_id)

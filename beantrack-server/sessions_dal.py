@@ -27,11 +27,6 @@ def add_session(data: User):
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials"
         )
 
-    # Check if a session already exists for this user
-    existing_session = sessions_collection.find_one({"user": found_user["_id"]})
-    if existing_session:
-        return {"is_logged_in": True, "message": "User is already logged in"}
-
     # Create a new session
     session_doc = {
         "user": found_user["_id"],

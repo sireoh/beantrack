@@ -1,5 +1,5 @@
 import { JSX } from "react";
-import LinkWithTooltip from "../link-with-tooltip";
+import LinkWithTooltip from "./link-with-tooltip";
 
 const _omdb = (
   <LinkWithTooltip

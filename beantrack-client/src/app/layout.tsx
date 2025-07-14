@@ -4,7 +4,8 @@ import "./globals.css";
 import { ThemeProvider } from "next-themes";
 import { Navbar } from "@/components/app/navbar/navbar";
 import { MobileSearchbar } from "@/components/app/search/search-mobile";
-import ThemedToast from "@/components/app/themed-toast";
+import ThemedToast from "@/components/app/global/themed-toast";
+import { DialogDemo } from "@/components/app/global/deletion-dialog";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -40,6 +41,7 @@ export default function RootLayout({
             <Navbar />
 
             {/* Modal */}
+            <DialogDemo />
 
             {/* Toast Notifications */}
             <ThemedToast />

@@ -1,7 +1,7 @@
-import LinkWithTooltip from "../link-with-tooltip";
+import LinkWithTooltip from "./link-with-tooltip";
 import Link from "next/link";
 import { DescriptionList } from "./description-list";
-import DeveloperSocials from "../developer-socials";
+import DeveloperSocials from "./developer-socials";
 
 const _s = (
   <Link

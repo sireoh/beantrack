@@ -8,7 +8,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { WatchlistItem } from "@/models";
 import { handleStatusUpdateAndDelete } from "@/utils/handle-status-update-and-delete";
 import {
   TvMinimalPlay,
@@ -20,6 +19,7 @@ import {
 } from "lucide-react";
 import { Fragment } from "react";
 import { ItemCardDataModel } from "./item-card";
+import { useStore } from "@/store";
 
 const ItemCardEditButtonDropdown = ({
   item,
@@ -28,6 +28,9 @@ const ItemCardEditButtonDropdown = ({
   item: ItemCardDataModel;
   type: string;
 }) => {
+  const dialog = useStore((state) => state.dialog);
+  dialog.deleteData = { item, type };
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -47,6 +50,8 @@ function ItemCardEditButtonDropdownContent({
   item: ItemCardDataModel;
   type: string;
 }) {
+  const dialog = useStore((state) => state.dialog);
+
   const actions = [
     {
       label: "Currently Watching",
@@ -66,7 +71,14 @@ function ItemCardEditButtonDropdownContent({
         action !== "delete" ? (
           <DropdownMenuItem
             key={action}
-            onSelect={() => handleStatusUpdateAndDelete(action, type, item)}
+            onSelect={() =>
+              handleStatusUpdateAndDelete(
+                action,
+                type,
+                item,
+                dialog.toggleDialog
+              )
+            }
             className="cursor-pointer">
             {icon}
             {label}
@@ -75,7 +87,14 @@ function ItemCardEditButtonDropdownContent({
           <Fragment key={action}>
             <DropdownMenuSeparator />
             <DropdownMenuItem
-              onSelect={() => handleStatusUpdateAndDelete(action, type, item)}
+              onSelect={() =>
+                handleStatusUpdateAndDelete(
+                  action,
+                  type,
+                  item,
+                  dialog.toggleDialog
+                )
+              }
               className="cursor-pointer">
               {icon}
               {label}

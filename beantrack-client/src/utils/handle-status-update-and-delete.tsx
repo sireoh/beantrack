@@ -1,5 +1,6 @@
 import { ItemCardDataModel } from "@/components/app/item-card/item-card";
 import { WatchlistItem } from "@/models";
+import { deleteDataModel } from "@/store/slices/dialog-slice";
 import axios from "axios";
 import { toast } from "sonner";
 
@@ -14,30 +15,26 @@ const notifs: Record<string, string> = {
 export const handleStatusUpdateAndDelete = async (
   action: string,
   type: string,
-  item: WatchlistItem | ItemCardDataModel
+  item: WatchlistItem | ItemCardDataModel,
+  toggleDialog: () => void
 ) => {
   if (action === "delete") {
-    return handleDelete(type, item);
+    return toggleDialog();
   }
 
   return type == "tv"
-    ? handleTVShowSelect(action, type, item)
-    : handleMovieSelect(action, type, item);
+    ? handleTVShowSelect(action, item)
+    : handleMovieSelect(action, item);
 };
 
 const handleTVShowSelect = async (
   action: string,
-  type: string,
   item: WatchlistItem | ItemCardDataModel
 ) => {
-  if (action === "delete") {
-    return handleDelete(type, item);
-  }
-
   try {
     const url = `/api/${item.imdb}/edit/tv_show/status/${action}`;
     await axios.patch(url);
-    toast.success(action != "delete" ? `Updated to: ${notifs[action]}` : "");
+    toast.success(`Updated to: ${notifs[action]}`);
   } catch (error) {
     console.error(error);
     toast.error("Failed to update tv show.");
@@ -46,27 +43,20 @@ const handleTVShowSelect = async (
 
 const handleMovieSelect = async (
   action: string,
-  type: string,
   item: WatchlistItem | ItemCardDataModel
 ) => {
-  if (action === "delete") {
-    return handleDelete(type, item);
-  }
-
   try {
     const url = `/api/${item.imdb}/edit/movie/status/${action}`;
     await axios.patch(url);
-    toast.success(action != "delete" ? `Updated to: ${notifs[action]}` : "");
+    toast.success(`Updated to: ${notifs[action]}`);
   } catch (error) {
     console.error(error);
     toast.error("Failed to update movie.");
   }
 };
 
-const handleDelete = async (
-  type: string,
-  item: WatchlistItem | ItemCardDataModel
-) => {
+export const handleDelete = async (deleteData: deleteDataModel) => {
+  const { type, item } = deleteData;
   return type == "tv" ? handleTVShowDelete(item) : handleMovieDelete(item);
 };
 

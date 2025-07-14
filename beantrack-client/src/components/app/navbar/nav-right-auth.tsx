@@ -1,7 +1,7 @@
 import ProfilePictureDropdown from "../profile-picture/profile-picture-dropdown";
 import { SearchbarMobileToggleButton } from "../search/search-mobile";
 import { SearchbarDesktop } from "../search/searchbar-desktop";
-import WelcomeMessage from "../welcome-message";
+import WelcomeMessage from "./welcome-message";
 
 const NavRightAuth = () => {
   return (

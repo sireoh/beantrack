@@ -20,6 +20,7 @@ import {
 import { Fragment } from "react";
 import { WatchlistItem } from "@/models";
 import { handleStatusUpdateAndDelete } from "@/utils/handle-status-update-and-delete";
+import { useStore } from "@/store";
 
 export function EditButton({
   item,
@@ -52,6 +53,8 @@ function EditButtonDropdownContent({
   item: WatchlistItem;
   type: string;
 }) {
+  const { toggleDialog } = useStore((state) => state.dialog);
+
   const actions = [
     {
       label: "Currently Watching",
@@ -71,7 +74,9 @@ function EditButtonDropdownContent({
         action !== "delete" ? (
           <DropdownMenuItem
             key={action}
-            onSelect={() => handleStatusUpdateAndDelete(action, type, item)}
+            onSelect={() =>
+              handleStatusUpdateAndDelete(action, type, item, toggleDialog)
+            }
             className="cursor-pointer">
             {icon}
             {label}
@@ -80,7 +85,9 @@ function EditButtonDropdownContent({
           <Fragment key={action}>
             <DropdownMenuSeparator />
             <DropdownMenuItem
-              onSelect={() => handleStatusUpdateAndDelete(action, type, item)}
+              onSelect={() =>
+                handleStatusUpdateAndDelete(action, type, item, toggleDialog)
+              }
               className="cursor-pointer">
               {icon}
               {label}

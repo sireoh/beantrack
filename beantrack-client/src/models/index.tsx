@@ -35,6 +35,7 @@ export interface TVMazeTVShowModel {
   summary: string;
   premiered: string;
   ended: string;
+  isAdded?: boolean;
 }
 
 export interface TVMazeResultEntryModel {
@@ -47,6 +48,7 @@ interface OMDBMovieModel {
   imdbID: string;
   Type: string;
   Poster: string;
+  isAdded?: boolean;
 }
 
 export interface OMDBResults {

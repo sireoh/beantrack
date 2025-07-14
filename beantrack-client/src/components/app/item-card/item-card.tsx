@@ -5,6 +5,7 @@ import ItemCardAddButtonDropdown from "./item-card-add-button-dropdown";
 import SafeImage from "./safe-image";
 import ItemCardTitle from "./item-card-title";
 import { useStore } from "@/store";
+import ItemCardEditButtonDropdown from "./item-card-edit-button-dropdown";
 
 export interface ItemCardDataModel {
   id?: number;
@@ -16,6 +17,7 @@ export interface ItemCardDataModel {
   image: string;
   score?: number;
   description?: string;
+  isAdded?: boolean;
 }
 
 export default function ItemCard({
@@ -28,15 +30,18 @@ export default function ItemCard({
   image,
   score,
   description,
+  isAdded,
 }: ItemCardDataModel) {
   const search = useStore((state) => state.search);
   const _href = `https://www.imdb.com/title/${imdb}`;
+
   const itemCardData: ItemCardDataModel = {
     id: id,
     imdb: imdb,
     title: title,
     image: image,
     score: score,
+    isAdded: isAdded,
   };
 
   return (
@@ -61,7 +66,14 @@ export default function ItemCard({
               />
             </h2>
             {score && <span className="text-sm font-medium">{score}</span>}
-            <ItemCardAddButtonDropdown itemCardData={itemCardData} />
+            {isAdded ? (
+              <ItemCardEditButtonDropdown
+                item={itemCardData}
+                type={search.currentType}
+              />
+            ) : (
+              <ItemCardAddButtonDropdown itemCardData={itemCardData} />
+            )}
           </div>
         </div>
         {description && <ItemCardDescription description={description} />}

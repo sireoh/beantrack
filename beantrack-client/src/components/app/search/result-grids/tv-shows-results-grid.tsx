@@ -17,6 +17,7 @@ export function TVShowsResultsGrid({ results }: { results: TVMazeResults }) {
           image={show.image?.original ?? "/images/item-card-no-image.png"}
           score={show.rating?.average ?? "No Rating"}
           description={show.summary ?? "No description available."}
+          isAdded={show.isAdded}
         />
       ))}
     </>

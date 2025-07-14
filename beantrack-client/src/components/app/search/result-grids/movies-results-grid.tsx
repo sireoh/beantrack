@@ -23,6 +23,7 @@ export function MoviesResultsGrid({ results }: { results: OMDBResults }) {
               ? item.Poster
               : "/images/item-card-no-image.png"
           }
+          isAdded={item.isAdded}
         />
       ))}
     </>

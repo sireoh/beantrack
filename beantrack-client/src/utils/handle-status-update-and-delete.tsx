@@ -1,3 +1,4 @@
+import { ItemCardDataModel } from "@/components/app/item-card/item-card";
 import { WatchlistItem } from "@/models";
 import axios from "axios";
 import { toast } from "sonner";
@@ -13,7 +14,7 @@ const notifs: Record<string, string> = {
 export const handleStatusUpdateAndDelete = async (
   action: string,
   type: string,
-  item: WatchlistItem
+  item: WatchlistItem | ItemCardDataModel
 ) => {
   if (action === "delete") {
     return handleDelete(type, item);
@@ -27,7 +28,7 @@ export const handleStatusUpdateAndDelete = async (
 const handleTVShowSelect = async (
   action: string,
   type: string,
-  item: WatchlistItem
+  item: WatchlistItem | ItemCardDataModel
 ) => {
   if (action === "delete") {
     return handleDelete(type, item);
@@ -46,7 +47,7 @@ const handleTVShowSelect = async (
 const handleMovieSelect = async (
   action: string,
   type: string,
-  item: WatchlistItem
+  item: WatchlistItem | ItemCardDataModel
 ) => {
   if (action === "delete") {
     return handleDelete(type, item);
@@ -62,11 +63,14 @@ const handleMovieSelect = async (
   }
 };
 
-const handleDelete = async (type: string, item: WatchlistItem) => {
+const handleDelete = async (
+  type: string,
+  item: WatchlistItem | ItemCardDataModel
+) => {
   return type == "tv" ? handleTVShowDelete(item) : handleMovieDelete(item);
 };
 
-const handleTVShowDelete = async (item: WatchlistItem) => {
+const handleTVShowDelete = async (item: WatchlistItem | ItemCardDataModel) => {
   try {
     const url = `/api/delete/${item.imdb}/tv_show`;
     await axios.delete(url);
@@ -78,7 +82,7 @@ const handleTVShowDelete = async (item: WatchlistItem) => {
   }
 };
 
-const handleMovieDelete = async (item: WatchlistItem) => {
+const handleMovieDelete = async (item: WatchlistItem | ItemCardDataModel) => {
   try {
     const url = `/api/delete/${item.imdb}/movie`;
     await axios.delete(url);

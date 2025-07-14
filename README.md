@@ -19,6 +19,7 @@ NEXT_FORCE_WASM=true npm run dev-arm -- --hostname 0.0.0.0 --port 5482
 python -m venv .venv
 .venv\Scripts\activate
 pip install -r requirements.txt
+python server.py
 ```
 
 # Server Installation - bash
@@ -26,4 +27,5 @@ pip install -r requirements.txt
 python -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
+python server.py
 ```

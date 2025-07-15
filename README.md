@@ -13,7 +13,6 @@ cd beantrack/beantrack-client
 npm install --legacy-peer-deps
 NEXT_FORCE_WASM=true npm run dev-arm -- --hostname 0.0.0.0 --port 5482
 ```
-
 # Server Installation - PowerShell 7 🚀 Windows
 ```
 python -m venv .venv

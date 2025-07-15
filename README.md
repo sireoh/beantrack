@@ -33,14 +33,24 @@ curl https://sh.rustup.rs -sSf | sh
 ```
 You can add `source $HOME/.cargo/env` to your ~/.bashrc or ~/.profile for persistence.
 
-## Verify:
+Verify:
 ```
 rustc --version
 cargo --version
 ```
+Continue Installation:
 ```
+apt update && apt upgrade
+apt install python3 python3-venv python3-pip
 python -m venv .venv
 source .venv/bin/activate
+```
+Upgrade Dependencies:
+```
+pip install --upgrade pip setuptools wheel
+```
+Continue Installation:
+```
 pip install -r requirements.txt
 python server.py
 ```

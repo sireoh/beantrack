@@ -21,10 +21,12 @@ export const WatchlistTableRow = ({
     item.currentEpisodeIndex
   );
 
+  const [currentStatus, setCurrentStatus] = useState(item.status);
+
   return (
     <TableRow key={item.id + item.image}>
       {/* Status */}
-      <WatchlistTableStatus status={item.status} />
+      <WatchlistTableStatus currentStatus={currentStatus} />
 
       {/* Number */}
       {screenSize === "desktop" && (
@@ -48,6 +50,7 @@ export const WatchlistTableRow = ({
         <WatchlistTableTitle
           item={item}
           currentProgress={currentProgress}
+          setCurrentStatus={setCurrentStatus}
           type={type}
         />
       </TableCell>

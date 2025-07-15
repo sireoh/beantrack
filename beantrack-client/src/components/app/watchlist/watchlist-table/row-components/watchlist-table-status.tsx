@@ -1,6 +1,5 @@
 import { TableCell } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
-import React from "react";
 
 const statusColors: Record<string, string> = {
   watching: "bg-green-600",
@@ -10,9 +9,10 @@ const statusColors: Record<string, string> = {
   plan_to_watch: "bg-gray-500",
 };
 
-const WatchlistTableStatus = ({ status }: { status: string }) => {
+const WatchlistTableStatus = ({ currentStatus }: { currentStatus: string }) => {
   return (
-    <TableCell className={cn(statusColors[status], "w-[1px] p-0")}></TableCell>
+    <TableCell
+      className={cn(statusColors[currentStatus], "w-[1px] p-0")}></TableCell>
   );
 };
 

@@ -3,6 +3,7 @@ import { WatchlistItem } from "@/models";
 import { deleteDataModel } from "@/store/slices/dialog-slice";
 import axios from "axios";
 import { toast } from "sonner";
+import { de } from "zod/v4/locales";
 
 const notifs: Record<string, string> = {
   watching: "Currently Watching",
@@ -16,8 +17,12 @@ export const handleStatusUpdateAndDelete = async (
   action: string,
   type: string,
   item: WatchlistItem | ItemCardDataModel,
-  toggleDialog: () => void
+  toggleDialog: () => void,
+  setDeleteData: (data: deleteDataModel | undefined) => void
 ) => {
+  // Set the deleteData to the State.
+  setDeleteData({ type, item });
+
   if (action === "delete") {
     return toggleDialog();
   }
@@ -56,6 +61,8 @@ const handleMovieSelect = async (
 };
 
 export const handleDelete = async (deleteData: deleteDataModel) => {
+  console.log("deleteData", deleteData);
+
   const { type, item } = deleteData;
   return type == "tv" ? handleTVShowDelete(item) : handleMovieDelete(item);
 };

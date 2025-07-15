@@ -1,15 +1,17 @@
 import Link from "next/link";
-import React, { SetStateAction } from "react";
+import React, { Dispatch, SetStateAction } from "react";
 import { EditButton } from "./edit-button-dropdown";
 import { WatchlistItem } from "@/models";
 
 const WatchlistTableTitle = ({
   item,
   currentProgress,
+  setCurrentStatus,
   type,
 }: {
   item: WatchlistItem;
   currentProgress: number;
+  setCurrentStatus: Dispatch<SetStateAction<string>>;
   type: string;
 }) => {
   return (
@@ -41,7 +43,7 @@ const WatchlistTableTitle = ({
           })()}
       </div>
 
-      <EditButton item={item} type={type} />
+      <EditButton item={item} type={type} setCurrentStatus={setCurrentStatus} />
     </div>
   );
 };

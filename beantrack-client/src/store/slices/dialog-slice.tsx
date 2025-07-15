@@ -19,7 +19,7 @@ export const createDialogSlice: StateCreator<{
 }> = (set) => ({
   dialog: {
     isToggled: false,
-    handleDeleteData: undefined,
+    deleteData: undefined,
     toggleDialog: () =>
       set((state) => ({
         dialog: {
@@ -31,7 +31,7 @@ export const createDialogSlice: StateCreator<{
       set((state) => ({
         dialog: {
           ...state.dialog,
-          handleDeleteData: data,
+          deleteData: data,
         },
       })),
   },

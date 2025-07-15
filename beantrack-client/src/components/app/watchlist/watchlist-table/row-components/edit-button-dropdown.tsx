@@ -17,7 +17,7 @@ import {
   NotebookPen,
   Trash2,
 } from "lucide-react";
-import { Fragment } from "react";
+import { Dispatch, Fragment, SetStateAction } from "react";
 import { WatchlistItem } from "@/models";
 import { handleStatusUpdateAndDelete } from "@/utils/handle-status-update-and-delete";
 import { useStore } from "@/store";
@@ -25,9 +25,11 @@ import { useStore } from "@/store";
 export function EditButton({
   item,
   type,
+  setCurrentStatus,
 }: {
   item: WatchlistItem;
   type: string;
+  setCurrentStatus: Dispatch<SetStateAction<string>>;
 }) {
   const _padding = "py-0.5 px-1 m-0 h-auto w-auto min-h-0 min-w-0";
   const _main =
@@ -41,7 +43,11 @@ export function EditButton({
           edit
         </Button>
       </DropdownMenuTrigger>
-      <EditButtonDropdownContent item={item} type={type} />
+      <EditButtonDropdownContent
+        item={item}
+        type={type}
+        setCurrentStatus={setCurrentStatus}
+      />
     </DropdownMenu>
   );
 }
@@ -49,11 +55,13 @@ export function EditButton({
 function EditButtonDropdownContent({
   item,
   type,
+  setCurrentStatus,
 }: {
   item: WatchlistItem;
   type: string;
+  setCurrentStatus: Dispatch<SetStateAction<string>>;
 }) {
-  const { toggleDialog } = useStore((state) => state.dialog);
+  const { toggleDialog, setDeleteData } = useStore((state) => state.dialog);
 
   const actions = [
     {
@@ -74,9 +82,16 @@ function EditButtonDropdownContent({
         action !== "delete" ? (
           <DropdownMenuItem
             key={action}
-            onSelect={() =>
-              handleStatusUpdateAndDelete(action, type, item, toggleDialog)
-            }
+            onSelect={() => {
+              setCurrentStatus(action);
+              handleStatusUpdateAndDelete(
+                action,
+                type,
+                item,
+                toggleDialog,
+                setDeleteData
+              );
+            }}
             className="cursor-pointer">
             {icon}
             {label}
@@ -85,9 +100,16 @@ function EditButtonDropdownContent({
           <Fragment key={action}>
             <DropdownMenuSeparator />
             <DropdownMenuItem
-              onSelect={() =>
-                handleStatusUpdateAndDelete(action, type, item, toggleDialog)
-              }
+              onSelect={() => {
+                setCurrentStatus(action);
+                handleStatusUpdateAndDelete(
+                  action,
+                  type,
+                  item,
+                  toggleDialog,
+                  setDeleteData
+                );
+              }}
               className="cursor-pointer">
               {icon}
               {label}

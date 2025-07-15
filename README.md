@@ -52,5 +52,17 @@ pip install --upgrade pip setuptools wheel
 Continue Installation:
 ```
 pip install -r requirements.txt
+touch .env && nano .env
+```
+Populate .env:
+```
+PORT=<ur port>
+DEV_MODE=<default: false>
+MONGODB_URI=<ur mongodb uri>
+SECRET_KEY=<generate a random uuid>
+OMDB_API_KEY=<ur omdb api key>
+```
+
+```
 python server.py
 ```

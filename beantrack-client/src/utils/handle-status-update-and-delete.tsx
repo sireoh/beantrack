@@ -3,7 +3,6 @@ import { WatchlistItem } from "@/models";
 import { deleteDataModel } from "@/store/slices/dialog-slice";
 import axios from "axios";
 import { toast } from "sonner";
-import { de } from "zod/v4/locales";
 
 const notifs: Record<string, string> = {
   watching: "Currently Watching",

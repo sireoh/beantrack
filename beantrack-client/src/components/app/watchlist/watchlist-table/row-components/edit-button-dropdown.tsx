@@ -101,7 +101,6 @@ function EditButtonDropdownContent({
             <DropdownMenuSeparator />
             <DropdownMenuItem
               onSelect={() => {
-                setCurrentStatus(action);
                 handleStatusUpdateAndDelete(
                   action,
                   type,

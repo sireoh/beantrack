@@ -6,6 +6,8 @@ export interface WatchlistsState {
   movieslist: WatchlistItem[];
   updateTVList: (tvlist: WatchlistItem[]) => void;
   updateMoviesList: (movieslist: WatchlistItem[]) => void;
+  deleteTVListItem: (imdb: string) => void;
+  deleteMovieListItem: (imdb: string) => void;
 }
 
 export const createWatchlistsSlice: StateCreator<{
@@ -29,6 +31,26 @@ export const createWatchlistsSlice: StateCreator<{
         watchlists: {
           ...state.watchlists,
           movieslist,
+        },
+      }));
+    },
+
+    deleteTVListItem: (imdb: string) => {
+      set((state) => ({
+        watchlists: {
+          ...state.watchlists,
+          tvlist: state.watchlists.tvlist.filter((item) => item.imdb !== imdb),
+        },
+      }));
+    },
+
+    deleteMovieListItem: (imdb: string) => {
+      set((state) => ({
+        watchlists: {
+          ...state.watchlists,
+          movieslist: state.watchlists.movieslist.filter(
+            (item) => item.imdb !== imdb
+          ),
         },
       }));
     },

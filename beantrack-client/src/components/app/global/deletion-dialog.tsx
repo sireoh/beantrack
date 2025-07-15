@@ -14,10 +14,13 @@ import { deleteDataModel } from "@/store/slices/dialog-slice";
 import { handleDelete } from "@/utils/handle-status-update-and-delete";
 import { toast } from "sonner";
 
-export function DialogDemo() {
+export function DeletionDialog() {
   const { isToggled, toggleDialog } = useStore((state) => state.dialog);
   const dialog = useStore((state) => state.dialog);
   const deleteData: deleteDataModel | undefined = dialog.deleteData;
+  const { deleteTVListItem, deleteMovieListItem } = useStore(
+    (state) => state.watchlists
+  );
 
   return (
     <Dialog open={isToggled} onOpenChange={toggleDialog}>
@@ -26,6 +29,12 @@ export function DialogDemo() {
           onSubmit={(e) => {
             e.preventDefault();
             if (deleteData) {
+              // FRONTEND
+              deleteData.type == "tv"
+                ? deleteTVListItem(deleteData.item.imdb)
+                : deleteMovieListItem(deleteData.item.imdb);
+
+              // BACKEND
               handleDelete(deleteData);
             } else {
               toast.error("No item selected for deletion.");

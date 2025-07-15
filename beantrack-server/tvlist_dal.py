@@ -192,3 +192,28 @@ def increment_tv_show_progress(request: Request, imdb: str):
         )
     else:
         print(f"[incremented progress] imdb: {imdb} already at last episode ({total})")
+
+
+def update_by_index_tv_show_progress(request: Request, imdb: str, index: int):
+    user_id = Helpers.get_current_user_id_from_session(request)
+    tvlist_id = Helpers.get_current_tvlist_id(user_id)
+
+    # Find the show within the user's tvlist
+    doc = tvlist_collection.find_one(
+        {"_id": tvlist_id, "data.imdb": imdb}, {"data.$": 1}
+    )
+
+    # Validate existence
+    if not doc or "data" not in doc or len(doc["data"]) == 0:
+        print(f"[update by index progress] imdb: {imdb} not found")
+        return
+
+    # Directly update to the provided index
+    result = tvlist_collection.update_one(
+        {"_id": tvlist_id, "data.imdb": imdb},
+        {"$set": {"data.$.currentEpisodeIndex": index}},
+    )
+
+    print(
+        f"[update by index progress] imdb: {imdb}, set to: {index}, matched: {result.matched_count}, modified: {result.modified_count}"
+    )

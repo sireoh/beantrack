@@ -27,6 +27,7 @@ from tvlist_dal import (
     get_user_tv_list,
     get_user_tv_list_by_status,
     increment_tv_show_progress,
+    update_by_index_tv_show_progress,
     update_tv_show_status,
 )
 from user_dal import add_user, delete_user
@@ -172,6 +173,12 @@ async def __update_tv_show_status(
     return {"message": "Status endpoint hit", "imdb": imdb, "new_status": new_status}
 
 
+# ===============================================
+# ============== TV SHOWS =======================
+# ============== PROGRESS =======================
+# ===============================================
+
+
 @app.patch("/api/{imdb}/edit/tv_show/progress/{action}")
 async def __update_tv_show_progress(
     request: Request, imdb: str = Path(...), action: str = Path(...)
@@ -186,6 +193,19 @@ async def __update_tv_show_progress(
             detail="Invalid action. Must be 'increment' or 'decrement'.",
         )
     return {"message": "Progress endpoint hit", "imdb": imdb, "action": action}
+
+
+@app.patch("/api/{imdb}/edit/tv_show/progress/by_index/{index}")
+async def __update_by_index_tv_show_progress(
+    request: Request, imdb: str = Path(...), index: str = Path(...)
+):
+    update_by_index_tv_show_progress(request, imdb, int(index))
+    return {
+        "message": "Progress endpoint hit",
+        "imdb": imdb,
+        "action": "update_by_index",
+        "index": index,
+    }
 
 
 # ===============================================

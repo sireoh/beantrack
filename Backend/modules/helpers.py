@@ -22,17 +22,6 @@ class Helpers:
     """
 
     @staticmethod
-    def get_current_user(request: Request) -> str:
-        """
-        Dependency function to get the current authenticated user ID from JWT.
-
-        :param request: The request object.
-        :return: The user ID.
-        :raises HTTPException: If not authenticated or invalid token.
-        """
-        return Helpers.get_current_user_id_from_jwt(request)
-
-    @staticmethod
     def create_jwt_token(user_id: str) -> str:
         """
         Create a JWT token for the user.
@@ -40,55 +29,16 @@ class Helpers:
         :param user_id: The user ID to encode in the token.
         :return: The JWT token.
         """
-        expire = datetime.utcnow() + timedelta(days=1)  # 24 hours
+        expire = datetime.now() + timedelta(days=1)  # 24 hours
         to_encode = {
             "sub": user_id,
             "exp": expire,
-            "iat": datetime.utcnow(),
+            "iat": datetime.now(),
         }
         encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm="HS256")
         if DEV_MODE == "true":
             print(f"jwt_token: {encoded_jwt}")
         return encoded_jwt
-
-    @staticmethod
-    def verify_jwt_token(token: str) -> str:
-        """
-        Verify a JWT token and return the user ID.
-
-        :param token: The JWT token to verify.
-        :return: The user ID if valid.
-        :raises HTTPException: If invalid.
-        """
-        try:
-            payload = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
-            user_id: str = payload.get("sub")  # type: ignore
-            if user_id is None:
-                raise HTTPException(
-                    status_code=status.HTTP_401_UNAUTHORIZED,
-                    detail="Invalid token payload",
-                )
-            return user_id
-        except JWTError:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid or expired token",
-            )
-
-    @staticmethod
-    def get_current_user_id_from_jwt(request: Request) -> str:
-        """
-        Get the current user ID from the JWT token in the request.
-
-        :param request: The request object.
-        :return: The user ID.
-        :raises HTTPException: If not authenticated or invalid token.
-        """
-        token = request.cookies.get("access_token")
-        if not token:
-            raise HTTPException(status_code=401, detail="Not authenticated")
-
-        return Helpers.verify_jwt_token(token)
 
     @staticmethod
     def get_current_tvlist_id(user_id: str) -> ObjectId:
@@ -121,3 +71,31 @@ class Helpers:
             raise HTTPException(status_code=404, detail="Movie list not found")
 
         return user_doc["movielist"]
+
+    @staticmethod
+    def get_current_user(request: Request) -> str:
+        """
+        Dependency function to get the current authenticated user ID from JWT.
+
+        :param request: The request object.
+        :return: The user ID.
+        :raises HTTPException: If not authenticated or invalid token.
+        """
+        token = request.cookies.get("access_token")
+        if not token:
+            raise HTTPException(status_code=401, detail="Not authenticated")
+
+        try:
+            payload = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
+            user_id: str = payload.get("sub")  # type: ignore
+            if user_id is None:
+                raise HTTPException(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    detail="Invalid token payload",
+                )
+            return user_id
+        except JWTError:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid or expired token",
+            )

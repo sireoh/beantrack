@@ -48,7 +48,7 @@ app = FastAPI()
 # Enable CORS for local development
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["http://localhost:3000"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -65,7 +65,7 @@ BASE_URI = "/api/v1"
 
 
 @app.post(f"{BASE_URI}/user/add", status_code=status.HTTP_201_CREATED)
-async def __add_user(user_data: User):
+async def add_user_route(user_data: User):
     """
     Add a new user to the system.
 
@@ -80,7 +80,7 @@ async def __add_user(user_data: User):
 
 
 @app.delete(f"{BASE_URI}/user/delete")
-async def __delete_user(data: User):
+async def delete_user_route(data: User):
     """
     Delete a user from the system.
 
@@ -100,7 +100,7 @@ async def __delete_user(data: User):
 
 
 @app.post(f"{BASE_URI}/login")
-async def __login(data: User, response: Response, request: Request):
+async def login_route(data: User, response: Response, request: Request):
     """
     Log in a user and set session cookie.
 
@@ -127,7 +127,7 @@ async def __login(data: User, response: Response, request: Request):
 
 
 @app.get(f"{BASE_URI}/auth")
-def _auth(request: Request):
+def auth_route(request: Request):
     """
     Get authentication status for the current user.
 
@@ -141,7 +141,7 @@ def _auth(request: Request):
 
 
 @app.post(f"{BASE_URI}/logout")
-async def __logout(response: Response, session_token: str = Cookie(None)):
+async def logout_route(response: Response, session_token: str = Cookie(None)):
     """
     Log out the current user by clearing the session.
 
@@ -161,7 +161,7 @@ async def __logout(response: Response, session_token: str = Cookie(None)):
 
 
 @app.get(f"{BASE_URI}/search/tv_show")
-async def __search_tv_show(query: str = Query(..., alias="q")):
+async def search_tv_show_route(query: str = Query(..., alias="q")):
     """
     Search for TV shows by query string.
 
@@ -176,7 +176,7 @@ async def __search_tv_show(query: str = Query(..., alias="q")):
 
 
 @app.get(f"{BASE_URI}/search/movie")
-async def __search_movie(query: str = Query(..., alias="q")):
+async def search_movie_route(query: str = Query(..., alias="q")):
     """
     Search for movies by query string.
 
@@ -191,7 +191,7 @@ async def __search_movie(query: str = Query(..., alias="q")):
 
 
 @app.get(f"{BASE_URI}/singlesearch/tv_show")
-async def __search_tv_show_by_tvmaze_id(tvmaze_id: str = Query(..., alias="id")):
+async def search_tv_show_by_tvmaze_id_route(tvmaze_id: str = Query(..., alias="id")):
     """
     Search for a TV show by TVmaze ID.
 
@@ -206,7 +206,7 @@ async def __search_tv_show_by_tvmaze_id(tvmaze_id: str = Query(..., alias="id"))
 
 
 @app.get(f"{BASE_URI}/singlesearch/movie")
-async def __search_movie_by_imdb_id(imdb: str = Query(..., alias="id")):
+async def search_movie_by_imdb_id_route(imdb: str = Query(..., alias="id")):
     """
     Search for a movie by IMDb ID.
 
@@ -226,7 +226,7 @@ async def __search_movie_by_imdb_id(imdb: str = Query(..., alias="id")):
 
 
 @app.get(f"{BASE_URI}/tvlist")
-async def __get_user_tv_list(request: Request):
+async def get_user_tv_list_route(request: Request):
     """
     Get the user's TV list.
 
@@ -241,7 +241,7 @@ async def __get_user_tv_list(request: Request):
 
 
 @app.get(f"{BASE_URI}/tvlist/status")
-async def __get_user_tv_list_by_status(
+async def get_user_tv_list_by_status_route(
     request: Request, status_filter: str = Query(..., alias="status")
 ):
     """
@@ -259,7 +259,7 @@ async def __get_user_tv_list_by_status(
 
 
 @app.post(f"{BASE_URI}/tvlist/add", status_code=status.HTTP_201_CREATED)
-async def __add_tv_show(request: Request, data: TVShow):
+async def add_tv_show_route(request: Request, data: TVShow):
     """
     Add a TV show to the user's list.
 
@@ -274,24 +274,24 @@ async def __add_tv_show(request: Request, data: TVShow):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
 
-@app.delete(f"{BASE_URI}/tvlist/delete")
-async def __delete_tv_show(request: Request, data: DeleteRequest):
+@app.delete(f"{BASE_URI}/tvlist/{{imdb}}")
+async def delete_tv_show_route(request: Request, imdb: str = Path(...)):
     """
     Delete a TV show from the user's list.
 
     :param request: The request object.
-    :param data: The delete request data.
+    :param imdb: The IMDB ID of the TV show.
     :return: No content on success.
     """
     try:
-        delete_tv_show(request, data.imdb)
+        delete_tv_show(request, imdb)
         return Response(status_code=status.HTTP_204_NO_CONTENT)
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
 
 
 @app.patch(f"{BASE_URI}/tvlist/edit")
-async def __update_tv_show_status(request: Request, data: UpdateStatusRequest):
+async def update_tv_show_status_route(request: Request, data: UpdateStatusRequest):
     """
     Update the status of a TV show in the user's list.
 
@@ -316,7 +316,9 @@ async def __update_tv_show_status(request: Request, data: UpdateStatusRequest):
 
 
 @app.patch(f"{BASE_URI}/tvlist/progress/increment")
-async def __increment_tv_show_progress(request: Request, data: UpdateProgressRequest):
+async def increment_tv_show_progress_route(
+    request: Request, data: UpdateProgressRequest
+):
     """
     Increment the progress of a TV show.
 
@@ -332,7 +334,9 @@ async def __increment_tv_show_progress(request: Request, data: UpdateProgressReq
 
 
 @app.patch(f"{BASE_URI}/tvlist/progress/decrement")
-async def __decrement_tv_show_progress(request: Request, data: UpdateProgressRequest):
+async def decrement_tv_show_progress_route(
+    request: Request, data: UpdateProgressRequest
+):
     """
     Decrement the progress of a TV show.
 
@@ -348,7 +352,7 @@ async def __decrement_tv_show_progress(request: Request, data: UpdateProgressReq
 
 
 @app.patch(f"{BASE_URI}/tvlist/progress/index")
-async def __update_by_index_tv_show_progress(
+async def update_by_index_tv_show_progress_route(
     request: Request, data: UpdateProgressByIndexRequest
 ):
     """
@@ -374,8 +378,8 @@ async def __update_by_index_tv_show_progress(
 # ===============================================
 
 
-@app.post(f"{BASE_URI}/movielist")
-async def __get_user_movie_list(request: Request):
+@app.get(f"{BASE_URI}/movielist")
+async def get_user_movie_list_route(request: Request):
     """
     Get the user's movie list.
 
@@ -389,8 +393,10 @@ async def __get_user_movie_list(request: Request):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=str(e))
 
 
-@app.post(f"{BASE_URI}/movielist/{{status_filter}}")
-async def __get_user_movie_list_by_status(request: Request, status_filter: str = Path(...)):
+@app.get(f"{BASE_URI}/movielist/{{status_filter}}")
+async def get_user_movie_list_by_status_route(
+    request: Request, status_filter: str = Path(...)
+):
     """
     Get the user's movie list filtered by status.
 
@@ -406,7 +412,7 @@ async def __get_user_movie_list_by_status(request: Request, status_filter: str =
 
 
 @app.post(f"{BASE_URI}/movielist/add", status_code=status.HTTP_201_CREATED)
-async def __add_movie(request: Request, movie_data: Movie):
+async def add_movie_route(request: Request, movie_data: Movie):
     """
     Add a movie to the user's list.
 
@@ -415,31 +421,30 @@ async def __add_movie(request: Request, movie_data: Movie):
     :return: Success message.
     """
     try:
-        print(movie_data)
         add_movie(request, movie_data)
         return {"message": "Movie added successfully", "movie_data": movie_data}
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
 
-@app.delete(f"{BASE_URI}/movielist/delete")
-async def __delete_movie(request: Request, data: DeleteRequest):
+@app.delete(f"{BASE_URI}/movielist/{{imdb}}")
+async def delete_movie_route(request: Request, imdb: str = Path(...)):
     """
     Delete a movie from the user's list.
 
     :param request: The request object.
-    :param data: The delete request data.
+    :param imdb: The IMDB ID of the movie.
     :return: No content on success.
     """
     try:
-        delete_movie(request, data.imdb)
+        delete_movie(request, imdb)
         return Response(status_code=status.HTTP_204_NO_CONTENT)
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
 
 
 @app.patch(f"{BASE_URI}/movielist/edit")
-async def __update_movie_status(request: Request, data: UpdateStatusRequest):
+async def update_movie_status_route(request: Request, data: UpdateStatusRequest):
     """
     Update the status of a movie in the user's list.
 

@@ -1,3 +1,7 @@
+"""
+Database connection module.
+"""
+
 from pymongo import MongoClient
 from dotenv import load_dotenv
 import os
@@ -9,3 +13,4 @@ client = MongoClient(MONGODB_URI)
 db = client["beantrack"]
 
 movielist_collection = db["movielist"]
+tvlist_collection = db["tvlist"]

@@ -1,3 +1,7 @@
+"""
+Movie list data access layer.
+"""
+
 from bson import ObjectId
 from fastapi import Request
 from database import db
@@ -13,6 +17,12 @@ movielist_collection = db["movielist"]
 
 
 def get_user_movie_list(request: Request):
+    """
+    Get the user's movie list.
+
+    :param request: The request object.
+    :return: List of movies.
+    """
     user_id = Helpers.get_current_user_id_from_session(request)
     print(f"User ID from session: {user_id}")
 
@@ -39,6 +49,13 @@ def get_user_movie_list(request: Request):
 
 
 def get_user_movie_list_by_status(request: Request, status: str):
+    """
+    Get the user's movie list filtered by status.
+
+    :param request: The request object.
+    :param status: The status to filter by.
+    :return: Filtered list of movies.
+    """
     user_id = Helpers.get_current_user_id_from_session(request)
     print(f"User ID from session: {user_id}")
 
@@ -86,6 +103,13 @@ def get_user_movie_list_by_status(request: Request, status: str):
 
 
 def add_movie(request: Request, movie: Movie):
+    """
+    Add a movie to the user's movie list.
+
+    :param request: The request object.
+    :param movie: The movie to add.
+    :return: None
+    """
     user_id = Helpers.get_current_user_id_from_session(request)
     movielist_id = Helpers.get_current_movielist_id(user_id)
 
@@ -101,6 +125,13 @@ def add_movie(request: Request, movie: Movie):
 
 
 def delete_movie(request: Request, imdb: str):
+    """
+    Delete a movie from the user's movie list.
+
+    :param request: The request object.
+    :param imdb: The IMDB ID of the movie.
+    :return: None
+    """
     user_id = Helpers.get_current_user_id_from_session(request)
     movielist_id = Helpers.get_current_movielist_id(user_id)
 
@@ -120,6 +151,14 @@ def delete_movie(request: Request, imdb: str):
 
 
 def update_movie_status(request: Request, imdb: str, new_status: str):
+    """
+    Update the status of a movie in the user's movie list.
+
+    :param request: The request object.
+    :param imdb: The IMDB ID of the movie.
+    :param new_status: The new status.
+    :return: None
+    """
     user_id = Helpers.get_current_user_id_from_session(request)
     movielist_id = Helpers.get_current_movielist_id(user_id)
 

@@ -1,3 +1,7 @@
+"""
+User data access layer.
+"""
+
 import bcrypt
 from bson import ObjectId
 from database import db
@@ -12,6 +16,11 @@ movielist_collection = db["movielist"]
 
 
 def add_user(_u: User):
+    """
+    Add a new user with hashed password and create empty lists.
+
+    :param _u: The user data.
+    """
     # Hash the password using bcrypt
     hashed_password = bcrypt.hashpw(_u.password.encode(), bcrypt.gensalt()).decode()
 
@@ -32,6 +41,13 @@ def add_user(_u: User):
 
 
 def delete_user(data: User):
+    """
+    Delete a user and associated lists.
+
+    :param data: The user data for deletion.
+    :return: Deletion result.
+    :raises HTTPException: If user not found or invalid credentials.
+    """
     user = users_collection.find_one({"username": data.username})
 
     if not user:
@@ -66,6 +82,12 @@ def delete_user(data: User):
 
 
 def change_password(username: str, new_password: str):
+    """
+    Change a user's password.
+
+    :param username: The username.
+    :param new_password: The new password.
+    """
     result = users_collection.update_one(
         {"username": username}, {"$set": {"password": new_password}}
     )
@@ -75,6 +97,12 @@ def change_password(username: str, new_password: str):
 
 
 def get_user_tvlist(username: str):
+    """
+    Get a user's TV list document.
+
+    :param username: The username.
+    :return: The TV list document or None.
+    """
     user = users_collection.find_one({"username": username})
     if not user:
         print(f"[get_user_tvlist] username {username} not found")
@@ -90,6 +118,12 @@ def get_user_tvlist(username: str):
 
 
 def get_user_movielist(username: str):
+    """
+    Get a user's movie list document.
+
+    :param username: The username.
+    :return: The movie list document or None.
+    """
     user = users_collection.find_one({"username": username})
     if not user:
         print(f"[get_user_movielist] username {username} not found")

@@ -1,3 +1,7 @@
+"""
+Sessions data access layer.
+"""
+
 from datetime import datetime
 from bson import ObjectId
 from fastapi import HTTPException, Request, status, Response, Cookie
@@ -15,6 +19,14 @@ users_collection = db["users"]
 
 
 def login(request: Request, data: User):
+    """
+    Log in a user and create a session.
+
+    :param request: The request object.
+    :param data: User login data.
+    :return: Session info.
+    :raises HTTPException: If user not found or invalid credentials.
+    """
     found_user = users_collection.find_one({"username": data.username})
 
     if not found_user:
@@ -45,6 +57,13 @@ def login(request: Request, data: User):
 
 
 def logout(response: Response, session_token: str = Cookie(None)):
+    """
+    Log out a user by deleting the session.
+
+    :param response: The response object.
+    :param session_token: The session token.
+    :return: Logout message.
+    """
     if not session_token:
         response.delete_cookie("session_token")
         print("[logout] No session token provided, but cookie cleared")

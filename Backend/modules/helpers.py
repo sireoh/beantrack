@@ -17,14 +17,29 @@ users_collection = db["users"]
 
 
 class Helpers:
+    """
+    Utility class for helper functions.
+    """
+
     @staticmethod
     def create_empty_list_doc(collection):
-        """Create an empty list doc with an empty data array and return its ObjectId."""
+        """
+        Create an empty list document with an empty data array and return its ObjectId.
+
+        :param collection: The MongoDB collection.
+        :return: The inserted document's ObjectId.
+        """
         res = collection.insert_one({"data": []})
         return res.inserted_id
 
     @staticmethod
     def sign_session_id(session_id: str):
+        """
+        Sign a session ID with HMAC-SHA256.
+
+        :param session_id: The session ID to sign.
+        :return: The signed token.
+        """
         key_bytes = SECRET_KEY.encode()  # Convert string to bytes
         signature = hmac.new(key_bytes, session_id.encode(), hashlib.sha256).digest()
         signed_token = f"{session_id}.{base64.urlsafe_b64encode(signature).decode()}"
@@ -34,6 +49,13 @@ class Helpers:
 
     @staticmethod
     def verify_signed_token(signed_token: str):
+        """
+        Verify a signed token.
+
+        :param signed_token: The signed token to verify.
+        :return: The session ID if valid.
+        :raises HTTPException: If invalid.
+        """
         try:
             session_id, signature_b64 = signed_token.split(".")
             expected_signature = hmac.new(
@@ -53,6 +75,13 @@ class Helpers:
 
     @staticmethod
     def get_current_user_id_from_session(request: Request):
+        """
+        Get the current user ID from the session token in the request.
+
+        :param request: The request object.
+        :return: The user ID.
+        :raises HTTPException: If not authenticated or invalid session.
+        """
         session_token = request.cookies.get("session_token")
         if not session_token:
             raise HTTPException(status_code=401, detail="Not authenticated")
@@ -68,6 +97,13 @@ class Helpers:
 
     @staticmethod
     def get_current_tvlist_id(user_id: str) -> ObjectId:
+        """
+        Get the TV list ID for the user.
+
+        :param user_id: The user ID.
+        :return: The TV list ObjectId.
+        :raises HTTPException: If not found.
+        """
         user_doc = users_collection.find_one({"_id": ObjectId(user_id)})
 
         if not user_doc or "tvlist" not in user_doc:
@@ -77,6 +113,13 @@ class Helpers:
 
     @staticmethod
     def get_current_movielist_id(user_id: str) -> ObjectId:
+        """
+        Get the movie list ID for the user.
+
+        :param user_id: The user ID.
+        :return: The movie list ObjectId.
+        :raises HTTPException: If not found.
+        """
         user_doc = users_collection.find_one({"_id": ObjectId(user_id)})
 
         if not user_doc or "movielist" not in user_doc:

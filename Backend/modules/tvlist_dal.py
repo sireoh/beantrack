@@ -4,9 +4,9 @@ TV list data access layer.
 
 from bson import ObjectId
 from fastapi import Request
-from database import db
-from helpers import Helpers
-from models import TVShow
+from .database import db
+from .helpers import Helpers
+from .models import TVShow
 
 users_collection = db["users"]
 tvlist_collection = db["tvlist"]
@@ -16,15 +16,14 @@ tvlist_collection = db["tvlist"]
 # ===============================================
 
 
-def get_user_tv_list(request: Request):
+def get_user_tv_list(user_id: str):
     """
     Get the user's TV list.
 
-    :param request: The request object.
+    :param user_id: The user ID.
     :return: Sorted list of TV shows.
     """
-    user_id = Helpers.get_current_user_id_from_session(request)
-    print(f"User ID from session: {user_id}")
+    print(f"User ID from JWT: {user_id}")
 
     user_doc = users_collection.find_one({"_id": ObjectId(user_id)})
     # print(f"User doc: {user_doc}")
@@ -49,16 +48,15 @@ def get_user_tv_list(request: Request):
     return sorted_data
 
 
-def get_user_tv_list_by_status(request: Request, status: str):
+def get_user_tv_list_by_status(user_id: str, status: str):
     """
     Get the user's TV list filtered by status.
 
-    :param request: The request object.
+    :param user_id: The user ID.
     :param status: The status to filter by.
     :return: Filtered and sorted list of TV shows.
     """
-    user_id = Helpers.get_current_user_id_from_session(request)
-    print(f"User ID from session: {user_id}")
+    print(f"User ID from JWT: {user_id}")
 
     user_doc = users_collection.find_one({"_id": ObjectId(user_id)})
     # print(f"User doc: {user_doc}")
@@ -106,14 +104,13 @@ def get_user_tv_list_by_status(request: Request, status: str):
 # ===============================================
 
 
-def add_tv_show(request: Request, tv_show: TVShow):
+def add_tv_show(user_id: str, tv_show: TVShow):
     """
     Add a TV show to the user's list.
 
-    :param request: The request object.
+    :param user_id: The user ID.
     :param tv_show: The TV show data.
     """
-    user_id = Helpers.get_current_user_id_from_session(request)
     tvlist_id = Helpers.get_current_tvlist_id(user_id)
 
     _t = tv_show.model_dump()
@@ -125,14 +122,13 @@ def add_tv_show(request: Request, tv_show: TVShow):
     )
 
 
-def delete_tv_show(request: Request, imdb: str):
+def delete_tv_show(user_id: str, imdb: str):
     """
     Delete a TV show from the user's list by IMDb ID.
 
-    :param request: The request object.
+    :param user_id: The user ID.
     :param imdb: The IMDb ID.
     """
-    user_id = Helpers.get_current_user_id_from_session(request)
     tvlist_id = Helpers.get_current_tvlist_id(user_id)
 
     result = tvlist_collection.update_one(
@@ -150,15 +146,14 @@ def delete_tv_show(request: Request, imdb: str):
 # ===============================================
 
 
-def update_tv_show_status(request: Request, imdb: str, new_status: str):
+def update_tv_show_status(user_id: str, imdb: str, new_status: str):
     """
     Update the status of a TV show in the user's list.
 
-    :param request: The request object.
+    :param user_id: The user ID.
     :param imdb: The IMDb ID.
     :param new_status: The new status.
     """
-    user_id = Helpers.get_current_user_id_from_session(request)
     tvlist_id = Helpers.get_current_tvlist_id(user_id)
 
     result = tvlist_collection.update_one(
@@ -177,15 +172,14 @@ def update_tv_show_status(request: Request, imdb: str, new_status: str):
 # ===============================================
 
 
-def decrement_tv_show_progress(request: Request, imdb: str):
+def decrement_tv_show_progress(user_id: str, imdb: str):
     """
     Decrement the progress of a TV show by one episode.
 
-    :param request: The request object.
+    :param user_id: The user ID.
     :param imdb: The IMDB ID of the TV show.
     :return: None
     """
-    user_id = Helpers.get_current_user_id_from_session(request)
     tvlist_id = Helpers.get_current_tvlist_id(user_id)
 
     doc = tvlist_collection.find_one(
@@ -209,15 +203,14 @@ def decrement_tv_show_progress(request: Request, imdb: str):
         print(f"[decremented progress] imdb: {imdb} already at 0")
 
 
-def increment_tv_show_progress(request: Request, imdb: str):
+def increment_tv_show_progress(user_id: str, imdb: str):
     """
     Increment the progress of a TV show by one episode.
 
-    :param request: The request object.
+    :param user_id: The user ID.
     :param imdb: The IMDB ID of the TV show.
     :return: None
     """
-    user_id = Helpers.get_current_user_id_from_session(request)
     tvlist_id = Helpers.get_current_tvlist_id(user_id)
 
     doc = tvlist_collection.find_one(
@@ -244,16 +237,15 @@ def increment_tv_show_progress(request: Request, imdb: str):
         print(f"[incremented progress] imdb: {imdb} already at last episode ({total})")
 
 
-def update_by_index_tv_show_progress(request: Request, imdb: str, index: int):
+def update_by_index_tv_show_progress(user_id: str, imdb: str, index: int):
     """
     Update the progress of a TV show to a specific episode index.
 
-    :param request: The request object.
+    :param user_id: The user ID.
     :param imdb: The IMDB ID of the TV show.
     :param index: The episode index to set.
     :return: None
     """
-    user_id = Helpers.get_current_user_id_from_session(request)
     tvlist_id = Helpers.get_current_tvlist_id(user_id)
 
     # Find the show within the user's tvlist

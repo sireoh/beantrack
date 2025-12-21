@@ -4,9 +4,9 @@ User data access layer.
 
 import bcrypt
 from bson import ObjectId
-from database import db
-from helpers import Helpers
-from models import User
+from .database import db
+from .helpers import Helpers
+from .models import User
 
 from fastapi import HTTPException, status
 

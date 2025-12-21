@@ -1,8 +1,10 @@
-from sqlite3 import Date
 from typing import List, Literal, Union
 from pydantic import BaseModel
 
 
+# ===============================================
+# ============== DATA MODELS ====================
+# ===============================================
 class Episode(BaseModel):
     code: str
     name: str
@@ -29,3 +31,26 @@ class Movie(BaseModel):
 class User(BaseModel):
     username: str
     password: str
+
+
+# ===============================================
+# ============== REQUEST MODELS =================
+# ===============================================
+
+
+class UpdateStatusRequest(BaseModel):
+    imdb: str
+    new_status: str
+
+
+class DeleteRequest(BaseModel):
+    imdb: str
+
+
+class UpdateProgressRequest(BaseModel):
+    imdb: str
+
+
+class UpdateProgressByIndexRequest(BaseModel):
+    imdb: str
+    index: int

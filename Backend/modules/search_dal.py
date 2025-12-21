@@ -35,7 +35,7 @@ async def search_tv_show_by_tvmaze_id(id: str):
             return {"error": str(e), "source": "tvmaze"}
 
 
-async def search_movie_by_imdb(imdb: str):
+async def search_movie_by_imdb_id(imdb: str):
     async with httpx.AsyncClient() as client:
         try:
             url = f"https://www.omdbapi.com/?apikey={OMDB_API_KEY}&i={imdb}"

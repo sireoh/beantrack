@@ -6,7 +6,7 @@ from database import db
 users_collection = db["users"]
 
 
-def get_auth(request: Request):
+def auth(request: Request):
     user_id = Helpers.get_current_user_id_from_session(request)
     user = users_collection.find_one({"_id": ObjectId(user_id)})
     if not user:

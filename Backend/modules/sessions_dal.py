@@ -14,7 +14,7 @@ users_collection = db["users"]
 # ===============================================
 
 
-def add_session(request: Request, data: User):
+def login(request: Request, data: User):
     found_user = users_collection.find_one({"username": data.username})
 
     if not found_user:
@@ -44,7 +44,7 @@ def add_session(request: Request, data: User):
     }
 
 
-def delete_session(response: Response, session_token: str = Cookie(None)):
+def logout(response: Response, session_token: str = Cookie(None)):
     if not session_token:
         response.delete_cookie("session_token")
         print("[logout] No session token provided, but cookie cleared")

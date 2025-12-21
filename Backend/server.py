@@ -5,9 +5,17 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi import Path
 import os
 
-from Backend.modules.auth_dal import get_auth
+from Backend.modules.auth_dal import auth
 from Backend.modules.helpers import Helpers
-from Backend.modules.models import Movie, TVShow, User
+from Backend.modules.models import (
+    Movie,
+    TVShow,
+    UpdateStatusRequest,
+    DeleteRequest,
+    UpdateProgressRequest,
+    UpdateProgressByIndexRequest,
+    User,
+)
 from Backend.modules.movielist_dal import (
     add_movie,
     delete_movie,
@@ -17,11 +25,11 @@ from Backend.modules.movielist_dal import (
 )
 from Backend.modules.search_dal import (
     search_movie,
-    search_movie_by_imdb,
+    search_movie_by_imdb_id,
     search_tv_show,
     search_tv_show_by_tvmaze_id,
 )
-from Backend.modules.sessions_dal import add_session, delete_session
+from Backend.modules.sessions_dal import login, logout
 from Backend.modules.tvlist_dal import (
     add_tv_show,
     decrement_tv_show_progress,
@@ -33,6 +41,7 @@ from Backend.modules.tvlist_dal import (
     update_tv_show_status,
 )
 from Backend.modules.user_dal import add_user, delete_user
+
 
 app = FastAPI()
 
@@ -48,20 +57,21 @@ app.add_middleware(
 load_dotenv()
 DEV_MODE = os.environ["DEV_MODE"] == "true"
 PORT = os.environ["PORT"]
+BASE_URI = "/api/v1"
 
 # ===============================================
 # ============== USERS ==========================
 # ===============================================
 
 
-@app.post("/api/add/user")
-async def __add_user(data: User):
-    print(data)
-    add_user(data)
-    return {"message": "Add User endpoint hit", "data": data}
+@app.post(f"{BASE_URI}/user/add")
+async def __add_user(user_data: User):
+    print(user_data)
+    add_user(user_data)
+    return {"message": "Adding User", "user_data": user_data}
 
 
-@app.delete("/api/delete/user")
+@app.delete(f"{BASE_URI}/user/delete")
 async def __delete_user(data: User):
     print(data)
     delete_user(data)
@@ -69,13 +79,13 @@ async def __delete_user(data: User):
 
 
 # ===============================================
-# ============== SESSIONS =======================
+# ============== AUTH ===========================
 # ===============================================
 
 
-@app.post("/api/login")
+@app.post(f"{BASE_URI}/login")
 async def __login(data: User, response: Response, request: Request):
-    _r = add_session(request, data)
+    _r = login(request, data)
 
     session_id = _r["session_id"]
     signed_session = Helpers.sign_session_id(session_id)
@@ -92,9 +102,14 @@ async def __login(data: User, response: Response, request: Request):
     return {"message": "User logged in", "data": data}
 
 
-@app.post("/api/logout")
+@app.get(f"{BASE_URI}/auth")
+def _auth(request: Request):
+    return auth(request)
+
+
+@app.post(f"{BASE_URI}/logout")
 async def __logout(response: Response, session_token: str = Cookie(None)):
-    return delete_session(response, session_token)
+    return logout(response, session_token)
 
 
 # ===============================================
@@ -102,38 +117,51 @@ async def __logout(response: Response, session_token: str = Cookie(None)):
 # ===============================================
 
 
-@app.post("/api/search/tv_show")
+@app.get(f"{BASE_URI}/search/tv_show")
 async def __search_tv_show(query: str = Query(..., alias="q")):
+    """
+    Searches all the tv shows by query string.
+
+    :param query: The search query string.
+    :return: A JSON response containing the search results.
+    """
     data = await search_tv_show(query)
     return {"results": data}
 
 
-@app.post("/api/search/movie")
+@app.get(f"{BASE_URI}/search/movie")
 async def __search_movie(query: str = Query(..., alias="q")):
+    """
+    Searches all the movies by query string.
+
+    :param query: The search query string.
+    :return: A JSON response containing the search results.
+    """
     data = await search_movie(query)
     return {"results": data}
 
 
-@app.post("/api/search_by_tvmaze_id/tv_show")
+@app.get(f"{BASE_URI}/singlesearch/tv_show")
 async def __search_tv_show_by_tvmaze_id(tvmaze_id: str = Query(..., alias="id")):
+    """
+    Searches a TV show by its TVmaze ID.
+
+    :param tvmaze_id: The TVmaze ID of the TV show.
+    :return: A JSON response containing the TV show details.
+    """
     data = await search_tv_show_by_tvmaze_id(tvmaze_id)
     return {"results": data}
 
 
-@app.post("/api/search_by_imdb/movie")
-async def __search_movie_by_imdb(imdb: str = Query(..., alias="i")):
-    data = await search_movie_by_imdb(imdb)
+@app.get(f"{BASE_URI}/singlesearch/movie")
+async def __search_movie_by_imdb_id(imdb: str = Query(..., alias="id")):
+    """
+    Searches a movie by its IMDb ID.
+    :param imdb: The IMDb ID of the movie.
+    :return: A JSON response containing the movie details.
+    """
+    data = await search_movie_by_imdb_id(imdb)
     return {"results": data}
-
-
-# ===============================================
-# ============== AUTH ===========================
-# ===============================================
-
-
-@app.get("/api/auth")
-def __get_auth(request: Request):
-    return get_auth(request)
 
 
 # ===============================================
@@ -141,71 +169,68 @@ def __get_auth(request: Request):
 # ===============================================
 
 
-@app.post("/api/tvlist")
+@app.get(f"{BASE_URI}/tvlist")
 async def __get_user_tv_list(request: Request):
     data = get_user_tv_list(request)
     return {"watchlist": data}
 
 
-@app.post("/api/tvlist/{status}")
-async def __get_user_tv_list_by_status(request: Request, status: str = Path(...)):
-    print(f"TV LIST ROUTE HIT with status: {status}")
+@app.get(f"{BASE_URI}/tvlist/status")
+async def __get_user_tv_list_by_status(
+    request: Request, status: str = Query(..., alias="status")
+):
     data = get_user_tv_list_by_status(request, status)
     return {"watchlist": data}
 
 
-@app.post("/api/add/tv_show")
+@app.post(f"{BASE_URI}/tvlist/add")
 async def __add_tv_show(request: Request, data: TVShow):
     add_tv_show(request, data)
-    return {"message": "Add TV Show endpoint hit", "data": data}
+    return {"message": "Add TV List Item added", "data": data}
 
 
-@app.delete("/api/delete/{imdb}/tv_show")
-async def __delete_tv_show(request: Request, imdb: str = Path(...)):
-    delete_tv_show(request, imdb)
-    return {"message": "Delete TV Show endpoint hit", "imdb": imdb}
+@app.delete(f"{BASE_URI}/tvlist/delete")
+async def __delete_tv_show(request: Request, data: DeleteRequest):
+    delete_tv_show(request, data.imdb)
+    return {"message": "Delete TV List Item deleted", "imdb": data.imdb}
 
 
-@app.patch("/api/{imdb}/edit/tv_show/status/{new_status}")
-async def __update_tv_show_status(
-    request: Request, imdb: str = Path(...), new_status: str = Path(...)
-):
-    update_tv_show_status(request, imdb, new_status)
-    return {"message": "Status endpoint hit", "imdb": imdb, "new_status": new_status}
-
-
-# ===============================================
-# ============== TV SHOWS =======================
-# ============== PROGRESS =======================
-# ===============================================
-
-
-@app.patch("/api/{imdb}/edit/tv_show/progress/{action}")
-async def __update_tv_show_progress(
-    request: Request, imdb: str = Path(...), action: str = Path(...)
-):
-    if action == "increment":
-        increment_tv_show_progress(request, imdb)
-    elif action == "decrement":
-        decrement_tv_show_progress(request, imdb)
-    else:
-        raise HTTPException(
-            status_code=400,
-            detail="Invalid action. Must be 'increment' or 'decrement'.",
-        )
-    return {"message": "Progress endpoint hit", "imdb": imdb, "action": action}
-
-
-@app.patch("/api/{imdb}/edit/tv_show/progress/by_index/{index}")
-async def __update_by_index_tv_show_progress(
-    request: Request, imdb: str = Path(...), index: str = Path(...)
-):
-    update_by_index_tv_show_progress(request, imdb, int(index))
+@app.patch(f"{BASE_URI}/tvlist/edit")
+async def __update_tv_show_status(request: Request, data: UpdateStatusRequest):
+    update_tv_show_status(request, data.imdb, data.new_status)
     return {
-        "message": "Progress endpoint hit",
-        "imdb": imdb,
-        "action": "update_by_index",
-        "index": index,
+        "message": "Status endpoint hit",
+        "imdb": data.imdb,
+        "new_status": data.new_status,
+    }
+
+
+# ===============================================
+# ========== TVLIST PROGRESS ====================
+# ===============================================
+
+
+@app.patch(f"{BASE_URI}/tvlist/progress/increment")
+async def __increment_tv_show_progress(request: Request, data: UpdateProgressRequest):
+    increment_tv_show_progress(request, data.imdb)
+    return {"message": "Progress incremented", "imdb": data.imdb}
+
+
+@app.patch(f"{BASE_URI}/tvlist/progress/decrement")
+async def __decrement_tv_show_progress(request: Request, data: UpdateProgressRequest):
+    decrement_tv_show_progress(request, data.imdb)
+    return {"message": "Progress decremented", "imdb": data.imdb}
+
+
+@app.patch(f"{BASE_URI}/tvlist/progress/index")
+async def __update_by_index_tv_show_progress(
+    request: Request, data: UpdateProgressByIndexRequest
+):
+    update_by_index_tv_show_progress(request, data.imdb, data.index)
+    return {
+        "message": "Progress updated by index",
+        "imdb": data.imdb,
+        "index": data.index,
     }
 
 
@@ -214,38 +239,40 @@ async def __update_by_index_tv_show_progress(
 # ===============================================
 
 
-@app.post("/api/movielist")
+@app.post(f"{BASE_URI}/movielist")
 async def __get_user_movie_list(request: Request):
     data = get_user_movie_list(request)
     return {"watchlist": data}
 
 
-@app.post("/api/movielist/{status}")
+@app.post(f"{BASE_URI}/movielist/{{status}}")
 async def __get_user_movie_list_by_status(request: Request, status: str = Path(...)):
     print(f"TV LIST ROUTE HIT with status: {status}")
     data = get_user_movie_list_by_status(request, status)
     return {"watchlist": data}
 
 
-@app.post("/api/add/movie")
-async def __add_movie(request: Request, data: Movie):
-    print(data)
-    add_movie(request, data)
-    return {"message": "Add Movie endpoint hit", "data": data}
+@app.post(f"{BASE_URI}/movielist/add")
+async def __add_movie(request: Request, movie_data: Movie):
+    print(movie_data)
+    add_movie(request, movie_data)
+    return {"message": "Movie Added", "movie_data": movie_data}
 
 
-@app.delete("/api/delete/{imdb}/movie")
-async def __delete_movie(request: Request, imdb: str = Path(...)):
-    delete_movie(request, imdb)
-    return {"message": "Delete Movie endpoint hit", "imdb": imdb}
+@app.delete(f"{BASE_URI}/movielist/delete")
+async def __delete_movie(request: Request, data: DeleteRequest):
+    delete_movie(request, data.imdb)
+    return {"message": "Delete Movie endpoint hit", "imdb": data.imdb}
 
 
-@app.patch("/api/{imdb}/edit/movie/status/{new_status}")
-async def __update_movie_status(
-    request: Request, imdb: str = Path(...), new_status: str = Path(...)
-):
-    update_movie_status(request, imdb, new_status)
-    return {"message": "Status endpoint hit", "imdb": imdb, "new_status": new_status}
+@app.patch(f"{BASE_URI}/movielist/edit")
+async def __update_movie_status(request: Request, data: UpdateStatusRequest):
+    update_movie_status(request, data.imdb, data.new_status)
+    return {
+        "message": "Status endpoint hit",
+        "imdb": data.imdb,
+        "new_status": data.new_status,
+    }
 
 
 if __name__ == "__main__":

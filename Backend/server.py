@@ -3,24 +3,26 @@ import uvicorn
 from fastapi import Cookie, FastAPI, HTTPException, Query, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi import Path
-from auth_dal import get_auth
-from helpers import Helpers
-from models import Movie, TVShow, User
-from movielist_dal import (
+import os
+
+from Backend.modules.auth_dal import get_auth
+from Backend.modules.helpers import Helpers
+from Backend.modules.models import Movie, TVShow, User
+from Backend.modules.movielist_dal import (
     add_movie,
     delete_movie,
     get_user_movie_list,
     get_user_movie_list_by_status,
     update_movie_status,
 )
-from search_dal import (
+from Backend.modules.search_dal import (
     search_movie,
     search_movie_by_imdb,
     search_tv_show,
     search_tv_show_by_tvmaze_id,
 )
-from sessions_dal import add_session, delete_session
-from tvlist_dal import (
+from Backend.modules.sessions_dal import add_session, delete_session
+from Backend.modules.tvlist_dal import (
     add_tv_show,
     decrement_tv_show_progress,
     delete_tv_show,
@@ -30,15 +32,14 @@ from tvlist_dal import (
     update_by_index_tv_show_progress,
     update_tv_show_status,
 )
-from user_dal import add_user, delete_user
-import os
+from Backend.modules.user_dal import add_user, delete_user
 
 app = FastAPI()
 
 # Enable CORS for local development
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # or ["http://localhost:your-client-port"]
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -82,10 +83,10 @@ async def __login(data: User, response: Response, request: Request):
     response.set_cookie(
         key="session_token",
         value=signed_session,
-        httponly=True,  # Prevents JS access
-        secure=True if not DEV_MODE else False,  # Only sent over HTTPS
-        samesite="lax",  # Good default; prevents CSRF in most cases
-        max_age=60 * 60 * 24,  # 1 day, Gets restored when browser comes back anyways
+        httponly=True,
+        secure=True if not DEV_MODE else False,
+        samesite="lax",
+        max_age=60 * 60 * 24,
     )
 
     return {"message": "User logged in", "data": data}

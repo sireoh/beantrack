@@ -2,7 +2,7 @@ import { OMDBResults, SearchResult } from "@/models";
 import { useEffect, useState } from "react";
 import { searchMovies as apiSearchMovies } from "@/api/api";
 
-export function searchMovies(query: string): SearchResult<OMDBResults> {
+export function useSearchMovies(query: string): SearchResult<OMDBResults> {
   const [results, setResults] = useState<OMDBResults>({
     Search: [],
     totalResults: "0",
@@ -30,8 +30,8 @@ export function searchMovies(query: string): SearchResult<OMDBResults> {
           )
         );
         setError(null);
-      } catch (err: any) {
-        setError(err.message || "Unknown error");
+      } catch (err: unknown) {
+        setError(err instanceof Error ? err.message : "Unknown error");
         setResults({
           Search: [],
           totalResults: "0",

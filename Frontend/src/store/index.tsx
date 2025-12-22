@@ -1,4 +1,4 @@
-import { create, StoreApi } from "zustand";
+import { create } from "zustand";
 import { createNavbarSlice, NavbarState } from "./slices/navbar-slice";
 import { createSearchSlice, SearchState } from "./slices/search-slice";
 import {

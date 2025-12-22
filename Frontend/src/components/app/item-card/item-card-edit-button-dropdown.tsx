@@ -20,6 +20,7 @@ import {
 import { Fragment } from "react";
 import { ItemCardDataModel } from "./item-card";
 import { useStore } from "@/store";
+import { deleteDataModel } from "@/store/slices/dialog-slice";
 
 const ItemCardEditButtonDropdown = ({
   item,
@@ -28,8 +29,7 @@ const ItemCardEditButtonDropdown = ({
   item: ItemCardDataModel;
   type: string;
 }) => {
-  const dialog = useStore((state) => state.dialog);
-  dialog.deleteData = { item, type };
+  const { toggleDialog, setDeleteData } = useStore((state) => state.dialog);
 
   return (
     <DropdownMenu>
@@ -38,7 +38,7 @@ const ItemCardEditButtonDropdown = ({
           Added
         </Button>
       </DropdownMenuTrigger>
-      <ItemCardEditButtonDropdownContent item={item} type={type} />
+      <ItemCardEditButtonDropdownContent item={item} type={type} toggleDialog={toggleDialog} setDeleteData={setDeleteData} />
     </DropdownMenu>
   );
 };
@@ -46,11 +46,14 @@ const ItemCardEditButtonDropdown = ({
 function ItemCardEditButtonDropdownContent({
   item,
   type,
+  toggleDialog,
+  setDeleteData,
 }: {
   item: ItemCardDataModel;
   type: string;
+  toggleDialog: () => void;
+  setDeleteData: (data: deleteDataModel | undefined) => void;
 }) {
-  const dialog = useStore((state) => state.dialog);
 
   const actions = [
     {
@@ -76,7 +79,8 @@ function ItemCardEditButtonDropdownContent({
                 action,
                 type,
                 item,
-                dialog.toggleDialog
+                toggleDialog,
+                setDeleteData
               )
             }
             className="cursor-pointer">
@@ -92,7 +96,8 @@ function ItemCardEditButtonDropdownContent({
                   action,
                   type,
                   item,
-                  dialog.toggleDialog
+                  toggleDialog,
+                  setDeleteData
                 )
               }
               className="cursor-pointer">

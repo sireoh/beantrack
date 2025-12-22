@@ -22,7 +22,7 @@ interface WatchlistStatusTabsScreenProps {
 }
 
 function createTabArray(type: string): TabArrayType {
-  var _allTabTitle = "";
+  let _allTabTitle = "";
 
   if (type == "tv") {
     _allTabTitle = "All TV Shows";

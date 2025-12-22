@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { SearchResult, TVMazeResults } from "@/models";
 import { searchTVShows } from "@/api/api";
 
-export function searchTVShow(query: string): SearchResult<TVMazeResults> {
+export function useSearchTVShow(query: string): SearchResult<TVMazeResults> {
   const [results, setResults] = useState<TVMazeResults>([]);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -16,8 +16,8 @@ export function searchTVShow(query: string): SearchResult<TVMazeResults> {
       try {
         const data = await searchTVShows(query);
         setResults(data.results || []);
-      } catch (err: any) {
-        setError(err.message || "Unknown error");
+      } catch (err: unknown) {
+        setError(err instanceof Error ? err.message : "Unknown error");
         setResults([]);
       } finally {
         setLoading(false);

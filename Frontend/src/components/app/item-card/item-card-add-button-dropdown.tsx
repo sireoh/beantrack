@@ -56,7 +56,11 @@ function ItemCardAddButtonDropdownContent({
   ];
 
   const handleSelect = async (action: string) => {
-    search.currentType == "tv" ? _t(action) : _m(action);
+    if (search.currentType === "tv") {
+      _t(action);
+    } else {
+      _m(action);
+    }
   };
 
   return (

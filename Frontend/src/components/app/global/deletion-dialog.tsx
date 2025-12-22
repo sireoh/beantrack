@@ -30,9 +30,11 @@ export function DeletionDialog() {
             e.preventDefault();
             if (deleteData) {
               // FRONTEND
-              deleteData.type == "tv"
-                ? deleteTVListItem(deleteData.item.imdb)
-                : deleteMovieListItem(deleteData.item.imdb);
+              if (deleteData.type === "tv") {
+                deleteTVListItem(deleteData.item.imdb);
+              } else {
+                deleteMovieListItem(deleteData.item.imdb);
+              }
 
               // BACKEND
               handleDelete(deleteData);

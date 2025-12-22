@@ -20,7 +20,7 @@ const WatchlistTable = ({
   );
   useEffect(() => {
     fetchWatchlist(type, updateTVList, updateMoviesList, status);
-  }, []);
+  }, [status, type, updateMoviesList, updateTVList]);
   const isMobile = useIsMobile(ScreenSize.TABLET);
   if (isMobile === null) return null;
 

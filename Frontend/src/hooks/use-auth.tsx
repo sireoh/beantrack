@@ -28,7 +28,7 @@ export function useAuth() {
     }
 
     checkAuth();
-  }, []);
+  }, [setLoading, setUser]);
 
   return { user, loading };
 }

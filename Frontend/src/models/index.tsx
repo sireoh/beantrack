@@ -69,3 +69,33 @@ export type TVMazeEpisodeModel = {
   number: number;
   name: string;
 };
+
+// API Request Types
+export interface AddMovieRequest {
+  imdb: string;
+  status: string;
+}
+
+export interface UpdateMovieStatusRequest {
+  imdb: string;
+  status: string;
+}
+
+export interface AddTVShowRequest {
+  tvmaze_id: number;
+  status: string;
+}
+
+export interface UpdateStatusRequest {
+  imdb: string;
+  status: string;
+}
+
+export interface UpdateProgressRequest {
+  imdb: string;
+}
+
+export interface UpdateProgressByIndexRequest {
+  imdb: string;
+  index: number;
+}

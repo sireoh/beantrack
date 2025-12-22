@@ -1,4 +1,12 @@
 import api from './axiosInstance';
+import {
+	AddMovieRequest,
+	UpdateMovieStatusRequest,
+	AddTVShowRequest,
+	UpdateStatusRequest,
+	UpdateProgressRequest,
+	UpdateProgressByIndexRequest,
+} from '../models';
 
 // Auth endpoints
 export const login = async (data: { username: string; password: string }) => {
@@ -23,7 +31,7 @@ export const getUserMovieList = async (status?: string) => {
 	return response.data;
 };
 
-export const addMovie = async (data: any) => {
+export const addMovie = async (data: AddMovieRequest) => {
 	const response = await api.post('/movielist/add', data);
 	return response.data;
 };
@@ -33,7 +41,7 @@ export const deleteMovie = async (imdb: string) => {
 	return response.data;
 };
 
-export const updateMovieStatus = async (data: any) => {
+export const updateMovieStatus = async (data: UpdateMovieStatusRequest) => {
 	const response = await api.patch('/movielist/edit', data);
 	return response.data;
 };
@@ -45,7 +53,7 @@ export const getUserTVList = async (status?: string) => {
 	return response.data;
 };
 
-export const addTVShow = async (data: any) => {
+export const addTVShow = async (data: AddTVShowRequest) => {
 	const response = await api.post('/tvlist/add', data);
 	return response.data;
 };
@@ -55,22 +63,22 @@ export const deleteTVShow = async (imdb: string) => {
 	return response.data;
 };
 
-export const updateTVShowStatus = async (data: any) => {
+export const updateTVShowStatus = async (data: UpdateStatusRequest) => {
 	const response = await api.patch('/tvlist/edit', data);
 	return response.data;
 };
 
-export const incrementTVProgress = async (data: any) => {
+export const incrementTVProgress = async (data: UpdateProgressRequest) => {
 	const response = await api.patch('/tvlist/progress/increment', data);
 	return response.data;
 };
 
-export const decrementTVProgress = async (data: any) => {
+export const decrementTVProgress = async (data: UpdateProgressRequest) => {
 	const response = await api.patch('/tvlist/progress/decrement', data);
 	return response.data;
 };
 
-export const updateTVProgressByIndex = async (data: any) => {
+export const updateTVProgressByIndex = async (data: UpdateProgressByIndexRequest) => {
 	const response = await api.patch('/tvlist/progress/index', data);
 	return response.data;
 };

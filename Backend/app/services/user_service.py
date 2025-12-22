@@ -5,8 +5,8 @@ User data access layer.
 import bcrypt
 import uuid
 from sqlalchemy.orm import sessionmaker
-from .database import engine
-from .models import User, TVList, MovieList
+from app.core.database import engine
+from app.db.models import DBUser, DBTVList, DBMovieList
 from fastapi import HTTPException, status
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
@@ -28,7 +28,7 @@ def add_user(_u):
         )  # Wait, userId is for the list? No, TVList has userId ref User.userId, but user not created yet.
         # Need to create user first, get userId, then create lists.
 
-        user = User(
+        user = DBUser(
             userId=str(uuid.uuid4()),
             username=_u.username,
             password=hashed_password,

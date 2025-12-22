@@ -3,9 +3,15 @@ TV list data access layer.
 """
 
 from sqlalchemy.orm import sessionmaker
-from .database import engine
-from .helpers import Helpers
-from .models import TVShow as TVShowModel, TVList, Progress, EpisodeList, Episode
+from app.core.database import engine
+from app.utils.helpers import Helpers
+from app.db.models import (
+    DBTVShow as TVShowModel,
+    DBTVList,
+    DBProgress,
+    DBEpisodeList,
+    DBEpisode,
+)
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 

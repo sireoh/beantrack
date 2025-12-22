@@ -3,9 +3,9 @@ Movie list data access layer.
 """
 
 from sqlalchemy.orm import sessionmaker
-from ..core.database import engine
-from ..utils.helpers import Helpers
-from ..db.models import Movie as MovieModel, MovieList, Progress
+from app.core.database import engine
+from app.utils.helpers import Helpers
+from app.db.models import DBMovie as MovieModel, DBMovieList, DBProgress
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
@@ -193,7 +193,7 @@ def update_movie_status(user_id: str, imdb: str, new_status: str):
                 .first()
             )
             if progress:
-                progress.status = new_status # type: ignore
+                progress.status = new_status  # type: ignore
                 session.commit()
 
     print(

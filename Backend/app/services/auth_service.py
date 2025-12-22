@@ -4,8 +4,8 @@ Authentication data access layer.
 
 from fastapi import HTTPException
 from sqlalchemy.orm import sessionmaker
-from .database import engine
-from .models import User
+from app.core.database import engine
+from app.db.models import DBUser
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 

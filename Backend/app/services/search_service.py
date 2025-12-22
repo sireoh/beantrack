@@ -4,7 +4,7 @@ Search data access layer for external APIs.
 
 from fastapi import Request
 import httpx
-from ..core.config import settings
+from app.core.config import settings
 
 OMDB_API_KEY = settings.omdb_api_key
 

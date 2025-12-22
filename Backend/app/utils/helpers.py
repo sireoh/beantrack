@@ -1,10 +1,10 @@
 from fastapi import Request
-from ..core.database import engine
+from app.core.database import engine
 from jose import JWTError, jwt
 from fastapi import HTTPException, status
 from sqlalchemy.orm import sessionmaker
-from ..db.models import TVList, MovieList
-from ..core.config import settings
+from app.db.models import DBTVList, DBMovieList
+from app.core.config import settings
 
 SECRET_KEY = settings.secret_key
 DEV_MODE = settings.dev_mode
@@ -27,7 +27,7 @@ class Helpers:
         :raises HTTPException: If not found.
         """
         with SessionLocal() as session:
-            tvlist = session.query(TVList).filter(TVList.userId == user_id).first()
+            tvlist = session.query(DBTVList).filter(DBTVList.userId == user_id).first()
             if not tvlist:
                 raise HTTPException(status_code=404, detail="TV list not found")
             return str(tvlist.tvListId)
@@ -43,7 +43,7 @@ class Helpers:
         """
         with SessionLocal() as session:
             movielist = (
-                session.query(MovieList).filter(MovieList.userId == user_id).first()
+                session.query(DBMovieList).filter(DBMovieList.userId == user_id).first()
             )
             if not movielist:
                 raise HTTPException(status_code=404, detail="Movie list not found")

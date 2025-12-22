@@ -1,6 +1,6 @@
 -- Create tables for BeanTrack app
 
--- Users table
+-- Level 0: Independent tables (no foreign keys)
 CREATE TABLE users
 (
 	userId UUID PRIMARY KEY,
@@ -10,7 +10,19 @@ CREATE TABLE users
 	avatar VARCHAR
 );
 
--- Sessions table
+CREATE TABLE progress
+(
+	progressId UUID PRIMARY KEY,
+	status VARCHAR,
+	currentEpisodeIndex INTEGER DEFAULT 0
+);
+
+CREATE TABLE episodelist
+(
+	episodeListId UUID PRIMARY KEY
+);
+
+-- Level 1: Tables depending on Level 0
 CREATE TABLE sessions
 (
 	sessionId UUID PRIMARY KEY,
@@ -23,28 +35,19 @@ CREATE TABLE sessions
 	createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Progress table
-CREATE TABLE progress
-(
-	progressId UUID PRIMARY KEY,
-	status VARCHAR,
-	currentEpisodeIndex INTEGER DEFAULT 0
-);
-
--- TVList table
 CREATE TABLE tvlist
 (
 	tvListId UUID PRIMARY KEY,
 	userId UUID REFERENCES users(userId)
 );
 
--- EpisodeList table
-CREATE TABLE episodelist
+CREATE TABLE movielist
 (
-	episodeListId UUID PRIMARY KEY
+	movieListId UUID PRIMARY KEY,
+	userId UUID REFERENCES users(userId)
 );
 
--- TVShow table
+-- Level 2: Tables depending on Level 0 and/or Level 1
 CREATE TABLE tvshow
 (
 	imdb VARCHAR PRIMARY KEY,
@@ -56,23 +59,6 @@ CREATE TABLE tvshow
 	progressId UUID REFERENCES progress(progressId)
 );
 
--- Episode table
-CREATE TABLE episode
-(
-	episodeId VARCHAR PRIMARY KEY,
-	episodeListId UUID REFERENCES episodelist(episodeListId),
-	name VARCHAR,
-	code VARCHAR
-);
-
--- MovieList table
-CREATE TABLE movielist
-(
-	movieListId UUID PRIMARY KEY,
-	userId UUID REFERENCES users(userId)
-);
-
--- Movie table
 CREATE TABLE movie
 (
 	imdb VARCHAR PRIMARY KEY,
@@ -81,4 +67,12 @@ CREATE TABLE movie
 	image VARCHAR,
 	score FLOAT,
 	progressId UUID REFERENCES progress(progressId)
+);
+
+CREATE TABLE episode
+(
+	episodeId VARCHAR PRIMARY KEY,
+	episodeListId UUID REFERENCES episodelist(episodeListId),
+	name VARCHAR,
+	code VARCHAR
 );

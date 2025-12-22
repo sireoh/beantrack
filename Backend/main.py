@@ -6,7 +6,12 @@ from app.core.config import settings
 from app.api.router import router
 
 
-app = FastAPI()
+app = FastAPI(
+    title="BeanTrack API",
+    description="API for managing movie and TV show watchlists",
+    version="1.0.0",
+    docs_url="/docs",
+)
 
 # Enable CORS for local development
 app.add_middleware(
@@ -21,4 +26,4 @@ app.add_middleware(
 app.include_router(router)
 
 if __name__ == "__main__":
-    uvicorn.run("main:app", host="0.0.0.0", port=int(settings.port), reload=True)
+    uvicorn.run("main:app", host="127.0.0.1", port=int(settings.port), reload=True)

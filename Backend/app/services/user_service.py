@@ -23,24 +23,24 @@ def add_user(_u):
 
     with SessionLocal() as session:
         user = DBUser(
-            userid=str(uuid.uuid4()),
+            user_id=str(uuid.uuid4()),
             username=_u.username,
             password=hashed_password,
-            usertype="user",
+            user_type="user",
             avatar=None,
         )
         session.add(user)
-        session.flush()  # Get userid
+        session.flush()  # Get user_id
 
-        tvlist = DBTVList(tvlistid=str(uuid.uuid4()), userid=user.userid)
-        movielist = DBMovieList(movielistid=str(uuid.uuid4()), userid=user.userid)
+        tvlist = DBTVList(tv_list_id=str(uuid.uuid4()), user_id=user.user_id)
+        movielist = DBMovieList(movie_list_id=str(uuid.uuid4()), user_id=user.user_id)
         session.add(tvlist)
         session.add(movielist)
 
         session.commit()
 
-        # Store userid before session closes
-        user_id = user.userid
+        # Store user_id before session closes
+        user_id = user.user_id
 
     print(f"[added user] username: {_u.username}, userId: {user_id}")
 
@@ -67,13 +67,17 @@ def delete_user(data):
             )
 
         # Delete associated lists and data
-        tvlist = session.query(DBTVList).filter(DBTVList.userid == user.userid).first()
+        tvlist = (
+            session.query(DBTVList).filter(DBTVList.user_id == user.user_id).first()
+        )
         if tvlist:
             # Delete TVShows, etc. But for simplicity, cascade delete if set up, else manual
             session.delete(tvlist)
 
         movielist = (
-            session.query(DBMovieList).filter(DBMovieList.userid == user.userid).first()
+            session.query(DBMovieList)
+            .filter(DBMovieList.user_id == user.user_id)
+            .first()
         )
         if movielist:
             session.delete(movielist)

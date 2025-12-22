@@ -1,0 +1,16 @@
+meta {
+  name: Get User TV List Route
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{base_uri}}/tvlist
+  body: json
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

@@ -1,0 +1,16 @@
+meta {
+  name: Logout Route
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{base_uri}}/logout
+  body: json
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

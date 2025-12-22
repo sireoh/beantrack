@@ -1,0 +1,20 @@
+meta {
+  name: Get User TV List By Status Route
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{base_uri}}/tvlist/status?status=completed
+  body: json
+  auth: inherit
+}
+
+params:query {
+  status: completed
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

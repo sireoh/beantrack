@@ -2,15 +2,21 @@
 TV list data access layer.
 """
 
+from fastapi import HTTPException
+import httpx
+from sqlalchemy import text
 from sqlalchemy.orm import sessionmaker
+import uuid
 from app.core.database import engine
-from app.utils.helpers import Helpers
 from app.db.models import (
+    AddTVShowRequest,
     DBTVShow as TVShowModel,
     DBTVList,
     DBProgress,
     DBEpisode,
     DBEpisodeList,
+    TVShowData,
+    EpisodeData,
 )
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
@@ -30,45 +36,37 @@ def get_user_tv_list(user_id: str):
     print(f"User ID from JWT: {user_id}")
 
     with SessionLocal() as session:
-        tvlist = session.query(DBTVList).filter(DBTVList.userid == user_id).first()
+        tvlist = session.query(DBTVList).filter(DBTVList.user_id == user_id).first()
         if not tvlist:
             print("No tvlist found for user")
             return []
 
-        tvshows = (
-            session.query(TVShowModel)
-            .filter(TVShowModel.tvlistid == tvlist.tvlistid)
+        # Raw SQL to flatten data with JSON aggregation
+        sql = text(
+            """
+            SELECT tv.imdb, tv.title, tv.image, tv.score, p.status, p.current_episode_index AS "currentEpisodeIndex",
+                   COALESCE(json_agg(
+                       json_build_object('name', ep.name, 'code', CONCAT('S', LPAD(ep.season::text, 2, '0'), 'E', LPAD(ep.number::text, 2, '0')))
+                   ) FILTER (WHERE ep.episode_id IS NOT NULL), '[]'::json) AS episodes
+            FROM tvshow tv
+            JOIN progress p ON tv.progress_id = p.progress_id
+            LEFT JOIN episode ep ON tv.episode_list_id = ep.episode_list_id
+            WHERE tv.tv_list_id = :tv_list_id
+            AND tv.title IS NOT NULL
+            AND tv.image IS NOT NULL
+            AND tv.score IS NOT NULL
+            GROUP BY tv.imdb, tv.title, tv.image, tv.score, p.status, p.current_episode_index
+            ORDER BY tv.title ASC
+        """
+        )
+
+        result = (
+            session.execute(sql, {"tv_list_id": str(tvlist.tv_list_id)})
+            .mappings()
             .all()
         )
 
-        data = []
-        for tv in tvshows:
-            progress = (
-                session.query(DBProgress)
-                .filter(DBProgress.progressid == tv.progressid)
-                .first()
-            )
-            episodes = []
-            if tv.episodelistid:
-                eps = (
-                    session.query(DBEpisode)
-                    .filter(DBEpisode.episodelistid == tv.episodelistid)
-                    .all()
-                )
-                episodes = [{"code": e.code, "name": e.name} for e in eps]
-            item = {
-                "status": progress.status if progress else "unknown",
-                "image": tv.image,
-                "title": tv.title,
-                "imdb": tv.imdb,
-                "score": tv.score,
-                "currentEpisodeIndex": progress.currentEpisodeIndex if progress else 0,
-                "episodes": episodes,
-            }
-            data.append(item)
-
-        sorted_data = sorted(data, key=lambda x: x.get("title", "").lower())
-        return sorted_data
+        return result
 
 
 def get_user_tv_list_by_status(user_id: str, status: str):
@@ -82,16 +80,16 @@ def get_user_tv_list_by_status(user_id: str, status: str):
     print(f"User ID from JWT: {user_id}")
 
     with SessionLocal() as session:
-        tvlist = session.query(DBTVList).filter(DBTVList.userid == user_id).first()
+        tvlist = session.query(DBTVList).filter(DBTVList.user_id == user_id).first()
         if not tvlist:
             print("No tvlist found for user")
             return []
 
         tvshows = (
             session.query(TVShowModel)
-            .join(DBProgress, TVShowModel.progressid == DBProgress.progressid)
+            .join(DBProgress, TVShowModel.progress_id == DBProgress.progress_id)
             .filter(
-                TVShowModel.tvlistid == tvlist.tvlistid, DBProgress.status == status
+                TVShowModel.tv_list_id == tvlist.tv_list_id, DBProgress.status == status
             )
             .all()
         )
@@ -100,24 +98,29 @@ def get_user_tv_list_by_status(user_id: str, status: str):
         for tv in tvshows:
             progress = (
                 session.query(DBProgress)
-                .filter(DBProgress.progressid == tv.progressid)
+                .filter(DBProgress.progress_id == tv.progress_id)
                 .first()
             )
             episodes = []
-            if tv.episodelistid:
+            if tv.episode_list_id:
                 eps = (
                     session.query(DBEpisode)
-                    .filter(DBEpisode.episodelistid == tv.episodelistid)
+                    .filter(DBEpisode.episode_list_id == tv.episode_list_id)
                     .all()
                 )
-                episodes = [{"code": e.code, "name": e.name} for e in eps]
+                episodes = [
+                    {"code": f"S{e.season:02d}E{e.number:02d}", "name": e.name}
+                    for e in eps
+                ]
             item = {
                 "status": progress.status if progress else "unknown",
                 "image": tv.image,
                 "title": tv.title,
                 "imdb": tv.imdb,
                 "score": tv.score,
-                "currentEpisodeIndex": progress.currentEpisodeIndex if progress else 0,
+                "currentEpisodeIndex": (
+                    progress.current_episode_index if progress else 0
+                ),
                 "episodes": episodes,
             }
             data.append(item)
@@ -131,85 +134,101 @@ def get_user_tv_list_by_status(user_id: str, status: str):
 # ===============================================
 
 
-def add_tv_show(user_id: str, tv_show):
+async def add_tv_show(user_id: str, req: AddTVShowRequest):
     """
     Add a TV show to the user's list.
 
     :param user_id: The user ID.
-    :param tv_show: The TV show data.
+    :param tvmaze_id: The TVMaze ID.
     """
-    tvlist_id = Helpers.get_current_tvlist_id(user_id)
-
     with SessionLocal() as session:
+        # Get the user's TV list ID
+        tvlist = session.query(DBTVList).filter(DBTVList.user_id == user_id).first()
+        if not tvlist:
+            raise HTTPException(status_code=404, detail="TV list not found")
+        tvlist_id = str(tvlist.tv_list_id)
+
+        # Fetch show details from TVMaze
+        _tsd: TVShowData = await get_tv_show_data(req.tvmaze_id)
+
         # Create DBProgress
         progress = DBProgress(
-            status=tv_show.status, currentEpisodeIndex=tv_show.currentEpisodeIndex
+            progress_id=str(uuid.uuid4()),
+            status=req.status,
+            current_episode_index=0,
         )
         session.add(progress)
         session.flush()
 
         # Create DBEpisodeList
-        episode_list = DBEpisodeList()
+        episode_list = DBEpisodeList(episode_list_id=str(uuid.uuid4()))
         session.add(episode_list)
         session.flush()
 
         # Add Episodes
-        for ep in tv_show.episodes:
-            episode = DBEpisode(
-                episodeid=f"{tv_show.imdb}_{ep.code}",
-                episodelistid=episode_list.episodelistid,
+        episodes = [
+            DBEpisode(
+                episode_id=ep.episode_id,
+                episode_list_id=episode_list.episode_list_id,
                 name=ep.name,
-                code=ep.code,
+                season=ep.season,
+                number=ep.number,
             )
-            session.add(episode)
+            for ep in _tsd.episodes
+        ]
+        session.add_all(episodes)
 
         # Add TVShow
         tv = TVShowModel(
-            imdb=tv_show.imdb,
-            tvlistid=tvlist_id,
-            title=tv_show.title,
-            image=tv_show.image,
-            score=tv_show.score,
-            episodelistid=episode_list.episodelistid,
-            progressid=progress.progressid,
+            imdb=_tsd.imdb,
+            tv_list_id=tvlist_id,
+            title=_tsd.title,
+            image=_tsd.image,
+            score=_tsd.score,
+            episode_list_id=episode_list.episode_list_id,
+            progress_id=progress.progress_id,
         )
         session.add(tv)
 
         session.commit()
 
-    print(f"[added tv show] user_id: {user_id}, title: {tv_show.title}")
+    print(f"[added tv show] user_id: {user_id}, title: {_tsd.title}")
 
 
-def delete_tv_show(user_id: str, imdb: str):
+def delete_tv_show(user_id: str, id: str):
     """
-    Delete a TV show from the user's list by IMDb ID.
+    Delete a TV show from the user's list by ID.
 
     :param user_id: The user ID.
-    :param imdb: The IMDb ID.
+    :param id: The ID.
     """
-    tvlist_id = Helpers.get_current_tvlist_id(user_id)
-
     with SessionLocal() as session:
+        # Get the user's TV list ID
+        tvlist = session.query(DBTVList).filter(DBTVList.user_id == user_id).first()
+        if not tvlist:
+            raise HTTPException(status_code=404, detail="TV list not found")
+        tvlist_id = str(tvlist.tv_list_id)
+
         tvshow = (
             session.query(TVShowModel)
-            .filter(TVShowModel.imdb == imdb, TVShowModel.tvlistid == tvlist_id)
+            .filter(TVShowModel.id == id, TVShowModel.tv_list_id == tvlist_id)
             .first()
         )
         if tvshow:
             # Delete related
             session.query(DBEpisode).filter(
-                DBEpisode.episodelistid == tvshow.episodelistid
+                DBEpisode.episode_list_id == tvshow.episode_list_id
             ).delete()
             session.query(DBEpisodeList).filter(
-                DBEpisodeList.episodelistid == tvshow.episodelistid
+                DBEpisodeList.episode_list_id == tvshow.episode_list_id
             ).delete()
             session.query(DBProgress).filter(
-                DBProgress.progressId == tvshow.progressId
+                DBProgress.progress_id == tvshow.progress_id
             ).delete()
             session.delete(tvshow)
             session.commit()
 
-    print(f"[deleted show] user_id: {user_id}, imdb: {imdb}")
+    print(f"[deleted show] user_id: {user_id}, id: {id}")
 
 
 # ===============================================
@@ -225,18 +244,22 @@ def update_tv_show_status(user_id: str, imdb: str, new_status: str):
     :param imdb: The IMDb ID.
     :param new_status: The new status.
     """
-    tvlist_id = Helpers.get_current_tvlist_id(user_id)
-
     with SessionLocal() as session:
+        # Get the user's TV list ID
+        tvlist = session.query(DBTVList).filter(DBTVList.user_id == user_id).first()
+        if not tvlist:
+            raise HTTPException(status_code=404, detail="TV list not found")
+        tvlist_id = str(tvlist.tv_list_id)
+
         tvshow = (
             session.query(TVShowModel)
-            .filter(TVShowModel.imdb == imdb, TVShowModel.tvlistid == tvlist_id)
+            .filter(TVShowModel.imdb == imdb, TVShowModel.tv_list_id == tvlist_id)
             .first()
         )
         if tvshow:
             progress = (
                 session.query(DBProgress)
-                .filter(DBProgress.progressid == tvshow.progressid)
+                .filter(DBProgress.progress_id == tvshow.progress_id)
                 .first()
             )
             if progress:
@@ -262,22 +285,26 @@ def decrement_tv_show_progress(user_id: str, imdb: str):
     :param imdb: The IMDB ID of the TV show.
     :return: None
     """
-    tvlist_id = Helpers.get_current_tvlist_id(user_id)
-
     with SessionLocal() as session:
+        # Get the user's TV list ID
+        tvlist = session.query(DBTVList).filter(DBTVList.user_id == user_id).first()
+        if not tvlist:
+            raise HTTPException(status_code=404, detail="TV list not found")
+        tvlist_id = str(tvlist.tv_list_id)
+
         tvshow = (
             session.query(TVShowModel)
-            .filter(TVShowModel.imdb == imdb, TVShowModel.tvlistid == tvlist_id)
+            .filter(TVShowModel.imdb == imdb, TVShowModel.tv_list_id == tvlist_id)
             .first()
         )
         if tvshow:
             progress = (
                 session.query(DBProgress)
-                .filter(DBProgress.progressid == tvshow.progressid)
+                .filter(DBProgress.progress_id == tvshow.progress_id)
                 .first()
             )
-            if progress and progress.currentEpisodeIndex > 0:
-                progress.currentEpisodeIndex -= 1
+            if progress and progress.current_episode_index > 0:
+                progress.current_episode_index -= 1
                 session.commit()
                 print(f"[decremented progress] imdb: {imdb}")
             else:
@@ -294,27 +321,31 @@ def increment_tv_show_progress(user_id: str, imdb: str):
     :param imdb: The IMDB ID of the TV show.
     :return: None
     """
-    tvlist_id = Helpers.get_current_tvlist_id(user_id)
-
     with SessionLocal() as session:
+        # Get the user's TV list ID
+        tvlist = session.query(DBTVList).filter(DBTVList.user_id == user_id).first()
+        if not tvlist:
+            raise HTTPException(status_code=404, detail="TV list not found")
+        tvlist_id = str(tvlist.tv_list_id)
+
         tvshow = (
             session.query(TVShowModel)
-            .filter(TVShowModel.imdb == imdb, TVShowModel.tvlistid == tvlist_id)
+            .filter(TVShowModel.imdb == imdb, TVShowModel.tv_list_id == tvlist_id)
             .first()
         )
         if tvshow:
             progress = (
                 session.query(DBProgress)
-                .filter(DBProgress.progressid == tvshow.progressid)
+                .filter(DBProgress.progress_id == tvshow.progress_id)
                 .first()
             )
             episodes_count = (
                 session.query(DBEpisode)
-                .filter(DBEpisode.episodelistid == tvshow.episodelistid)
+                .filter(DBEpisode.episode_list_id == tvshow.episode_list_id)
                 .count()
             )
-            if progress and progress.currentEpisodeIndex < episodes_count - 1:
-                progress.currentEpisodeIndex += 1
+            if progress and progress.current_episode_index < episodes_count - 1:
+                progress.current_episode_index += 1
                 session.commit()
                 print(f"[incremented progress] imdb: {imdb}")
             else:
@@ -334,23 +365,79 @@ def update_by_index_tv_show_progress(user_id: str, imdb: str, index: int):
     :param index: The episode index to set.
     :return: None
     """
-    tvlist_id = Helpers.get_current_tvlist_id(user_id)
-
     with SessionLocal() as session:
+        # Get the user's TV list ID
+        tvlist = session.query(DBTVList).filter(DBTVList.user_id == user_id).first()
+        if not tvlist:
+            raise HTTPException(status_code=404, detail="TV list not found")
+        tvlist_id = str(tvlist.tv_list_id)
+
         tvshow = (
             session.query(TVShowModel)
-            .filter(TVShowModel.imdb == imdb, TVShowModel.tvlistid == tvlist_id)
+            .filter(TVShowModel.imdb == imdb, TVShowModel.tv_list_id == tvlist_id)
             .first()
         )
         if tvshow:
             progress = (
                 session.query(DBProgress)
-                .filter(DBProgress.progressid == tvshow.progressid)
+                .filter(DBProgress.progress_id == tvshow.progress_id)
                 .first()
             )
             if progress:
-                progress.currentEpisodeIndex = index
+                progress.current_episode_index = index
                 session.commit()
                 print(f"[update by index progress] imdb: {imdb}, set to: {index}")
         else:
             print(f"[update by index progress] imdb: {imdb} not found")
+
+
+# ===============================================
+# =========== FETCH FULL DATA HELPERS ===========
+# ===============================================
+async def get_tv_show_data(tvmaze_id: int) -> TVShowData:
+    """
+    Get full show details AND all episodes in a single API call.
+
+    :param tvmaze_id: The TVMaze ID (e.g., "139")
+    :return: TVShowData object containing show metadata and episodes.
+    """
+    async with httpx.AsyncClient() as client:
+        try:
+            # We call the main show endpoint and tell TVMaze to "embed" the episodes
+            url = f"https://api.tvmaze.com/shows/{tvmaze_id}?embed=episodes"
+            res = await client.get(url)
+            res.raise_for_status()  # Check for 404s or 500s
+
+            data = res.json()
+
+            # Extract episodes from the special '_embedded' key
+            raw_episodes = data.get("_embedded", {}).get("episodes", [])
+
+            episodes = [
+                EpisodeData(
+                    episode_id=f"{data.get("name")}_{ep.get("season")}_{ep.get("number")}",
+                    name=ep.get("name"),
+                    season=ep.get("season"),
+                    number=ep.get("number"),
+                )
+                for ep in raw_episodes
+            ]
+
+            # Return a TVShowData object
+            return TVShowData(
+                title=data.get("name"),
+                image=data.get("image", {}).get("original"),
+                imdb=data.get("externals", {}).get("imdb"),
+                score=data.get("rating", {}).get("average"),
+                episodes=episodes,
+            )
+
+        except httpx.HTTPStatusError as e:
+            # For errors, return a minimal object or raise
+            raise HTTPException(
+                status_code=e.response.status_code, detail=f"TVMaze error: {e}"
+            )
+        except Exception as e:
+            raise HTTPException(
+                status_code=500, detail=f"Error fetching TV show: {str(e)}"
+            )

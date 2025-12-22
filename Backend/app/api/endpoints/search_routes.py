@@ -4,7 +4,6 @@ from app.services.search_service import (
     search_movie,
     search_movie_by_imdb_id,
     search_tv_show,
-    search_tv_show_by_tvmaze_id,
 )
 
 search_router = APIRouter()
@@ -38,21 +37,6 @@ async def search_movie_route(query: str = Query(..., alias="q")):
         return {"results": data}
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
-
-
-@search_router.get("/singlesearch/tv_show")
-async def search_tv_show_by_tvmaze_id_route(tvmaze_id: str = Query(..., alias="id")):
-    """
-    Search for a TV show by TVmaze ID.
-
-    :param tvmaze_id: The TVmaze ID.
-    :return: TV show details.
-    """
-    try:
-        data = await search_tv_show_by_tvmaze_id(tvmaze_id)
-        return {"results": data}
-    except Exception as e:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
 
 
 @search_router.get("/singlesearch/movie")

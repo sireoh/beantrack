@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Path, Query, Response, status
 
 from app.db.models import (
-    TVShow,
+    AddTVShowRequest,
     UpdateProgressByIndexRequest,
     UpdateProgressRequest,
     UpdateStatusRequest,
@@ -57,18 +57,18 @@ async def get_user_tv_list_by_status_route(
 
 @tvshows_router.post("/tvlist/add", status_code=status.HTTP_201_CREATED)
 async def add_tv_show_route(
-    tvshow: TVShow, user_id: str = Depends(Helpers.get_current_user)
+    req: AddTVShowRequest, user_id: str = Depends(Helpers.get_current_user)
 ):
     """
     Add a TV show to the user's list.
 
-    :param tvshow: The TV show data.
+    :param req: The TV show data.
     :param user_id: The authenticated user ID (injected automatically).
     :return: Success message.
     """
     try:
-        add_tv_show(user_id, tvshow)
-        return {"message": "TV show added successfully", "tvshow": tvshow}
+        await add_tv_show(user_id, req)
+        return {"message": "TV show added successfully", "req": req}
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 

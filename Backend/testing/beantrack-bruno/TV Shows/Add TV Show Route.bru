@@ -1,0 +1,23 @@
+meta {
+  name: Add TV Show Route
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{base_uri}}/tvlist/add
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "tvmaze_id": 139,
+    "status": "watching"
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

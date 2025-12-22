@@ -19,11 +19,11 @@ def auth(user_id: str):
     :raises HTTPException: If user not found.
     """
     with SessionLocal() as session:
-        user = session.query(DBUser).filter(DBUser.userid == user_id).first()
+        user = session.query(DBUser).filter(DBUser.user_id == user_id).first()
         if not user:
             raise HTTPException(status_code=404, detail="User not found")
         return {
             "username": user.username,
             "avatar": user.avatar,
-            "admin": user.usertype == "admin",  # Assuming userType indicates admin
+            "admin": user.user_type == "admin",  # Assuming user_type indicates admin
         }

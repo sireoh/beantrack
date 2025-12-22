@@ -1,0 +1,20 @@
+meta {
+  name: Single Search By IMDb Id Route
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{base_uri}}/singlesearch/movie?id=tt3521164
+  body: json
+  auth: inherit
+}
+
+params:query {
+  id: tt3521164
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

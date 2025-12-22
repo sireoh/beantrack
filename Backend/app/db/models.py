@@ -4,7 +4,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import Mapped, mapped_column
 from datetime import datetime
 from pydantic import BaseModel
-from typing import Optional
+from typing import List, Optional
 
 Base = declarative_base()
 
@@ -16,87 +16,94 @@ Base = declarative_base()
 
 class DBUser(Base):
     __tablename__ = "users"
-    userid: Mapped[UUID] = mapped_column(UUID(as_uuid=True), primary_key=True)
+    user_id: Mapped[UUID] = mapped_column(UUID(as_uuid=True), primary_key=True)
     username: Mapped[str] = mapped_column(String)
     password: Mapped[str] = mapped_column(String)
-    usertype: Mapped[str] = mapped_column(String)
+    user_type: Mapped[str] = mapped_column(String)
     avatar: Mapped[Optional[str]] = mapped_column(String, nullable=True)
 
 
 class DBSession(Base):
     __tablename__ = "sessions"
-    sessionid: Mapped[UUID] = mapped_column(UUID(as_uuid=True), primary_key=True)
-    userid: Mapped[UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("users.userid"))
-    refreshtokenhash: Mapped[str] = mapped_column(String)
-    devicetype: Mapped[str] = mapped_column(String)
-    ipaddress: Mapped[str] = mapped_column(String)
-    lastactiveat: Mapped[datetime] = mapped_column(TIMESTAMP)
-    expiresat: Mapped[datetime] = mapped_column(TIMESTAMP)
-    createdat: Mapped[datetime] = mapped_column(TIMESTAMP, default=datetime.utcnow)
+    session_id: Mapped[UUID] = mapped_column(UUID(as_uuid=True), primary_key=True)
+    user_id: Mapped[UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("users.user_id")
+    )
+    refresh_token_hash: Mapped[str] = mapped_column(String)
+    device_type: Mapped[str] = mapped_column(String)
+    ip_address: Mapped[str] = mapped_column(String)
+    last_active_at: Mapped[datetime] = mapped_column(TIMESTAMP)
+    expires_at: Mapped[datetime] = mapped_column(TIMESTAMP)
+    created_at: Mapped[datetime] = mapped_column(TIMESTAMP, default=datetime.utcnow)
 
 
 class DBProgress(Base):
     __tablename__ = "progress"
-    progressid: Mapped[UUID] = mapped_column(UUID(as_uuid=True), primary_key=True)
+    progress_id: Mapped[UUID] = mapped_column(UUID(as_uuid=True), primary_key=True)
     status: Mapped[str] = mapped_column(String)
-    currentepisodeindex: Mapped[int] = mapped_column(Integer)
+    current_episode_index: Mapped[int] = mapped_column(Integer, default=0)
 
 
 class DBTVList(Base):
     __tablename__ = "tvlist"
-    tvlistid: Mapped[UUID] = mapped_column(UUID(as_uuid=True), primary_key=True)
-    userid: Mapped[UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("users.userid"))
+    tv_list_id: Mapped[UUID] = mapped_column(UUID(as_uuid=True), primary_key=True)
+    user_id: Mapped[UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("users.user_id")
+    )
 
 
 class DBEpisodeList(Base):
     __tablename__ = "episodelist"
-    episodelistid: Mapped[UUID] = mapped_column(UUID(as_uuid=True), primary_key=True)
+    episode_list_id: Mapped[UUID] = mapped_column(UUID(as_uuid=True), primary_key=True)
 
 
 class DBTVShow(Base):
     __tablename__ = "tvshow"
     imdb: Mapped[str] = mapped_column(String, primary_key=True)
-    tvlistid: Mapped[UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("tvlist.tvlistid")
+    tv_list_id: Mapped[UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("tvlist.tv_list_id")
     )
     title: Mapped[str] = mapped_column(String)
     image: Mapped[str] = mapped_column(String)
     score: Mapped[float] = mapped_column(Float)
-    episodelistid: Mapped[UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("episodelist.episodelistid")
+    episode_list_id: Mapped[UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("episodelist.episode_list_id")
     )
-    progressid: Mapped[UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("progress.progressid")
+    progress_id: Mapped[UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("progress.progress_id")
     )
 
 
 class DBEpisode(Base):
     __tablename__ = "episode"
-    episodeid: Mapped[str] = mapped_column(String, primary_key=True)  # Assuming varchar
-    episodelistid: Mapped[UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("episodelist.episodelistid")
+    episode_id: Mapped[str] = mapped_column(String, primary_key=True)
+    episode_list_id: Mapped[UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("episodelist.episode_list_id")
     )
     name: Mapped[str] = mapped_column(String)
-    code: Mapped[str] = mapped_column(String)
+    season: Mapped[int] = mapped_column(Integer)
+    number: Mapped[int] = mapped_column(Integer)
 
 
 class DBMovieList(Base):
     __tablename__ = "movielist"
-    movielistid: Mapped[UUID] = mapped_column(UUID(as_uuid=True), primary_key=True)
-    userid: Mapped[UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("users.userid"))
+    movie_list_id: Mapped[UUID] = mapped_column(UUID(as_uuid=True), primary_key=True)
+    user_id: Mapped[UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("users.user_id")
+    )
 
 
 class DBMovie(Base):
     __tablename__ = "movie"
     imdb: Mapped[str] = mapped_column(String, primary_key=True)
-    movielistid: Mapped[UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("movielist.movielistid")
+    movie_list_id: Mapped[UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("movielist.movie_list_id")
     )
     title: Mapped[str] = mapped_column(String)
     image: Mapped[str] = mapped_column(String)
     score: Mapped[float] = mapped_column(Float)
-    progressid: Mapped[UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("progress.progressid")
+    progress_id: Mapped[UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("progress.progress_id")
     )
 
 
@@ -127,6 +134,13 @@ class Movie(BaseModel):
     score: Optional[float] = None
 
 
+class Episode(BaseModel):
+    imdb: str
+    name: str
+    season: int
+    number: int
+
+
 # ===============================================
 # ======= PYDANTIC MODELS : REQUEST MODELS ======
 # ===============================================
@@ -149,3 +163,23 @@ class UpdateProgressRequest(BaseModel):
 class UpdateProgressByIndexRequest(BaseModel):
     imdb: str
     index: int
+
+
+class AddTVShowRequest(BaseModel):
+    tvmaze_id: int
+    status: str
+
+
+class EpisodeData(BaseModel):
+    episode_id: str
+    name: str
+    season: int
+    number: int
+
+
+class TVShowData(BaseModel):
+    title: str
+    image: Optional[str]
+    imdb: Optional[str]
+    score: Optional[float]
+    episodes: List[EpisodeData]

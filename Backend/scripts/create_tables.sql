@@ -3,76 +3,77 @@
 -- Level 0: Independent tables (no foreign keys)
 CREATE TABLE users
 (
-	userId UUID PRIMARY KEY,
+	user_id UUID PRIMARY KEY,
 	username VARCHAR NOT NULL UNIQUE,
 	password VARCHAR NOT NULL,
-	userType VARCHAR DEFAULT 'user',
+	user_type VARCHAR DEFAULT 'user',
 	avatar VARCHAR
 );
 
 CREATE TABLE progress
 (
-	progressId UUID PRIMARY KEY,
+	progress_id UUID PRIMARY KEY,
 	status VARCHAR,
-	currentEpisodeIndex INTEGER DEFAULT 0
+	current_episode_index INTEGER DEFAULT 0
 );
 
 CREATE TABLE episodelist
 (
-	episodeListId UUID PRIMARY KEY
+	episode_list_id UUID PRIMARY KEY
 );
 
 -- Level 1: Tables depending on Level 0
 CREATE TABLE sessions
 (
-	sessionId UUID PRIMARY KEY,
-	userId UUID REFERENCES users(userId),
-	refreshTokenHash VARCHAR,
-	deviceType VARCHAR,
-	IPAddress VARCHAR,
-	lastActiveAt TIMESTAMP,
-	expiresAt TIMESTAMP,
-	createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+	session_id UUID PRIMARY KEY,
+	user_id UUID REFERENCES users(user_id),
+	refresh_token_hash VARCHAR,
+	device_type VARCHAR,
+	ip_address VARCHAR,
+	last_active_at TIMESTAMP,
+	expires_at TIMESTAMP,
+	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE tvlist
 (
-	tvListId UUID PRIMARY KEY,
-	userId UUID REFERENCES users(userId)
+	tv_list_id UUID PRIMARY KEY,
+	user_id UUID REFERENCES users(user_id)
 );
 
 CREATE TABLE movielist
 (
-	movieListId UUID PRIMARY KEY,
-	userId UUID REFERENCES users(userId)
+	movie_list_id UUID PRIMARY KEY,
+	user_id UUID REFERENCES users(user_id)
 );
 
 -- Level 2: Tables depending on Level 0 and/or Level 1
 CREATE TABLE tvshow
 (
 	imdb VARCHAR PRIMARY KEY,
-	tvListId UUID REFERENCES tvlist(tvListId),
+	tv_list_id UUID REFERENCES tvlist(tv_list_id),
 	title VARCHAR,
 	image VARCHAR,
 	score FLOAT,
-	episodeListId UUID REFERENCES episodelist(episodeListId),
-	progressId UUID REFERENCES progress(progressId)
+	episode_list_id UUID REFERENCES episodelist(episode_list_id),
+	progress_id UUID REFERENCES progress(progress_id)
 );
 
 CREATE TABLE movie
 (
 	imdb VARCHAR PRIMARY KEY,
-	movieListId UUID REFERENCES movielist(movieListId),
+	movie_list_id UUID REFERENCES movielist(movie_list_id),
 	title VARCHAR,
 	image VARCHAR,
 	score FLOAT,
-	progressId UUID REFERENCES progress(progressId)
+	progress_id UUID REFERENCES progress(progress_id)
 );
 
 CREATE TABLE episode
 (
-	episodeId VARCHAR PRIMARY KEY,
-	episodeListId UUID REFERENCES episodelist(episodeListId),
+	episode_id VARCHAR PRIMARY KEY,
+	episode_list_id UUID REFERENCES episodelist(episode_list_id),
 	name VARCHAR,
-	code VARCHAR
+	season INTEGER,
+	number INTEGER
 );

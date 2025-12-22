@@ -38,22 +38,6 @@ async def search_movie(query: str):
             return {"error": str(e), "source": "omdb"}
 
 
-async def search_tv_show_by_tvmaze_id(id: str):
-    """
-    Get episodes for a TV show by TVMaze ID.
-
-    :param id: The TVMaze ID.
-    :return: JSON response from TVMaze API.
-    """
-    async with httpx.AsyncClient() as client:
-        try:
-            url = f"https://api.tvmaze.com/shows/{id}/episodes"
-            res = await client.get(url)
-            return res.json()
-        except Exception as e:
-            return {"error": str(e), "source": "tvmaze"}
-
-
 async def search_movie_by_imdb_id(imdb: str):
     """
     Get movie details by IMDB ID using OMDB API.

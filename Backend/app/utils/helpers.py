@@ -3,7 +3,7 @@ from app.core.database import engine
 from jose import JWTError, jwt
 from fastapi import HTTPException, status
 from sqlalchemy.orm import sessionmaker
-from app.db.models import DBTVList, DBMovieList
+from app.db.models import DBMovieList
 from app.core.config import settings
 import uuid
 
@@ -26,21 +26,6 @@ class Helpers:
         :return: A UUID string.
         """
         return str(uuid.uuid4())
-
-    @staticmethod
-    def get_current_tvlist_id(user_id: str) -> str:
-        """
-        Get the TV list ID for the user.
-
-        :param user_id: The user ID.
-        :return: The TV list ID.
-        :raises HTTPException: If not found.
-        """
-        with SessionLocal() as session:
-            tvlist = session.query(DBTVList).filter(DBTVList.userid == user_id).first()
-            if not tvlist:
-                raise HTTPException(status_code=404, detail="TV list not found")
-            return str(tvlist.tvlistid)
 
     @staticmethod
     def get_current_movielist_id(user_id: str) -> str:

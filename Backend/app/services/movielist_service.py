@@ -10,7 +10,14 @@ import uuid
 from typing import Optional
 from app.core.database import engine
 from app.utils.helpers import Helpers
-from app.db.models import DBMovie, DBMovieList, DBProgress, AddMovieRequest, MovieData, UpdateMovieStatusRequest
+from app.db.models import (
+    DBMovie,
+    DBMovieList,
+    DBProgress,
+    AddMovieRequest,
+    MovieData,
+    UpdateMovieStatusRequest,
+)
 from app.core.config import settings
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)

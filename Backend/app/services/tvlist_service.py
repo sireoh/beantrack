@@ -413,7 +413,7 @@ async def get_tv_show_data(tvmaze_id: int) -> TVShowData:
 
             episodes = [
                 EpisodeData(
-                    episode_id=f"{data.get("name")}_{ep.get("season")}_{ep.get("number")}",
+                    episode_id=f"{data.get('name')}_{ep.get('season')}_{ep.get('number')}",
                     name=ep.get("name"),
                     season=ep.get("season"),
                     number=ep.get("number"),

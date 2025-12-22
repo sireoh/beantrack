@@ -38,4 +38,4 @@ def authenticate_user(data) -> str:
                 status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials"
             )
 
-        return str(found_user.userId)
+        return str(found_user.userid)

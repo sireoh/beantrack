@@ -25,7 +25,7 @@ def get_user_movie_list(user_id: str):
 
     with SessionLocal() as session:
         movielist = (
-            session.query(DBMovieList).filter(DBMovieList.userId == user_id).first()
+            session.query(DBMovieList).filter(DBMovieList.userid == user_id).first()
         )
         if not movielist:
             print("No movielist found for user")
@@ -33,7 +33,7 @@ def get_user_movie_list(user_id: str):
 
         movies = (
             session.query(DBMovie)
-            .filter(DBMovie.movieListId == movielist.movieListId)
+            .filter(DBMovie.movielistid == movielist.movielistid)
             .all()
         )
 
@@ -41,7 +41,7 @@ def get_user_movie_list(user_id: str):
         for movie in movies:
             progress = (
                 session.query(DBProgress)
-                .filter(DBProgress.progressId == movie.progressId)
+                .filter(DBProgress.progressid == movie.progressid)
                 .first()
             )
             item = {
@@ -68,7 +68,7 @@ def get_user_movie_list_by_status(user_id: str, status: str):
 
     with SessionLocal() as session:
         movielist = (
-            session.query(DBMovieList).filter(DBMovieList.userId == user_id).first()
+            session.query(DBMovieList).filter(DBMovieList.userid == user_id).first()
         )
         if not movielist:
             print("No movielist found for user")
@@ -76,9 +76,9 @@ def get_user_movie_list_by_status(user_id: str, status: str):
 
         movies = (
             session.query(DBMovie)
-            .join(DBProgress, DBMovie.progressId == DBProgress.progressId)
+            .join(DBProgress, DBMovie.progressid == DBProgress.progressid)
             .filter(
-                DBMovie.movieListId == movielist.movieListId,
+                DBMovie.movielistid == movielist.movielistid,
                 DBProgress.status == status,
             )
             .all()
@@ -129,11 +129,11 @@ def add_movie(user_id: str, movie):
         # Add Movie
         m = DBMovie(
             imdb=movie.imdb,
-            movieListId=movielist_id,
+            movielistid=movielist_id,
             title=movie.title,
             image=movie.image,
             score=movie.score,
-            progressId=progress.progressId,
+            progressid=progress.progressid,
         )
         session.add(m)
 
@@ -155,12 +155,12 @@ def delete_movie(user_id: str, imdb: str):
     with SessionLocal() as session:
         movie = (
             session.query(DBMovie)
-            .filter(DBMovie.imdb == imdb, DBMovie.movieListId == movielist_id)
+            .filter(DBMovie.imdb == imdb, DBMovie.movielistid == movielist_id)
             .first()
         )
         if movie:
             session.query(DBProgress).filter(
-                DBProgress.progressId == movie.progressId
+                DBProgress.progressid == movie.progressid
             ).delete()
             session.delete(movie)
             session.commit()
@@ -187,13 +187,13 @@ def update_movie_status(user_id: str, imdb: str, new_status: str):
     with SessionLocal() as session:
         movie = (
             session.query(DBMovie)
-            .filter(DBMovie.imdb == imdb, DBMovie.movieListId == movielist_id)
+            .filter(DBMovie.imdb == imdb, DBMovie.movielistid == movielist_id)
             .first()
         )
         if movie:
             progress = (
                 session.query(DBProgress)
-                .filter(DBProgress.progressId == movie.progressId)
+                .filter(DBProgress.progressid == movie.progressid)
                 .first()
             )
             if progress:

@@ -16,65 +16,65 @@ Base = declarative_base()
 
 class DBUser(Base):
     __tablename__ = "users"
-    userId: Mapped[UUID] = mapped_column(UUID(as_uuid=True), primary_key=True)
+    userid: Mapped[UUID] = mapped_column(UUID(as_uuid=True), primary_key=True)
     username: Mapped[str] = mapped_column(String)
     password: Mapped[str] = mapped_column(String)
-    userType: Mapped[str] = mapped_column(String)
+    usertype: Mapped[str] = mapped_column(String)
     avatar: Mapped[Optional[str]] = mapped_column(String, nullable=True)
 
 
 class DBSession(Base):
     __tablename__ = "sessions"
-    sessionId: Mapped[UUID] = mapped_column(UUID(as_uuid=True), primary_key=True)
-    userId: Mapped[UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("users.userId"))
-    refreshTokenHash: Mapped[str] = mapped_column(String)
-    deviceType: Mapped[str] = mapped_column(String)
-    IPAddress: Mapped[str] = mapped_column(String)
-    lastActiveAt: Mapped[datetime] = mapped_column(TIMESTAMP)
-    expiresAt: Mapped[datetime] = mapped_column(TIMESTAMP)
-    createdAt: Mapped[datetime] = mapped_column(TIMESTAMP, default=datetime.utcnow)
+    sessionid: Mapped[UUID] = mapped_column(UUID(as_uuid=True), primary_key=True)
+    userid: Mapped[UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("users.userid"))
+    refreshtokenhash: Mapped[str] = mapped_column(String)
+    devicetype: Mapped[str] = mapped_column(String)
+    ipaddress: Mapped[str] = mapped_column(String)
+    lastactiveat: Mapped[datetime] = mapped_column(TIMESTAMP)
+    expiresat: Mapped[datetime] = mapped_column(TIMESTAMP)
+    createdat: Mapped[datetime] = mapped_column(TIMESTAMP, default=datetime.utcnow)
 
 
 class DBProgress(Base):
     __tablename__ = "progress"
-    progressId: Mapped[UUID] = mapped_column(UUID(as_uuid=True), primary_key=True)
+    progressid: Mapped[UUID] = mapped_column(UUID(as_uuid=True), primary_key=True)
     status: Mapped[str] = mapped_column(String)
-    currentEpisodeIndex: Mapped[int] = mapped_column(Integer)
+    currentepisodeindex: Mapped[int] = mapped_column(Integer)
 
 
 class DBTVList(Base):
     __tablename__ = "tvlist"
-    tvListId: Mapped[UUID] = mapped_column(UUID(as_uuid=True), primary_key=True)
-    userId: Mapped[UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("users.userId"))
+    tvlistid: Mapped[UUID] = mapped_column(UUID(as_uuid=True), primary_key=True)
+    userid: Mapped[UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("users.userid"))
 
 
 class DBEpisodeList(Base):
     __tablename__ = "episodelist"
-    episodeListId: Mapped[UUID] = mapped_column(UUID(as_uuid=True), primary_key=True)
+    episodelistid: Mapped[UUID] = mapped_column(UUID(as_uuid=True), primary_key=True)
 
 
 class DBTVShow(Base):
     __tablename__ = "tvshow"
     imdb: Mapped[str] = mapped_column(String, primary_key=True)
-    tvListId: Mapped[UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("tvlist.tvListId")
+    tvlistid: Mapped[UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("tvlist.tvlistid")
     )
     title: Mapped[str] = mapped_column(String)
     image: Mapped[str] = mapped_column(String)
     score: Mapped[float] = mapped_column(Float)
-    episodeListId: Mapped[UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("episodelist.episodeListId")
+    episodelistid: Mapped[UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("episodelist.episodelistid")
     )
-    progressId: Mapped[UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("progress.progressId")
+    progressid: Mapped[UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("progress.progressid")
     )
 
 
 class DBEpisode(Base):
     __tablename__ = "episode"
-    episodeId: Mapped[str] = mapped_column(String, primary_key=True)  # Assuming varchar
-    episodeListId: Mapped[UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("episodelist.episodeListId")
+    episodeid: Mapped[str] = mapped_column(String, primary_key=True)  # Assuming varchar
+    episodelistid: Mapped[UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("episodelist.episodelistid")
     )
     name: Mapped[str] = mapped_column(String)
     code: Mapped[str] = mapped_column(String)
@@ -82,21 +82,21 @@ class DBEpisode(Base):
 
 class DBMovieList(Base):
     __tablename__ = "movielist"
-    movieListId: Mapped[UUID] = mapped_column(UUID(as_uuid=True), primary_key=True)
-    userId: Mapped[UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("users.userId"))
+    movielistid: Mapped[UUID] = mapped_column(UUID(as_uuid=True), primary_key=True)
+    userid: Mapped[UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("users.userid"))
 
 
 class DBMovie(Base):
     __tablename__ = "movie"
     imdb: Mapped[str] = mapped_column(String, primary_key=True)
-    movieListId: Mapped[UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("movielist.movieListId")
+    movielistid: Mapped[UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("movielist.movielistid")
     )
     title: Mapped[str] = mapped_column(String)
     image: Mapped[str] = mapped_column(String)
     score: Mapped[float] = mapped_column(Float)
-    progressId: Mapped[UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("progress.progressId")
+    progressid: Mapped[UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("progress.progressid")
     )
 
 
@@ -130,6 +130,11 @@ class Movie(BaseModel):
 # ===============================================
 # ======= PYDANTIC MODELS : REQUEST MODELS ======
 # ===============================================
+
+
+class SignupRequest(BaseModel):
+    username: str
+    password: str
 
 
 class UpdateStatusRequest(BaseModel):

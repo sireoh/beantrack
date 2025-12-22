@@ -5,6 +5,7 @@ from fastapi import HTTPException, status
 from sqlalchemy.orm import sessionmaker
 from app.db.models import DBTVList, DBMovieList
 from app.core.config import settings
+import uuid
 
 SECRET_KEY = settings.secret_key
 DEV_MODE = settings.dev_mode
@@ -18,6 +19,15 @@ class Helpers:
     """
 
     @staticmethod
+    def generate_uuid() -> str:
+        """
+        Generate a new UUID string.
+
+        :return: A UUID string.
+        """
+        return str(uuid.uuid4())
+
+    @staticmethod
     def get_current_tvlist_id(user_id: str) -> str:
         """
         Get the TV list ID for the user.
@@ -27,10 +37,10 @@ class Helpers:
         :raises HTTPException: If not found.
         """
         with SessionLocal() as session:
-            tvlist = session.query(DBTVList).filter(DBTVList.userId == user_id).first()
+            tvlist = session.query(DBTVList).filter(DBTVList.userid == user_id).first()
             if not tvlist:
                 raise HTTPException(status_code=404, detail="TV list not found")
-            return str(tvlist.tvListId)
+            return str(tvlist.tvlistid)
 
     @staticmethod
     def get_current_movielist_id(user_id: str) -> str:
@@ -43,11 +53,11 @@ class Helpers:
         """
         with SessionLocal() as session:
             movielist = (
-                session.query(DBMovieList).filter(DBMovieList.userId == user_id).first()
+                session.query(DBMovieList).filter(DBMovieList.userid == user_id).first()
             )
             if not movielist:
                 raise HTTPException(status_code=404, detail="Movie list not found")
-            return str(movielist.movieListId)
+            return str(movielist.movielistid)
 
     @staticmethod
     def get_current_user(request: Request) -> str:

@@ -22,30 +22,27 @@ def add_user(_u):
     hashed_password = bcrypt.hashpw(_u.password.encode(), bcrypt.gensalt()).decode()
 
     with SessionLocal() as session:
-        # Create TVList and MovieList
-        tvlist = DBTVList(
-            userId=str(uuid.uuid4())
-        )  # Wait, userId is for the list? No, TVList has userId ref User.userId, but user not created yet.
-        # Need to create user first, get userId, then create lists.
-
         user = DBUser(
-            userId=str(uuid.uuid4()),
+            userid=str(uuid.uuid4()),
             username=_u.username,
             password=hashed_password,
-            userType="user",
+            usertype="user",
             avatar=None,
         )
         session.add(user)
-        session.flush()  # Get userId
+        session.flush()  # Get userid
 
-        tvlist = DBTVList(tvListId=str(uuid.uuid4()), userId=user.userId)
-        movielist = DBMovieList(movieListId=str(uuid.uuid4()), userId=user.userId)
+        tvlist = DBTVList(tvlistid=str(uuid.uuid4()), userid=user.userid)
+        movielist = DBMovieList(movielistid=str(uuid.uuid4()), userid=user.userid)
         session.add(tvlist)
         session.add(movielist)
 
         session.commit()
 
-    print(f"[added user] username: {_u.username}, userId: {user.userId}")
+        # Store userid before session closes
+        user_id = user.userid
+
+    print(f"[added user] username: {_u.username}, userId: {user_id}")
 
 
 def delete_user(data):
@@ -70,13 +67,13 @@ def delete_user(data):
             )
 
         # Delete associated lists and data
-        tvlist = session.query(DBTVList).filter(DBTVList.userId == user.userId).first()
+        tvlist = session.query(DBTVList).filter(DBTVList.userid == user.userid).first()
         if tvlist:
             # Delete TVShows, etc. But for simplicity, cascade delete if set up, else manual
             session.delete(tvlist)
 
         movielist = (
-            session.query(DBMovieList).filter(DBMovieList.userId == user.userId).first()
+            session.query(DBMovieList).filter(DBMovieList.userid == user.userid).first()
         )
         if movielist:
             session.delete(movielist)
@@ -121,7 +118,7 @@ def get_user_tvlist(username: str):
             print(f"[get_user_tvlist] username {username} not found")
             return None
 
-        tvlist = session.query(DBTVList).filter(DBTVList.userId == user.userId).first()
+        tvlist = session.query(DBTVList).filter(DBTVList.userid == user.userid).first()
         return tvlist
 
 
@@ -139,6 +136,6 @@ def get_user_movielist(username: str):
             return None
 
         movielist = (
-            session.query(DBMovieList).filter(DBMovieList.userId == user.userId).first()
+            session.query(DBMovieList).filter(DBMovieList.userid == user.userid).first()
         )
         return movielist

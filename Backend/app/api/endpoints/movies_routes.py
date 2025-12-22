@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Path, Query, status
 from typing import Optional
 
-from app.db.models import UpdateStatusRequest, AddMovieRequest
+from app.db.models import UpdateMovieStatusRequest, UpdateStatusRequest, AddMovieRequest
 from app.utils.helpers import Helpers
 from app.services.movielist_service import (
     add_movie,
@@ -72,21 +72,21 @@ async def delete_movie_route(
 
 @movies_router.patch("/movielist/edit")
 async def update_movie_status_route(
-    data: UpdateStatusRequest, user_id: str = Depends(Helpers.get_current_user)
+    req: UpdateMovieStatusRequest, user_id: str = Depends(Helpers.get_current_user)
 ):
     """
     Update the status of a movie in the user's list.
 
-    :param data: The update request data.
+    :param req: The update request.
     :param user_id: The authenticated user ID (injected automatically).
     :return: Success message.
     """
     try:
-        update_movie_status(user_id, data.imdb, data.status)
+        update_movie_status(user_id, req)
         return {
             "message": "Movie status updated successfully",
-            "imdb": data.imdb,
-            "status": data.status,
+            "imdb": req.imdb,
+            "status": req.status,
         }
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))

@@ -195,3 +195,8 @@ class TVShowData(BaseModel):
     imdb: Optional[str]
     score: Optional[float]
     episodes: List[EpisodeData]
+
+
+class UpdateMovieStatusRequest(BaseModel):
+    imdb: str
+    status: str

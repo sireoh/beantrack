@@ -10,7 +10,7 @@ import uuid
 from typing import Optional
 from app.core.database import engine
 from app.utils.helpers import Helpers
-from app.db.models import DBMovie, DBMovieList, DBProgress, AddMovieRequest, MovieData
+from app.db.models import DBMovie, DBMovieList, DBProgress, AddMovieRequest, MovieData, UpdateMovieStatusRequest
 from app.core.config import settings
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
@@ -150,7 +150,7 @@ def delete_movie(user_id: str, imdb: str):
 # ===============================================
 
 
-def update_movie_status(user_id: str, imdb: str, status: str):
+def update_movie_status(user_id: str, req: UpdateMovieStatusRequest):
     """
     Update the status of a movie in the user's movie list.
 
@@ -169,7 +169,7 @@ def update_movie_status(user_id: str, imdb: str, status: str):
 
         movie = (
             session.query(DBMovie)
-            .filter(DBMovie.imdb == imdb, DBMovie.movie_list_id == movielist_id)
+            .filter(DBMovie.imdb == req.imdb, DBMovie.movie_list_id == movielist_id)
             .first()
         )
         if movie:
@@ -179,7 +179,7 @@ def update_movie_status(user_id: str, imdb: str, status: str):
                 .first()
             )
             if progress:
-                progress.status = status
+                progress.status = req.status
                 session.commit()
 
 

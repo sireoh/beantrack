@@ -24,7 +24,9 @@ def authenticate_user(data) -> str:
     :raises HTTPException: If user not found or invalid credentials.
     """
     with SessionLocal() as session:
-        found_user = session.query(User).filter(User.username == data.username).first()
+        found_user = (
+            session.query(DBUser).filter(DBUser.username == data.username).first()
+        )
 
         if not found_user:
             raise HTTPException(

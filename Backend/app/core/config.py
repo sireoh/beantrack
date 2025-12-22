@@ -35,11 +35,6 @@ class Settings(BaseSettings):
         default=["http://localhost:3000"], description="Allowed CORS origins"
     )
 
-    # Optional: CORS origins
-    cors_origins: list[str] = Field(
-        default=["http://localhost:3000"], description="Allowed CORS origins"
-    )
-
     # Pydantic config to load from .env
     class Config:
         env_file = ".env"  # Path to your .env file

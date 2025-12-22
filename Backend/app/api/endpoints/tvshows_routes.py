@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Path, Query, Response, status
 
-from app.db.models import TVShow
-from app.db.request_models import (
+from app.db.models import (
+    TVShow,
     UpdateProgressByIndexRequest,
     UpdateProgressRequest,
     UpdateStatusRequest,

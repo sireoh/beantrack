@@ -2,11 +2,8 @@
 Search data access layer for external APIs.
 """
 
-from fastapi import Request
 import httpx
 from app.core.config import settings
-
-OMDB_API_KEY = settings.omdb_api_key
 
 
 async def search_tv_show(query: str):
@@ -34,7 +31,7 @@ async def search_movie(query: str):
     """
     async with httpx.AsyncClient() as client:
         try:
-            url = f"https://www.omdbapi.com/?apikey={OMDB_API_KEY}&s={query}"
+            url = f"https://www.omdbapi.com/?apikey={settings.omdb_api_key}&s={query}"
             res = await client.get(url)
             return res.json()
         except Exception as e:
@@ -66,7 +63,7 @@ async def search_movie_by_imdb_id(imdb: str):
     """
     async with httpx.AsyncClient() as client:
         try:
-            url = f"https://www.omdbapi.com/?apikey={OMDB_API_KEY}&i={imdb}"
+            url = f"https://www.omdbapi.com/?apikey={settings.omdb_api_key}&i={imdb}"
             res = await client.get(url)
             return res.json()
         except Exception as e:

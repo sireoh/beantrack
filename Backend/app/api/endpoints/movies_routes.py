@@ -1,7 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, Path, Response, status
 
-from app.db.models import Movie
-from app.db.request_models import UpdateStatusRequest
+from app.db.models import Movie, UpdateStatusRequest
 from app.utils.helpers import Helpers
 from app.services.movielist_service import (
     add_movie,

@@ -9,8 +9,8 @@ from app.db.models import (
     DBTVShow as TVShowModel,
     DBTVList,
     DBProgress,
-    DBEpisodeList,
     DBEpisode,
+    DBEpisodeList,
 )
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
@@ -30,7 +30,7 @@ def get_user_tv_list(user_id: str):
     print(f"User ID from JWT: {user_id}")
 
     with SessionLocal() as session:
-        tvlist = session.query(TVList).filter(TVList.userId == user_id).first()
+        tvlist = session.query(DBTVList).filter(DBTVList.userId == user_id).first()
         if not tvlist:
             print("No tvlist found for user")
             return []
@@ -44,15 +44,15 @@ def get_user_tv_list(user_id: str):
         data = []
         for tv in tvshows:
             progress = (
-                session.query(Progress)
-                .filter(Progress.progressId == tv.progressId)
+                session.query(DBProgress)
+                .filter(DBProgress.progressId == tv.progressId)
                 .first()
             )
             episodes = []
             if tv.episodeListId:
                 eps = (
-                    session.query(Episode)
-                    .filter(Episode.episodeListId == tv.episodeListId)
+                    session.query(DBEpisode)
+                    .filter(DBEpisode.episodeListId == tv.episodeListId)
                     .all()
                 )
                 episodes = [{"code": e.code, "name": e.name} for e in eps]
@@ -82,30 +82,32 @@ def get_user_tv_list_by_status(user_id: str, status: str):
     print(f"User ID from JWT: {user_id}")
 
     with SessionLocal() as session:
-        tvlist = session.query(TVList).filter(TVList.userId == user_id).first()
+        tvlist = session.query(DBTVList).filter(DBTVList.userId == user_id).first()
         if not tvlist:
             print("No tvlist found for user")
             return []
 
         tvshows = (
             session.query(TVShowModel)
-            .join(Progress, TVShowModel.progressId == Progress.progressId)
-            .filter(TVShowModel.tvListId == tvlist.tvListId, Progress.status == status)
+            .join(DBProgress, TVShowModel.progressId == DBProgress.progressId)
+            .filter(
+                TVShowModel.tvListId == tvlist.tvListId, DBProgress.status == status
+            )
             .all()
         )
 
         data = []
         for tv in tvshows:
             progress = (
-                session.query(Progress)
-                .filter(Progress.progressId == tv.progressId)
+                session.query(DBProgress)
+                .filter(DBProgress.progressId == tv.progressId)
                 .first()
             )
             episodes = []
             if tv.episodeListId:
                 eps = (
-                    session.query(Episode)
-                    .filter(Episode.episodeListId == tv.episodeListId)
+                    session.query(DBEpisode)
+                    .filter(DBEpisode.episodeListId == tv.episodeListId)
                     .all()
                 )
                 episodes = [{"code": e.code, "name": e.name} for e in eps]
@@ -139,21 +141,21 @@ def add_tv_show(user_id: str, tv_show):
     tvlist_id = Helpers.get_current_tvlist_id(user_id)
 
     with SessionLocal() as session:
-        # Create Progress
-        progress = Progress(
+        # Create DBProgress
+        progress = DBProgress(
             status=tv_show.status, currentEpisodeIndex=tv_show.currentEpisodeIndex
         )
         session.add(progress)
         session.flush()
 
-        # Create EpisodeList
-        episode_list = EpisodeList()
+        # Create DBEpisodeList
+        episode_list = DBEpisodeList()
         session.add(episode_list)
         session.flush()
 
         # Add Episodes
         for ep in tv_show.episodes:
-            episode = Episode(
+            episode = DBEpisode(
                 episodeId=f"{tv_show.imdb}_{ep.code}",
                 episodeListId=episode_list.episodeListId,
                 name=ep.name,
@@ -195,14 +197,14 @@ def delete_tv_show(user_id: str, imdb: str):
         )
         if tvshow:
             # Delete related
-            session.query(Episode).filter(
-                Episode.episodeListId == tvshow.episodeListId
+            session.query(DBEpisode).filter(
+                DBEpisode.episodeListId == tvshow.episodeListId
             ).delete()
-            session.query(EpisodeList).filter(
-                EpisodeList.episodeListId == tvshow.episodeListId
+            session.query(DBEpisodeList).filter(
+                DBEpisodeList.episodeListId == tvshow.episodeListId
             ).delete()
-            session.query(Progress).filter(
-                Progress.progressId == tvshow.progressId
+            session.query(DBProgress).filter(
+                DBProgress.progressId == tvshow.progressId
             ).delete()
             session.delete(tvshow)
             session.commit()
@@ -233,8 +235,8 @@ def update_tv_show_status(user_id: str, imdb: str, new_status: str):
         )
         if tvshow:
             progress = (
-                session.query(Progress)
-                .filter(Progress.progressId == tvshow.progressId)
+                session.query(DBProgress)
+                .filter(DBProgress.progressId == tvshow.progressId)
                 .first()
             )
             if progress:
@@ -270,8 +272,8 @@ def decrement_tv_show_progress(user_id: str, imdb: str):
         )
         if tvshow:
             progress = (
-                session.query(Progress)
-                .filter(Progress.progressId == tvshow.progressId)
+                session.query(DBProgress)
+                .filter(DBProgress.progressId == tvshow.progressId)
                 .first()
             )
             if progress and progress.currentEpisodeIndex > 0:
@@ -302,13 +304,13 @@ def increment_tv_show_progress(user_id: str, imdb: str):
         )
         if tvshow:
             progress = (
-                session.query(Progress)
-                .filter(Progress.progressId == tvshow.progressId)
+                session.query(DBProgress)
+                .filter(DBProgress.progressId == tvshow.progressId)
                 .first()
             )
             episodes_count = (
-                session.query(Episode)
-                .filter(Episode.episodeListId == tvshow.episodeListId)
+                session.query(DBEpisode)
+                .filter(DBEpisode.episodeListId == tvshow.episodeListId)
                 .count()
             )
             if progress and progress.currentEpisodeIndex < episodes_count - 1:
@@ -342,8 +344,8 @@ def update_by_index_tv_show_progress(user_id: str, imdb: str, index: int):
         )
         if tvshow:
             progress = (
-                session.query(Progress)
-                .filter(Progress.progressId == tvshow.progressId)
+                session.query(DBProgress)
+                .filter(DBProgress.progressId == tvshow.progressId)
                 .first()
             )
             if progress:

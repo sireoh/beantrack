@@ -23,7 +23,7 @@ def add_user(_u):
 
     with SessionLocal() as session:
         # Create TVList and MovieList
-        tvlist = TVList(
+        tvlist = DBTVList(
             userId=str(uuid.uuid4())
         )  # Wait, userId is for the list? No, TVList has userId ref User.userId, but user not created yet.
         # Need to create user first, get userId, then create lists.
@@ -38,8 +38,8 @@ def add_user(_u):
         session.add(user)
         session.flush()  # Get userId
 
-        tvlist = TVList(tvListId=str(uuid.uuid4()), userId=user.userId)
-        movielist = MovieList(movieListId=str(uuid.uuid4()), userId=user.userId)
+        tvlist = DBTVList(tvListId=str(uuid.uuid4()), userId=user.userId)
+        movielist = DBMovieList(movieListId=str(uuid.uuid4()), userId=user.userId)
         session.add(tvlist)
         session.add(movielist)
 
@@ -57,7 +57,7 @@ def delete_user(data):
     :raises HTTPException: If user not found or invalid credentials.
     """
     with SessionLocal() as session:
-        user = session.query(User).filter(User.username == data.username).first()
+        user = session.query(DBUser).filter(DBUser.username == data.username).first()
 
         if not user:
             raise HTTPException(
@@ -70,13 +70,13 @@ def delete_user(data):
             )
 
         # Delete associated lists and data
-        tvlist = session.query(TVList).filter(TVList.userId == user.userId).first()
+        tvlist = session.query(DBTVList).filter(DBTVList.userId == user.userId).first()
         if tvlist:
             # Delete TVShows, etc. But for simplicity, cascade delete if set up, else manual
             session.delete(tvlist)
 
         movielist = (
-            session.query(MovieList).filter(MovieList.userId == user.userId).first()
+            session.query(DBMovieList).filter(DBMovieList.userId == user.userId).first()
         )
         if movielist:
             session.delete(movielist)
@@ -99,7 +99,7 @@ def change_password(username: str, new_password: str):
     :param new_password: The new password.
     """
     with SessionLocal() as session:
-        user = session.query(User).filter(User.username == username).first()
+        user = session.query(DBUser).filter(DBUser.username == username).first()
         if user:
             user.password = new_password
             session.commit()
@@ -116,12 +116,12 @@ def get_user_tvlist(username: str):
     :return: The TV list or None.
     """
     with SessionLocal() as session:
-        user = session.query(User).filter(User.username == username).first()
+        user = session.query(DBUser).filter(DBUser.username == username).first()
         if not user:
             print(f"[get_user_tvlist] username {username} not found")
             return None
 
-        tvlist = session.query(TVList).filter(TVList.userId == user.userId).first()
+        tvlist = session.query(DBTVList).filter(DBTVList.userId == user.userId).first()
         return tvlist
 
 
@@ -133,12 +133,12 @@ def get_user_movielist(username: str):
     :return: The movie list or None.
     """
     with SessionLocal() as session:
-        user = session.query(User).filter(User.username == username).first()
+        user = session.query(DBUser).filter(DBUser.username == username).first()
         if not user:
             print(f"[get_user_movielist] username {username} not found")
             return None
 
         movielist = (
-            session.query(MovieList).filter(MovieList.userId == user.userId).first()
+            session.query(DBMovieList).filter(DBMovieList.userId == user.userId).first()
         )
         return movielist

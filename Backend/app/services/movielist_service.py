@@ -5,7 +5,7 @@ Movie list data access layer.
 from sqlalchemy.orm import sessionmaker
 from app.core.database import engine
 from app.utils.helpers import Helpers
-from app.db.models import DBMovie as MovieModel, DBMovieList, DBProgress
+from app.db.models import DBMovie, DBMovieList, DBProgress
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
@@ -24,22 +24,24 @@ def get_user_movie_list(user_id: str):
     print(f"User ID: {user_id}")
 
     with SessionLocal() as session:
-        movielist = session.query(MovieList).filter(MovieList.userId == user_id).first()
+        movielist = (
+            session.query(DBMovieList).filter(DBMovieList.userId == user_id).first()
+        )
         if not movielist:
             print("No movielist found for user")
             return []
 
         movies = (
-            session.query(MovieModel)
-            .filter(MovieModel.movieListId == movielist.movieListId)
+            session.query(DBMovie)
+            .filter(DBMovie.movieListId == movielist.movieListId)
             .all()
         )
 
         data = []
         for movie in movies:
             progress = (
-                session.query(Progress)
-                .filter(Progress.progressId == movie.progressId)
+                session.query(DBProgress)
+                .filter(DBProgress.progressId == movie.progressId)
                 .first()
             )
             item = {
@@ -65,17 +67,19 @@ def get_user_movie_list_by_status(user_id: str, status: str):
     print(f"User ID: {user_id}")
 
     with SessionLocal() as session:
-        movielist = session.query(MovieList).filter(MovieList.userId == user_id).first()
+        movielist = (
+            session.query(DBMovieList).filter(DBMovieList.userId == user_id).first()
+        )
         if not movielist:
             print("No movielist found for user")
             return []
 
         movies = (
-            session.query(MovieModel)
-            .join(Progress, MovieModel.progressId == Progress.progressId)
+            session.query(DBMovie)
+            .join(DBProgress, DBMovie.progressId == DBProgress.progressId)
             .filter(
-                MovieModel.movieListId == movielist.movieListId,
-                Progress.status == status,
+                DBMovie.movieListId == movielist.movieListId,
+                DBProgress.status == status,
             )
             .all()
         )
@@ -83,8 +87,8 @@ def get_user_movie_list_by_status(user_id: str, status: str):
         data = []
         for movie in movies:
             progress = (
-                session.query(Progress)
-                .filter(Progress.progressId == movie.progressId)
+                session.query(DBProgress)
+                .filter(DBProgress.progressId == movie.progressId)
                 .first()
             )
             item = {
@@ -116,14 +120,14 @@ def add_movie(user_id: str, movie):
 
     with SessionLocal() as session:
         # Create Progress
-        progress = Progress(
+        progress = DBProgress(
             status=movie.status, currentEpisodeIndex=0
         )  # Movies don't have episodes, so 0
         session.add(progress)
         session.flush()
 
         # Add Movie
-        m = MovieModel(
+        m = DBMovie(
             imdb=movie.imdb,
             movieListId=movielist_id,
             title=movie.title,
@@ -150,13 +154,13 @@ def delete_movie(user_id: str, imdb: str):
 
     with SessionLocal() as session:
         movie = (
-            session.query(MovieModel)
-            .filter(MovieModel.imdb == imdb, MovieModel.movieListId == movielist_id)
+            session.query(DBMovie)
+            .filter(DBMovie.imdb == imdb, DBMovie.movieListId == movielist_id)
             .first()
         )
         if movie:
-            session.query(Progress).filter(
-                Progress.progressId == movie.progressId
+            session.query(DBProgress).filter(
+                DBProgress.progressId == movie.progressId
             ).delete()
             session.delete(movie)
             session.commit()
@@ -182,14 +186,14 @@ def update_movie_status(user_id: str, imdb: str, new_status: str):
 
     with SessionLocal() as session:
         movie = (
-            session.query(MovieModel)
-            .filter(MovieModel.imdb == imdb, MovieModel.movieListId == movielist_id)
+            session.query(DBMovie)
+            .filter(DBMovie.imdb == imdb, DBMovie.movieListId == movielist_id)
             .first()
         )
         if movie:
             progress = (
-                session.query(Progress)
-                .filter(Progress.progressId == movie.progressId)
+                session.query(DBProgress)
+                .filter(DBProgress.progressId == movie.progressId)
                 .first()
             )
             if progress:

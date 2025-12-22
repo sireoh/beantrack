@@ -2,7 +2,6 @@ from fastapi import APIRouter, HTTPException, Query, status
 
 from app.services.search_service import (
     search_movie,
-    search_movie_by_imdb_id,
     search_tv_show,
 )
 
@@ -37,18 +36,3 @@ async def search_movie_route(query: str = Query(..., alias="q")):
         return {"results": data}
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
-
-
-@search_router.get("/singlesearch/movie")
-async def search_movie_by_imdb_id_route(imdb: str = Query(..., alias="id")):
-    """
-    Search for a movie by IMDb ID.
-
-    :param imdb: The IMDb ID.
-    :return: Movie details.
-    """
-    try:
-        data = await search_movie_by_imdb_id(imdb)
-        return {"results": data}
-    except Exception as e:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))

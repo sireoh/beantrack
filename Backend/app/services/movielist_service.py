@@ -2,10 +2,16 @@
 Movie list data access layer.
 """
 
+from fastapi import HTTPException
+import httpx
+from sqlalchemy import text
 from sqlalchemy.orm import sessionmaker
+import uuid
+from typing import Optional
 from app.core.database import engine
 from app.utils.helpers import Helpers
-from app.db.models import DBMovie, DBMovieList, DBProgress
+from app.db.models import DBMovie, DBMovieList, DBProgress, AddMovieRequest, MovieData
+from app.core.config import settings
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
@@ -14,93 +20,48 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 # ===============================================
 
 
-def get_user_movie_list(user_id: str):
+def get_user_movie_list(user_id: str, status: Optional[str] = None):
     """
-    Get the user's movie list.
+    Get the user's movie list, optionally filtered by status.
 
     :param user_id: The user ID.
+    :param status: Optional status to filter by.
     :return: List of movies.
     """
     print(f"User ID: {user_id}")
 
     with SessionLocal() as session:
         movielist = (
-            session.query(DBMovieList).filter(DBMovieList.userid == user_id).first()
+            session.query(DBMovieList).filter(DBMovieList.user_id == user_id).first()
         )
         if not movielist:
             print("No movielist found for user")
             return []
 
-        movies = (
-            session.query(DBMovie)
-            .filter(DBMovie.movielistid == movielist.movielistid)
+        # Raw SQL to get movies with status
+        sql = text(
+            """
+            SELECT m.imdb, m.title, m.image, m.score, p.status
+            FROM movie m
+            JOIN progress p ON m.progress_id = p.progress_id
+            WHERE m.movie_list_id = :movie_list_id
+            AND m.title IS NOT NULL
+            AND m.image IS NOT NULL
+            AND m.score IS NOT NULL
+            AND (:status IS NULL OR p.status = :status)
+            ORDER BY m.title ASC
+            """
+        )
+
+        result = (
+            session.execute(
+                sql, {"movie_list_id": str(movielist.movie_list_id), "status": status}
+            )
+            .mappings()
             .all()
         )
 
-        data = []
-        for movie in movies:
-            progress = (
-                session.query(DBProgress)
-                .filter(DBProgress.progressid == movie.progressid)
-                .first()
-            )
-            item = {
-                "status": progress.status if progress else "unknown",
-                "image": movie.image,
-                "title": movie.title,
-                "imdb": movie.imdb,
-                "score": movie.score,
-            }
-            data.append(item)
-
-        return data
-
-
-def get_user_movie_list_by_status(user_id: str, status: str):
-    """
-    Get the user's movie list filtered by status.
-
-    :param user_id: The user ID.
-    :param status: The status to filter by.
-    :return: Filtered list of movies.
-    """
-    print(f"User ID: {user_id}")
-
-    with SessionLocal() as session:
-        movielist = (
-            session.query(DBMovieList).filter(DBMovieList.userid == user_id).first()
-        )
-        if not movielist:
-            print("No movielist found for user")
-            return []
-
-        movies = (
-            session.query(DBMovie)
-            .join(DBProgress, DBMovie.progressid == DBProgress.progressid)
-            .filter(
-                DBMovie.movielistid == movielist.movielistid,
-                DBProgress.status == status,
-            )
-            .all()
-        )
-
-        data = []
-        for movie in movies:
-            progress = (
-                session.query(DBProgress)
-                .filter(DBProgress.progressId == movie.progressId)
-                .first()
-            )
-            item = {
-                "status": progress.status if progress else "unknown",
-                "image": movie.image,
-                "title": movie.title,
-                "imdb": movie.imdb,
-                "score": movie.score,
-            }
-            data.append(item)
-
-        return data
+        return result
 
 
 # ===============================================
@@ -108,38 +69,45 @@ def get_user_movie_list_by_status(user_id: str, status: str):
 # ===============================================
 
 
-def add_movie(user_id: str, movie):
+async def add_movie(user_id: str, req: AddMovieRequest):
     """
     Add a movie to the user's movie list.
 
     :param user_id: The user ID.
-    :param movie: The movie to add.
-    :return: None
+    :param req: The add movie request.
     """
-    movielist_id = Helpers.get_current_movielist_id(user_id)
-
     with SessionLocal() as session:
+        # Get the user's movie list ID
+        movielist = (
+            session.query(DBMovieList).filter(DBMovieList.user_id == user_id).first()
+        )
+        if not movielist:
+            raise HTTPException(status_code=404, detail="Movie list not found")
+        movielist_id = str(movielist.movie_list_id)
+
+        # Fetch movie details from OMDB
+        _md: MovieData = await get_movie_data_by_imdb(req.imdb)
+
         # Create Progress
         progress = DBProgress(
-            status=movie.status, currentEpisodeIndex=0
-        )  # Movies don't have episodes, so 0
+            progress_id=str(uuid.uuid4()),
+            status=req.status,
+            current_episode_index=0,  # Movies don't have episodes
+        )
         session.add(progress)
         session.flush()
 
         # Add Movie
         m = DBMovie(
-            imdb=movie.imdb,
-            movielistid=movielist_id,
-            title=movie.title,
-            image=movie.image,
-            score=movie.score,
-            progressid=progress.progressid,
+            imdb=_md.imdb,
+            movie_list_id=movielist_id,
+            title=_md.title,
+            image=_md.image,
+            score=_md.score,
+            progress_id=progress.progress_id,
         )
         session.add(m)
-
         session.commit()
-
-    print(f"[added movie] user_id: {user_id}, title: {movie.title}")
 
 
 def delete_movie(user_id: str, imdb: str):
@@ -148,24 +116,33 @@ def delete_movie(user_id: str, imdb: str):
 
     :param user_id: The user ID.
     :param imdb: The IMDB ID of the movie.
-    :return: None
     """
-    movielist_id = Helpers.get_current_movielist_id(user_id)
-
     with SessionLocal() as session:
+        # Get the user's movie list ID
+        movielist = (
+            session.query(DBMovieList).filter(DBMovieList.user_id == user_id).first()
+        )
+        if not movielist:
+            raise HTTPException(status_code=404, detail="Movie list not found")
+        movielist_id = str(movielist.movie_list_id)
+
         movie = (
             session.query(DBMovie)
-            .filter(DBMovie.imdb == imdb, DBMovie.movielistid == movielist_id)
+            .filter(DBMovie.imdb == imdb, DBMovie.movie_list_id == movielist_id)
             .first()
         )
         if movie:
-            session.query(DBProgress).filter(
-                DBProgress.progressid == movie.progressid
-            ).delete()
+            # Delete movie first to remove foreign key references
             session.delete(movie)
+            session.flush()  # Execute the deletion to remove references
+            # Then delete related progress
+            session.query(DBProgress).filter(
+                DBProgress.progress_id == movie.progress_id
+            ).delete()
             session.commit()
-
-    print(f"[deleted movie] user_id: {user_id}, imdb: {imdb}")
+            return {"message": "Movie deleted successfully"}
+        else:
+            raise HTTPException(status_code=404, detail="Movie not found")
 
 
 # ===============================================
@@ -187,13 +164,13 @@ def update_movie_status(user_id: str, imdb: str, new_status: str):
     with SessionLocal() as session:
         movie = (
             session.query(DBMovie)
-            .filter(DBMovie.imdb == imdb, DBMovie.movielistid == movielist_id)
+            .filter(DBMovie.imdb == imdb, DBMovie.movie_list_id == movielist_id)
             .first()
         )
         if movie:
             progress = (
                 session.query(DBProgress)
-                .filter(DBProgress.progressid == movie.progressid)
+                .filter(DBProgress.progress_id == movie.progress_id)
                 .first()
             )
             if progress:
@@ -203,3 +180,42 @@ def update_movie_status(user_id: str, imdb: str, new_status: str):
     print(
         f"[updated status] user_id: {user_id}, imdb: {imdb}, new_status: {new_status}"
     )
+
+
+# ===============================================
+# =========== FETCH FULL DATA HELPERS ===========
+# ===============================================
+async def get_movie_data_by_imdb(imdb_id: str) -> MovieData:
+    """
+    Get movie details by IMDB ID using OMDB API.
+
+    :param imdb_id: The IMDB ID.
+    :return: MovieData object.
+    """
+    async with httpx.AsyncClient() as client:
+        try:
+            url = f"https://www.omdbapi.com/?apikey={settings.omdb_api_key}&i={imdb_id}"
+            res = await client.get(url)
+            res.raise_for_status()
+            data = res.json()
+            if data.get("Response") == "True":
+                return MovieData(
+                    title=data.get("Title"),
+                    image=data.get("Poster"),
+                    imdb=data.get("imdbID"),
+                    score=(
+                        float(data.get("imdbRating"))
+                        if data.get("imdbRating") != "N/A"
+                        else 0.0
+                    ),
+                )
+            else:
+                raise HTTPException(status_code=404, detail="Movie not found")
+        except httpx.HTTPStatusError as e:
+            raise HTTPException(
+                status_code=e.response.status_code, detail=f"OMDB error: {e}"
+            )
+        except Exception as e:
+            raise HTTPException(
+                status_code=500, detail=f"Error fetching movie: {str(e)}"
+            )

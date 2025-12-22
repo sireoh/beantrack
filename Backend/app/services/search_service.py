@@ -36,19 +36,3 @@ async def search_movie(query: str):
             return res.json()
         except Exception as e:
             return {"error": str(e), "source": "omdb"}
-
-
-async def search_movie_by_imdb_id(imdb: str):
-    """
-    Get movie details by IMDB ID using OMDB API.
-
-    :param imdb: The IMDB ID.
-    :return: JSON response from OMDB API.
-    """
-    async with httpx.AsyncClient() as client:
-        try:
-            url = f"https://www.omdbapi.com/?apikey={settings.omdb_api_key}&i={imdb}"
-            res = await client.get(url)
-            return res.json()
-        except Exception as e:
-            return {"error": str(e), "source": "omdb"}

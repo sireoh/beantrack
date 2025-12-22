@@ -1,12 +1,12 @@
-from fastapi import APIRouter, Depends, HTTPException, Path, Response, status
+from fastapi import APIRouter, Depends, HTTPException, Path, Query, status
+from typing import Optional
 
-from app.db.models import Movie, UpdateStatusRequest
+from app.db.models import UpdateStatusRequest, AddMovieRequest
 from app.utils.helpers import Helpers
 from app.services.movielist_service import (
     add_movie,
     delete_movie,
     get_user_movie_list,
-    get_user_movie_list_by_status,
     update_movie_status,
 )
 
@@ -14,52 +14,40 @@ movies_router = APIRouter()
 
 
 @movies_router.get("/movielist")
-async def get_user_movie_list_route(user_id: str = Depends(Helpers.get_current_user)):
+async def get_user_movie_list_route(
+    user_id: str = Depends(Helpers.get_current_user),
+    status_filter: Optional[str] = Query(None, alias="status"),
+):
     """
-    Get the user's movie list.
+    Get the user's movie list, optionally filtered by status.
 
     :param user_id: The authenticated user ID (injected automatically).
+    :param status_filter: Optional status to filter by.
     :return: User's movie watchlist.
     """
     try:
-        data = get_user_movie_list(user_id)
+        data = get_user_movie_list(user_id, status_filter)
         return {"watchlist": data}
     except Exception as e:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=str(e))
-
-
-@movies_router.get("/movielist/{status_filter}")
-async def get_user_movie_list_by_status_route(
-    user_id: str = Depends(Helpers.get_current_user), status_filter: str = Path(...)
-):
-    """
-    Get the user's movie list filtered by status.
-
-    :param user_id: The authenticated user ID (injected automatically).
-    :param status_filter: The status to filter by.
-    :return: Filtered movie watchlist.
-    """
-    try:
-        data = get_user_movie_list_by_status(user_id, status_filter)
-        return {"watchlist": data}
-    except Exception as e:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=str(e))
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)
+        )
 
 
 @movies_router.post("/movielist/add", status_code=status.HTTP_201_CREATED)
 async def add_movie_route(
-    movie_data: Movie, user_id: str = Depends(Helpers.get_current_user)
+    req: AddMovieRequest, user_id: str = Depends(Helpers.get_current_user)
 ):
     """
     Add a movie to the user's list.
 
-    :param movie_data: The movie data.
+    :param req: The add movie request.
     :param user_id: The authenticated user ID (injected automatically).
     :return: Success message.
     """
     try:
-        add_movie(user_id, movie_data)
-        return {"message": "Movie added successfully", "movie_data": movie_data}
+        await add_movie(user_id, req)
+        return {"message": "Movie added successfully", "req": req}
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
@@ -73,11 +61,11 @@ async def delete_movie_route(
 
     :param user_id: The authenticated user ID (injected automatically).
     :param imdb: The IMDB ID of the movie.
-    :return: No content on success.
+    :return: Success message on deletion.
     """
     try:
-        delete_movie(user_id, imdb)
-        return Response(status_code=status.HTTP_204_NO_CONTENT)
+        result = delete_movie(user_id, imdb)
+        return result
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
 

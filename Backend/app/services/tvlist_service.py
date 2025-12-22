@@ -7,6 +7,7 @@ import httpx
 from sqlalchemy import text
 from sqlalchemy.orm import sessionmaker
 import uuid
+from typing import Optional
 from app.core.database import engine
 from app.db.models import (
     AddTVShowRequest,
@@ -26,11 +27,12 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 # ===============================================
 
 
-def get_user_tv_list(user_id: str):
+def get_user_tv_list(user_id: str, status: Optional[str] = None):
     """
-    Get the user's TV list.
+    Get the user's TV list, optionally filtered by status.
 
     :param user_id: The user ID.
+    :param status: Optional status to filter by.
     :return: Sorted list of TV shows.
     """
     print(f"User ID from JWT: {user_id}")
@@ -55,13 +57,16 @@ def get_user_tv_list(user_id: str):
             AND tv.title IS NOT NULL
             AND tv.image IS NOT NULL
             AND tv.score IS NOT NULL
+            AND (:status IS NULL OR p.status = :status)
             GROUP BY tv.imdb, tv.title, tv.image, tv.score, p.status, p.current_episode_index
             ORDER BY tv.title ASC
         """
         )
 
         result = (
-            session.execute(sql, {"tv_list_id": str(tvlist.tv_list_id)})
+            session.execute(
+                sql, {"tv_list_id": str(tvlist.tv_list_id), "status": status}
+            )
             .mappings()
             .all()
         )
@@ -125,9 +130,6 @@ def get_user_tv_list_by_status(user_id: str, status: str):
             }
             data.append(item)
 
-        sorted_data = sorted(data, key=lambda x: x.get("title", "").lower())
-        return sorted_data
-
 
 # ===============================================
 # ============== ADD / REMOVE SHOWS =============
@@ -189,10 +191,7 @@ async def add_tv_show(user_id: str, req: AddTVShowRequest):
             progress_id=progress.progress_id,
         )
         session.add(tv)
-
         session.commit()
-
-    print(f"[added tv show] user_id: {user_id}, title: {_tsd.title}")
 
 
 def delete_tv_show(user_id: str, id: str):
@@ -211,11 +210,14 @@ def delete_tv_show(user_id: str, id: str):
 
         tvshow = (
             session.query(TVShowModel)
-            .filter(TVShowModel.id == id, TVShowModel.tv_list_id == tvlist_id)
+            .filter(TVShowModel.imdb == id, TVShowModel.tv_list_id == tvlist_id)
             .first()
         )
         if tvshow:
-            # Delete related
+            # Delete TV show first to remove foreign key references
+            session.delete(tvshow)
+            session.flush()  # Execute the deletion to remove references
+            # Then delete related records in dependency order
             session.query(DBEpisode).filter(
                 DBEpisode.episode_list_id == tvshow.episode_list_id
             ).delete()
@@ -225,10 +227,10 @@ def delete_tv_show(user_id: str, id: str):
             session.query(DBProgress).filter(
                 DBProgress.progress_id == tvshow.progress_id
             ).delete()
-            session.delete(tvshow)
             session.commit()
-
-    print(f"[deleted show] user_id: {user_id}, id: {id}")
+            return {"message": "TV show deleted successfully"}
+        else:
+            raise HTTPException(status_code=404, detail="TV show not found")
 
 
 # ===============================================

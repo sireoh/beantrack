@@ -170,6 +170,18 @@ class AddTVShowRequest(BaseModel):
     status: str
 
 
+class AddMovieRequest(BaseModel):
+    imdb: str
+    status: str
+
+
+class MovieData(BaseModel):
+    title: str
+    image: Optional[str]
+    imdb: str
+    score: Optional[float]
+
+
 class EpisodeData(BaseModel):
     episode_id: str
     name: str

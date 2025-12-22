@@ -38,11 +38,13 @@ class Helpers:
         """
         with SessionLocal() as session:
             movielist = (
-                session.query(DBMovieList).filter(DBMovieList.userid == user_id).first()
+                session.query(DBMovieList)
+                .filter(DBMovieList.user_id == user_id)
+                .first()
             )
             if not movielist:
                 raise HTTPException(status_code=404, detail="Movie list not found")
-            return str(movielist.movielistid)
+            return str(movielist.movie_list_id)
 
     @staticmethod
     def get_current_user(request: Request) -> str:

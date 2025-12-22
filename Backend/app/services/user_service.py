@@ -12,7 +12,7 @@ from fastapi import HTTPException, status
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 
-def add_user(_u):
+def signup(_u):
     """
     Add a new user with hashed password and create empty lists.
 
@@ -43,53 +43,6 @@ def add_user(_u):
         user_id = user.user_id
 
     print(f"[added user] username: {_u.username}, userId: {user_id}")
-
-
-def delete_user(data):
-    """
-    Delete a user and associated lists.
-
-    :param data: The user data for deletion.
-    :return: Deletion result.
-    :raises HTTPException: If user not found or invalid credentials.
-    """
-    with SessionLocal() as session:
-        user = session.query(DBUser).filter(DBUser.username == data.username).first()
-
-        if not user:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
-            )
-
-        if not bcrypt.checkpw(data.password.encode(), user.password.encode()):
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials"
-            )
-
-        # Delete associated lists and data
-        tvlist = (
-            session.query(DBTVList).filter(DBTVList.user_id == user.user_id).first()
-        )
-        if tvlist:
-            # Delete TVShows, etc. But for simplicity, cascade delete if set up, else manual
-            session.delete(tvlist)
-
-        movielist = (
-            session.query(DBMovieList)
-            .filter(DBMovieList.user_id == user.user_id)
-            .first()
-        )
-        if movielist:
-            session.delete(movielist)
-
-        session.delete(user)
-        session.commit()
-
-    print(f"[deleted user] username: {data.username}")
-
-    return {
-        "message": "User and associated data deleted successfully",
-    }
 
 
 def change_password(username: str, new_password: str):

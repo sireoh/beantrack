@@ -1,4 +1,5 @@
-from fastapi import APIRouter, Depends, HTTPException, Path, Query, Response, status
+from fastapi import APIRouter, Depends, HTTPException, Path, Query, status
+from typing import Optional
 
 from app.db.models import (
     AddTVShowRequest,
@@ -12,7 +13,6 @@ from app.services.tvlist_service import (
     decrement_tv_show_progress,
     delete_tv_show,
     get_user_tv_list,
-    get_user_tv_list_by_status,
     increment_tv_show_progress,
     update_by_index_tv_show_progress,
     update_tv_show_status,
@@ -22,37 +22,24 @@ tvshows_router = APIRouter()
 
 
 @tvshows_router.get("/tvlist")
-async def get_user_tv_list_route(user_id: str = Depends(Helpers.get_current_user)):
+async def get_user_tv_list_route(
+    user_id: str = Depends(Helpers.get_current_user),
+    status_filter: Optional[str] = Query(None, alias="status"),
+):
     """
-    Get the user's TV list.
+    Get the user's TV list, optionally filtered by status.
 
     :param user_id: The authenticated user ID (injected automatically).
+    :param status_filter: Optional status to filter by.
     :return: User's TV watchlist.
     """
     try:
-        data = get_user_tv_list(user_id)
+        data = get_user_tv_list(user_id, status_filter)
         return {"watchlist": data}
     except Exception as e:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=str(e))
-
-
-@tvshows_router.get("/tvlist/status")
-async def get_user_tv_list_by_status_route(
-    user_id: str = Depends(Helpers.get_current_user),
-    status_filter: str = Query(..., alias="status"),
-):
-    """
-    Get the user's TV list filtered by status.
-
-    :param user_id: The authenticated user ID (injected automatically).
-    :param status_filter: The status to filter by.
-    :return: Filtered TV watchlist.
-    """
-    try:
-        data = get_user_tv_list_by_status(user_id, status_filter)
-        return {"watchlist": data}
-    except Exception as e:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=str(e))
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)
+        )
 
 
 @tvshows_router.post("/tvlist/add", status_code=status.HTTP_201_CREATED)
@@ -82,11 +69,11 @@ async def delete_tv_show_route(
 
     :param user_id: The authenticated user ID (injected automatically).
     :param imdb: The IMDB ID of the TV show.
-    :return: No content on success.
+    :return: Success message on deletion.
     """
     try:
-        delete_tv_show(user_id, imdb)
-        return Response(status_code=status.HTTP_204_NO_CONTENT)
+        result = delete_tv_show(user_id, imdb)
+        return result
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
 

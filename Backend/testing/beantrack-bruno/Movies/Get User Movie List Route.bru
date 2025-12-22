@@ -1,0 +1,16 @@
+meta {
+  name: Get User Movie List Route
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{base_uri}}/movielist
+  body: json
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

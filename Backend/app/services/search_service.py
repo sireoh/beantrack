@@ -2,11 +2,11 @@
 Search data access layer for external APIs.
 """
 
-import os
 from fastapi import Request
 import httpx
+from ..core.config import settings
 
-OMDB_API_KEY = os.environ["OMDB_API_KEY"]
+OMDB_API_KEY = settings.omdb_api_key
 
 
 async def search_tv_show(query: str):

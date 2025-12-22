@@ -1,35 +1,34 @@
-from dotenv import load_dotenv
 import uvicorn
-from fastapi import Depends, FastAPI, HTTPException, Query, Response, status
+from fastapi import APIRouter, Depends, FastAPI, HTTPException, Query, Response, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi import Path
-import os
 
-from modules.auth_dal import auth
-from modules.helpers import Helpers
-from modules.models import (
-    Movie,
-    TVShow,
-    UpdateStatusRequest,
-    UpdateProgressRequest,
+from app.core.config import Settings
+
+from Backend.app.core.security import Security
+from Backend.app.db.models import Movie, TVShow, User
+from Backend.app.db.request_models import (
     UpdateProgressByIndexRequest,
-    User,
+    UpdateProgressRequest,
+    UpdateStatusRequest,
 )
-from modules.movielist_dal import (
+from app.services.auth_service import auth
+from app.utils.helpers import Helpers
+from Backend.app.services.movielist_service import (
     add_movie,
     delete_movie,
     get_user_movie_list,
     get_user_movie_list_by_status,
     update_movie_status,
 )
-from modules.search_dal import (
+from Backend.app.services.search_service import (
     search_movie,
     search_movie_by_imdb_id,
     search_tv_show,
     search_tv_show_by_tvmaze_id,
 )
-from modules.sessions_dal import authenticate_user
-from modules.tvlist_dal import (
+from app.services.sessions_service import authenticate_user
+from app.services.tvlist_service import (
     add_tv_show,
     decrement_tv_show_progress,
     delete_tv_show,
@@ -39,31 +38,29 @@ from modules.tvlist_dal import (
     update_by_index_tv_show_progress,
     update_tv_show_status,
 )
-from modules.user_dal import add_user, delete_user
+from app.services.user_service import add_user, delete_user
 
 
 app = FastAPI()
 
+# Create API router with prefix
+router = APIRouter(prefix="/api/v1")
+
 # Enable CORS for local development
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=Settings.cors_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-load_dotenv()
-DEV_MODE = os.environ["DEV_MODE"] == "true"
-PORT = os.environ["PORT"]
-BASE_URI = "/api/v1"
 
 # ===============================================
 # ============== USERS ==========================
 # ===============================================
 
 
-@app.post(f"{BASE_URI}/user/add", status_code=status.HTTP_201_CREATED)
+@router.post("/user/add", status_code=status.HTTP_201_CREATED)
 async def add_user_route(user_data: User):
     """
     Add a new user to the system.
@@ -78,7 +75,7 @@ async def add_user_route(user_data: User):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
 
-@app.delete(f"{BASE_URI}/user/delete")
+@router.delete("/user/delete")
 async def delete_user_route(data: User):
     """
     Delete a user from the system.
@@ -98,7 +95,7 @@ async def delete_user_route(data: User):
 # ===============================================
 
 
-@app.post(f"{BASE_URI}/login")
+@router.post("/login")
 async def login_route(data: User, response: Response):
     """
     Log in a user and set JWT cookie.
@@ -109,12 +106,12 @@ async def login_route(data: User, response: Response):
     """
     try:
         user_id = authenticate_user(data)
-        jwt_token = Helpers.create_jwt_token(user_id)
+        jwt_token = Security.create_jwt_token(user_id)
         response.set_cookie(
             key="access_token",
             value=jwt_token,
             httponly=True,
-            secure=True if DEV_MODE != "true" else False,
+            secure=not Settings.dev_mode,
             samesite="lax",
             max_age=60 * 60 * 24,
         )
@@ -123,7 +120,7 @@ async def login_route(data: User, response: Response):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=str(e))
 
 
-@app.get(f"{BASE_URI}/auth")
+@router.get("/auth")
 def auth_route(user_id: str = Depends(Helpers.get_current_user)):
     """
     Get authentication status for the current user.
@@ -137,7 +134,7 @@ def auth_route(user_id: str = Depends(Helpers.get_current_user)):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=str(e))
 
 
-@app.post(f"{BASE_URI}/logout")
+@router.post("/logout")
 async def logout_route(response: Response):
     """
     Log out the current user by clearing the JWT cookie.
@@ -157,7 +154,7 @@ async def logout_route(response: Response):
 # ===============================================
 
 
-@app.get(f"{BASE_URI}/search/tv_show")
+@router.get("/search/tv_show")
 async def search_tv_show_route(query: str = Query(..., alias="q")):
     """
     Search for TV shows by query string.
@@ -172,7 +169,7 @@ async def search_tv_show_route(query: str = Query(..., alias="q")):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
 
-@app.get(f"{BASE_URI}/search/movie")
+@router.get("/search/movie")
 async def search_movie_route(query: str = Query(..., alias="q")):
     """
     Search for movies by query string.
@@ -187,7 +184,7 @@ async def search_movie_route(query: str = Query(..., alias="q")):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
 
-@app.get(f"{BASE_URI}/singlesearch/tv_show")
+@router.get("/singlesearch/tv_show")
 async def search_tv_show_by_tvmaze_id_route(tvmaze_id: str = Query(..., alias="id")):
     """
     Search for a TV show by TVmaze ID.
@@ -202,7 +199,7 @@ async def search_tv_show_by_tvmaze_id_route(tvmaze_id: str = Query(..., alias="i
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
 
 
-@app.get(f"{BASE_URI}/singlesearch/movie")
+@router.get("/singlesearch/movie")
 async def search_movie_by_imdb_id_route(imdb: str = Query(..., alias="id")):
     """
     Search for a movie by IMDb ID.
@@ -222,7 +219,7 @@ async def search_movie_by_imdb_id_route(imdb: str = Query(..., alias="id")):
 # ===============================================
 
 
-@app.get(f"{BASE_URI}/tvlist")
+@router.get("/tvlist")
 async def get_user_tv_list_route(user_id: str = Depends(Helpers.get_current_user)):
     """
     Get the user's TV list.
@@ -237,7 +234,7 @@ async def get_user_tv_list_route(user_id: str = Depends(Helpers.get_current_user
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=str(e))
 
 
-@app.get(f"{BASE_URI}/tvlist/status")
+@router.get("/tvlist/status")
 async def get_user_tv_list_by_status_route(
     user_id: str = Depends(Helpers.get_current_user),
     status_filter: str = Query(..., alias="status"),
@@ -256,25 +253,25 @@ async def get_user_tv_list_by_status_route(
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=str(e))
 
 
-@app.post(f"{BASE_URI}/tvlist/add", status_code=status.HTTP_201_CREATED)
+@router.post("/tvlist/add", status_code=status.HTTP_201_CREATED)
 async def add_tv_show_route(
-    data: TVShow, user_id: str = Depends(Helpers.get_current_user)
+    tvshow: TVShow, user_id: str = Depends(Helpers.get_current_user)
 ):
     """
     Add a TV show to the user's list.
 
-    :param data: The TV show data.
+    :param tvshow: The TV show data.
     :param user_id: The authenticated user ID (injected automatically).
     :return: Success message.
     """
     try:
-        add_tv_show(user_id, data)
-        return {"message": "TV show added successfully", "data": data}
+        add_tv_show(user_id, tvshow)
+        return {"message": "TV show added successfully", "tvshow": tvshow}
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
 
-@app.delete(f"{BASE_URI}/tvlist/{{imdb}}")
+@router.delete("/tvlist/{imdb}")
 async def delete_tv_show_route(
     user_id: str = Depends(Helpers.get_current_user), imdb: str = Path(...)
 ):
@@ -292,7 +289,7 @@ async def delete_tv_show_route(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
 
 
-@app.patch(f"{BASE_URI}/tvlist/edit")
+@router.patch("/tvlist/edit")
 async def update_tv_show_status_route(
     data: UpdateStatusRequest, user_id: str = Depends(Helpers.get_current_user)
 ):
@@ -314,12 +311,7 @@ async def update_tv_show_status_route(
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
 
-# ===============================================
-# ========== TVLIST PROGRESS ====================
-# ===============================================
-
-
-@app.patch(f"{BASE_URI}/tvlist/progress/increment")
+@router.patch("/tvlist/progress/increment")
 async def increment_tv_show_progress_route(
     data: UpdateProgressRequest, user_id: str = Depends(Helpers.get_current_user)
 ):
@@ -337,7 +329,7 @@ async def increment_tv_show_progress_route(
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
 
-@app.patch(f"{BASE_URI}/tvlist/progress/decrement")
+@router.patch("/tvlist/progress/decrement")
 async def decrement_tv_show_progress_route(
     data: UpdateProgressRequest, user_id: str = Depends(Helpers.get_current_user)
 ):
@@ -355,7 +347,7 @@ async def decrement_tv_show_progress_route(
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
 
-@app.patch(f"{BASE_URI}/tvlist/progress/index")
+@router.patch("/tvlist/progress/index")
 async def update_by_index_tv_show_progress_route(
     data: UpdateProgressByIndexRequest, user_id: str = Depends(Helpers.get_current_user)
 ):
@@ -382,7 +374,7 @@ async def update_by_index_tv_show_progress_route(
 # ===============================================
 
 
-@app.get(f"{BASE_URI}/movielist")
+@router.get("/movielist")
 async def get_user_movie_list_route(user_id: str = Depends(Helpers.get_current_user)):
     """
     Get the user's movie list.
@@ -397,7 +389,7 @@ async def get_user_movie_list_route(user_id: str = Depends(Helpers.get_current_u
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=str(e))
 
 
-@app.get(f"{BASE_URI}/movielist/{{status_filter}}")
+@router.get("/movielist/{status_filter}")
 async def get_user_movie_list_by_status_route(
     user_id: str = Depends(Helpers.get_current_user), status_filter: str = Path(...)
 ):
@@ -415,7 +407,7 @@ async def get_user_movie_list_by_status_route(
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=str(e))
 
 
-@app.post(f"{BASE_URI}/movielist/add", status_code=status.HTTP_201_CREATED)
+@router.post("/movielist/add", status_code=status.HTTP_201_CREATED)
 async def add_movie_route(
     movie_data: Movie, user_id: str = Depends(Helpers.get_current_user)
 ):
@@ -433,7 +425,7 @@ async def add_movie_route(
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
 
-@app.delete(f"{BASE_URI}/movielist/{{imdb}}")
+@router.delete("/movielist/{imdb}")
 async def delete_movie_route(
     user_id: str = Depends(Helpers.get_current_user), imdb: str = Path(...)
 ):
@@ -451,7 +443,7 @@ async def delete_movie_route(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
 
 
-@app.patch(f"{BASE_URI}/movielist/edit")
+@router.patch("/movielist/edit")
 async def update_movie_status_route(
     data: UpdateStatusRequest, user_id: str = Depends(Helpers.get_current_user)
 ):
@@ -473,5 +465,8 @@ async def update_movie_status_route(
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
 
+# Include the router
+app.include_router(router)
+
 if __name__ == "__main__":
-    uvicorn.run("server:app", host="0.0.0.0", port=int(PORT), reload=False)
+    uvicorn.run("main:app", host="0.0.0.0", port=int(Settings.port), reload=False)

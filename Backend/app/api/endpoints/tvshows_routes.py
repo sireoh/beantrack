@@ -90,11 +90,11 @@ async def update_tv_show_status_route(
     :return: Success message.
     """
     try:
-        update_tv_show_status(user_id, data.imdb, data.new_status)
+        update_tv_show_status(user_id, data.imdb, data.status)
         return {
             "message": "TV show status updated successfully",
             "imdb": data.imdb,
-            "new_status": data.new_status,
+            "status": data.status,
         }
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))

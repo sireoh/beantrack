@@ -1,0 +1,23 @@
+meta {
+  name: Edit TV Show Status
+  type: http
+  seq: 4
+}
+
+patch {
+  url: {{base_uri}}/tvlist/edit
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "imdb": "tt1723816",
+    "status": "planned"
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

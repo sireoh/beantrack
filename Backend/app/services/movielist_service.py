@@ -150,18 +150,23 @@ def delete_movie(user_id: str, imdb: str):
 # ===============================================
 
 
-def update_movie_status(user_id: str, imdb: str, new_status: str):
+def update_movie_status(user_id: str, imdb: str, status: str):
     """
     Update the status of a movie in the user's movie list.
 
     :param user_id: The user ID.
     :param imdb: The IMDB ID of the movie.
-    :param new_status: The new status.
-    :return: None
+    :param status: The new status.
     """
-    movielist_id = Helpers.get_current_movielist_id(user_id)
-
     with SessionLocal() as session:
+        # Get the user's movie list ID
+        movielist = (
+            session.query(DBMovieList).filter(DBMovieList.user_id == user_id).first()
+        )
+        if not movielist:
+            raise HTTPException(status_code=404, detail="Movie list not found")
+        movielist_id = str(movielist.movie_list_id)
+
         movie = (
             session.query(DBMovie)
             .filter(DBMovie.imdb == imdb, DBMovie.movie_list_id == movielist_id)
@@ -174,12 +179,8 @@ def update_movie_status(user_id: str, imdb: str, new_status: str):
                 .first()
             )
             if progress:
-                progress.status = new_status  # type: ignore
+                progress.status = status
                 session.commit()
-
-    print(
-        f"[updated status] user_id: {user_id}, imdb: {imdb}, new_status: {new_status}"
-    )
 
 
 # ===============================================

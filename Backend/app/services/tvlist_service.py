@@ -11,7 +11,7 @@ from typing import Optional
 from app.core.database import engine
 from app.db.models import (
     AddTVShowRequest,
-    DBTVShow as TVShowModel,
+    DBTVShow,
     DBTVList,
     DBProgress,
     DBEpisode,
@@ -91,10 +91,10 @@ def get_user_tv_list_by_status(user_id: str, status: str):
             return []
 
         tvshows = (
-            session.query(TVShowModel)
-            .join(DBProgress, TVShowModel.progress_id == DBProgress.progress_id)
+            session.query(DBTVShow)
+            .join(DBProgress, DBTVShow.progress_id == DBProgress.progress_id)
             .filter(
-                TVShowModel.tv_list_id == tvlist.tv_list_id, DBProgress.status == status
+                DBTVShow.tv_list_id == tvlist.tv_list_id, DBProgress.status == status
             )
             .all()
         )
@@ -181,7 +181,7 @@ async def add_tv_show(user_id: str, req: AddTVShowRequest):
         session.add_all(episodes)
 
         # Add TVShow
-        tv = TVShowModel(
+        tv = DBTVShow(
             imdb=_tsd.imdb,
             tv_list_id=tvlist_id,
             title=_tsd.title,
@@ -209,8 +209,8 @@ def delete_tv_show(user_id: str, id: str):
         tvlist_id = str(tvlist.tv_list_id)
 
         tvshow = (
-            session.query(TVShowModel)
-            .filter(TVShowModel.imdb == id, TVShowModel.tv_list_id == tvlist_id)
+            session.query(DBTVShow)
+            .filter(DBTVShow.imdb == id, DBTVShow.tv_list_id == tvlist_id)
             .first()
         )
         if tvshow:
@@ -238,13 +238,13 @@ def delete_tv_show(user_id: str, id: str):
 # ===============================================
 
 
-def update_tv_show_status(user_id: str, imdb: str, new_status: str):
+def update_tv_show_status(user_id: str, imdb: str, status: str):
     """
     Update the status of a TV show in the user's list.
 
     :param user_id: The user ID.
     :param imdb: The IMDb ID.
-    :param new_status: The new status.
+    :param status: The new status.
     """
     with SessionLocal() as session:
         # Get the user's TV list ID
@@ -254,8 +254,8 @@ def update_tv_show_status(user_id: str, imdb: str, new_status: str):
         tvlist_id = str(tvlist.tv_list_id)
 
         tvshow = (
-            session.query(TVShowModel)
-            .filter(TVShowModel.imdb == imdb, TVShowModel.tv_list_id == tvlist_id)
+            session.query(DBTVShow)
+            .filter(DBTVShow.imdb == imdb, DBTVShow.tv_list_id == tvlist_id)
             .first()
         )
         if tvshow:
@@ -265,12 +265,8 @@ def update_tv_show_status(user_id: str, imdb: str, new_status: str):
                 .first()
             )
             if progress:
-                progress.status = new_status
+                progress.status = status
                 session.commit()
-
-    print(
-        f"[updated status] user_id: {user_id}, imdb: {imdb}, new_status: {new_status}"
-    )
 
 
 # ===============================================
@@ -295,8 +291,8 @@ def decrement_tv_show_progress(user_id: str, imdb: str):
         tvlist_id = str(tvlist.tv_list_id)
 
         tvshow = (
-            session.query(TVShowModel)
-            .filter(TVShowModel.imdb == imdb, TVShowModel.tv_list_id == tvlist_id)
+            session.query(DBTVShow)
+            .filter(DBTVShow.imdb == imdb, DBTVShow.tv_list_id == tvlist_id)
             .first()
         )
         if tvshow:
@@ -331,8 +327,8 @@ def increment_tv_show_progress(user_id: str, imdb: str):
         tvlist_id = str(tvlist.tv_list_id)
 
         tvshow = (
-            session.query(TVShowModel)
-            .filter(TVShowModel.imdb == imdb, TVShowModel.tv_list_id == tvlist_id)
+            session.query(DBTVShow)
+            .filter(DBTVShow.imdb == imdb, DBTVShow.tv_list_id == tvlist_id)
             .first()
         )
         if tvshow:
@@ -375,8 +371,8 @@ def update_by_index_tv_show_progress(user_id: str, imdb: str, index: int):
         tvlist_id = str(tvlist.tv_list_id)
 
         tvshow = (
-            session.query(TVShowModel)
-            .filter(TVShowModel.imdb == imdb, TVShowModel.tv_list_id == tvlist_id)
+            session.query(DBTVShow)
+            .filter(DBTVShow.imdb == imdb, DBTVShow.tv_list_id == tvlist_id)
             .first()
         )
         if tvshow:

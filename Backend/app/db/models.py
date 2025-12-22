@@ -153,7 +153,7 @@ class SignupRequest(BaseModel):
 
 class UpdateStatusRequest(BaseModel):
     imdb: str
-    new_status: str
+    status: str
 
 
 class UpdateProgressRequest(BaseModel):

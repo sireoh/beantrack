@@ -82,11 +82,11 @@ async def update_movie_status_route(
     :return: Success message.
     """
     try:
-        update_movie_status(user_id, data.imdb, data.new_status)
+        update_movie_status(user_id, data.imdb, data.status)
         return {
             "message": "Movie status updated successfully",
             "imdb": data.imdb,
-            "new_status": data.new_status,
+            "status": data.status,
         }
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))

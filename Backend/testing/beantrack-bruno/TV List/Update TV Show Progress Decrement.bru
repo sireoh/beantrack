@@ -1,0 +1,22 @@
+meta {
+  name: Update TV Show Progress Decrement
+  type: http
+  seq: 6
+}
+
+patch {
+  url: {{base_uri}}/tvlist/progress/decrement
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "imdb": "tt1723816"
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

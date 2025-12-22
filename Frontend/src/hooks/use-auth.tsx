@@ -2,6 +2,7 @@
 "use client";
 import { useStore } from "@/store";
 import { useEffect } from "react";
+import { getAuth } from "@/api/api";
 
 export type User = {
   username: string;
@@ -17,15 +18,8 @@ export function useAuth() {
   useEffect(() => {
     async function checkAuth() {
       try {
-        const res = await fetch("/api/auth", {
-          credentials: "include",
-        });
-        if (res.ok) {
-          const data = await res.json();
-          setUser(data);
-        } else {
-          setUser(undefined);
-        }
+        const data = await getAuth();
+        setUser(data);
       } catch {
         setUser(undefined);
       } finally {

@@ -14,8 +14,8 @@ const WatchlistTableImage = ({
 }) => {
   const _url =
     type == "tv"
-      ? `https://static.tvmaze.com/uploads/images/original_untouched/${image}.jpg`
-      : `https://m.media-amazon.com/images/${image}.jpg`;
+      ? (image.startsWith("http") ? image : `https://static.tvmaze.com/uploads/images/original_untouched/${image}.jpg`)
+      : (image.startsWith("http") ? image : `https://m.media-amazon.com/images/${image}.jpg`);
 
   const _href = `https://www.imdb.com/title/${imdb}`;
 

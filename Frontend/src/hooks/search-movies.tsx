@@ -1,5 +1,6 @@
 import { OMDBResults, SearchResult } from "@/models";
 import { useEffect, useState } from "react";
+import { searchMovies as apiSearchMovies } from "@/api/api";
 
 export function searchMovies(query: string): SearchResult<OMDBResults> {
   const [results, setResults] = useState<OMDBResults>({
@@ -17,17 +18,7 @@ export function searchMovies(query: string): SearchResult<OMDBResults> {
     const fetchMovies = async () => {
       setLoading(true);
       try {
-        const res = await fetch(
-          `/api/search/movie?q=${encodeURIComponent(query)}`,
-          {
-            method: "POST",
-            credentials: "include", // optional depending on auth/cookies
-          }
-        );
-
-        if (!res.ok)
-          throw new Error(`Failed to fetch movies: ${res.statusText}`);
-        const data = await res.json();
+        const data = await apiSearchMovies(query);
 
         setResults(
           __removeDuplicates(

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { SearchResult, TVMazeResults } from "@/models";
+import { searchTVShows } from "@/api/api";
 
 export function searchTVShow(query: string): SearchResult<TVMazeResults> {
   const [results, setResults] = useState<TVMazeResults>([]);
@@ -13,19 +14,7 @@ export function searchTVShow(query: string): SearchResult<TVMazeResults> {
       setLoading(true);
       setError(null);
       try {
-        const res = await fetch(
-          `/api/search/tv_show?q=${encodeURIComponent(query)}`,
-          {
-            method: "POST",
-            credentials: "include", // optional, remove if not using cookies/auth
-          }
-        );
-
-        if (!res.ok) {
-          throw new Error(`Error: ${res.status}`);
-        }
-
-        const data = await res.json();
+        const data = await searchTVShows(query);
         setResults(data.results || []);
       } catch (err: any) {
         setError(err.message || "Unknown error");

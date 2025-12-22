@@ -1,7 +1,7 @@
 import { ItemCardDataModel } from "@/components/app/item-card/item-card";
 import { WatchlistItem } from "@/models";
 import { deleteDataModel } from "@/store/slices/dialog-slice";
-import axios from "axios";
+import { updateTVShowStatus, updateMovieStatus, deleteTVShow, deleteMovie } from "@/api/api";
 import { toast } from "sonner";
 
 const notifs: Record<string, string> = {
@@ -36,8 +36,7 @@ const handleTVShowSelect = async (
   item: WatchlistItem | ItemCardDataModel
 ) => {
   try {
-    const url = `/api/${item.imdb}/edit/tv_show/status/${action}`;
-    await axios.patch(url);
+    await updateTVShowStatus({ imdb: item.imdb, status: action });
     toast.success(`Updated to: ${notifs[action]}`);
   } catch (error) {
     console.error(error);
@@ -50,8 +49,7 @@ const handleMovieSelect = async (
   item: WatchlistItem | ItemCardDataModel
 ) => {
   try {
-    const url = `/api/${item.imdb}/edit/movie/status/${action}`;
-    await axios.patch(url);
+    await updateMovieStatus({ imdb: item.imdb, status: action });
     toast.success(`Updated to: ${notifs[action]}`);
   } catch (error) {
     console.error(error);
@@ -68,8 +66,7 @@ export const handleDelete = async (deleteData: deleteDataModel) => {
 
 const handleTVShowDelete = async (item: WatchlistItem | ItemCardDataModel) => {
   try {
-    const url = `/api/delete/${item.imdb}/tv_show`;
-    await axios.delete(url);
+    await deleteTVShow(item.imdb);
     toast.success(`${item.title} removed from library.`);
     // Optionally trigger a refresh or remove item from local state
   } catch (error) {
@@ -80,8 +77,7 @@ const handleTVShowDelete = async (item: WatchlistItem | ItemCardDataModel) => {
 
 const handleMovieDelete = async (item: WatchlistItem | ItemCardDataModel) => {
   try {
-    const url = `/api/delete/${item.imdb}/movie`;
-    await axios.delete(url);
+    await deleteMovie(item.imdb);
     toast.success(`${item.title} removed from library.`);
     // Optionally trigger a refresh or remove item from local state
   } catch (error) {

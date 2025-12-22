@@ -1,5 +1,5 @@
 import { WatchlistItem } from "@/models";
-import axios from "axios";
+import { updateTVProgressByIndex } from "@/api/api";
 import { Dispatch, SetStateAction } from "react";
 import { toast } from "sonner";
 
@@ -10,8 +10,10 @@ export async function handleChangeProgress(
 ) {
   // BACKEND
   try {
-    const url = `/api/${item.imdb}/edit/tv_show/progress/by_index/${index}`;
-    await axios.patch(url);
+    await updateTVProgressByIndex({
+      imdb: item.imdb,
+      index: index,
+    });
   } catch (error) {
     console.error(error);
     toast.error("Failed to update item.");

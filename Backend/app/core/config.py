@@ -28,11 +28,11 @@ class Settings(BaseSettings):
     )
 
     # Server
-    port: int = Field(default=8000, description="Server port")
+    port: int = Field(default=5483, description="Server port")
 
     # Optional: CORS origins
     cors_origins: list[str] = Field(
-        default=["http://localhost:3000"], description="Allowed CORS origins"
+        default=["http://localhost:5482"], description="Allowed CORS origins"
     )
 
     # Pydantic config to load from .env

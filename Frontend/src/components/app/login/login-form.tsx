@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import LoginPassword from "@/components/app/login/login-password";
+import { login } from "@/api/api";
 
 const LoginForm = () => {
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -11,27 +12,17 @@ const LoginForm = () => {
 
     const formData = new FormData(e.currentTarget);
 
-    const body = JSON.stringify({
-      username: formData.get("username"),
-      password: formData.get("password"),
-    });
+    const body = {
+      username: formData.get("username") as string,
+      password: formData.get("password") as string,
+    };
 
     try {
-      const res = await fetch("/api/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body,
-      });
-
-      if (res.ok) {
-        window.location.href = "/";
-      } else {
-        alert("Login failed");
-      }
+      await login(body);
+      window.location.href = "/";
     } catch (err) {
       console.error("Network or server error:", err);
+      alert("Login failed");
     }
   };
 

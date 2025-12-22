@@ -11,9 +11,6 @@ import {
 import { TvMinimalPlay, SquareCheckBig, NotebookPen } from "lucide-react";
 import { ItemCardDataModel } from "./item-card";
 import { useStore } from "@/store";
-import { OMDBResultsByIMDB, TVMazeEpisodeModel } from "@/models";
-import { fetchMovieByIMDB } from "@/utils/fetch-movie-by-imdb";
-import { fetchTVShowByTVMazeID } from "@/utils/fetch-tv-show-by-tv-maze-id";
 import { handleTVSelect, handleMovieSelect } from "@/utils/handle-item-select";
 
 const ItemCardAddButtonDropdown = ({
@@ -41,17 +38,11 @@ function ItemCardAddButtonDropdownContent({
   const search = useStore((state) => state.search);
 
   async function _t(action: string) {
-    const results: TVMazeEpisodeModel[] = await fetchTVShowByTVMazeID(
-      itemCardData.id!
-    );
-    handleTVSelect(itemCardData, action, results);
+    handleTVSelect(itemCardData.id!, action);
   }
 
   async function _m(action: string) {
-    const results: OMDBResultsByIMDB = await fetchMovieByIMDB(
-      itemCardData.imdb
-    );
-    handleMovieSelect(itemCardData, action, results);
+    handleMovieSelect(itemCardData.imdb!, action);
   }
 
   const actions = [

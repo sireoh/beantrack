@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { Minus, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
-import axios from "axios";
+import { incrementTVProgress, decrementTVProgress } from "@/api/api";
 
 // ---------- Temp --------------------
 import { toast } from "sonner";
@@ -34,8 +34,11 @@ const WatchlistTableProgress = ({
   const handleSelect = async (action: string) => {
     // BACKEND
     try {
-      const url = `/api/${item.imdb}/edit/tv_show/progress/${action}`;
-      await axios.patch(url);
+      if (action === "increment") {
+        await incrementTVProgress({ imdb: item.imdb });
+      } else if (action === "decrement") {
+        await decrementTVProgress({ imdb: item.imdb });
+      }
     } catch (error) {
       console.error(error);
       toast.error("Failed to update item.");
@@ -57,8 +60,8 @@ const WatchlistTableProgress = ({
       const episode =
         action === "increment"
           ? item.episodes[
-              Math.min(currentProgress + 1, item.episodes.length - 1)
-            ]
+          Math.min(currentProgress + 1, item.episodes.length - 1)
+          ]
           : item.episodes[Math.max(currentProgress - 1, 0)];
       const code = episode.code;
       const name = episode.name;

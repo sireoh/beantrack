@@ -8,21 +8,8 @@ import { useRouter } from "next/navigation";
 const LogoutButton = () => {
   const router = useRouter();
   const handleLogout = async () => {
-    try {
-      const res = await fetch("/api/logout", {
-        method: "POST",
-        credentials: "include",
-      });
-
-      if (res.ok) {
-        window.location.reload();
-        router.push("/");
-      } else {
-        console.error("Logout failed:", await res.text());
-      }
-    } catch (err) {
-      console.error("Logout error:", err);
-    }
+    window.location.reload();
+    router.push("/");
   };
 
   return (

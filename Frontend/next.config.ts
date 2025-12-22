@@ -15,15 +15,6 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-
-  async rewrites() {
-    return [
-      {
-        source: "/api/:path*",
-        destination: "http://0.0.0.0:5483/api/:path*", // proxies to backend
-      },
-    ];
-  },
 };
 
 export default nextConfig;

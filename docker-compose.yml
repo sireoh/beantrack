@@ -1,0 +1,14 @@
+services:
+  backend:
+    image: ghcr.io/sireoh/beantrack/beantrack-backend:latest
+    restart: always
+    env_file:
+      - .env
+    network_mode: "host"
+
+  frontend:
+    image: ghcr.io/sireoh/beantrack/beantrack-frontend:latest
+    restart: always
+    network_mode: "host"
+    depends_on:
+      - backend

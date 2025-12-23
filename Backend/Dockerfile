@@ -1,5 +1,6 @@
 # Use an official Python runtime as a base image
 FROM python:3.11-slim
+LABEL org.opencontainers.image.source=https://github.com/sireoh/beantrack
 
 # Set the working directory in the container
 WORKDIR /app

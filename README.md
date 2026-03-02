@@ -60,3 +60,21 @@ Find a specific route / Search through nested:
 
 Show all server routes:
 - routes+page.server.ts
+
+# Fetch Data (Drizzle ORM) like:
+```ts
+// Fetch a show and include all its episodes
+const showWithEpisodes = await db.query.tvshow.findFirst({
+  where: (tvshow, { eq }) => eq(tvshow.imdb, 12345),
+  with: {
+    episodes: true,
+  },
+});
+
+// Fetch an episode and include the parent show's details
+const episodeWithShow = await db.query.episode.findFirst({
+  with: {
+    show: true, 
+  },
+});
+```

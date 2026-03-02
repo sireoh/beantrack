@@ -1,0 +1,4 @@
+name: Beantrack Server Environment
+variables:
+  - name: BASE_URL
+    value: http://localhost:5173

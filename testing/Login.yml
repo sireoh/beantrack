@@ -1,0 +1,31 @@
+info:
+  name: Login
+  type: http
+  seq: 2
+
+http:
+  method: POST
+  url: "{{BASE_URL}}/demo/better-auth/login?/signInEmail"
+  params:
+    - name: /signInEmail
+      value: ""
+      type: query
+  body:
+    type: multipart-form
+    data:
+      - name: email
+        type: text
+        value: admin@email.com
+      - name: password
+        type: text
+        value: adminadmin@@
+      - name: name
+        type: text
+        value: admin
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

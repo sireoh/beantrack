@@ -1,0 +1,17 @@
+# Local database (beantrack.db, -wal, -shm) and any restored copies
+data/
+
+# Secrets
+.env
+.env.*
+!.env.example
+
+# Build output
+backend/bin/
+*.exe
+
+# Editors / OS
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db

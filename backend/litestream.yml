@@ -1,0 +1,30 @@
+# Litestream config for BeanTrack (written for Litestream v0.5.18).
+#
+# Litestream expands $VAR / ${VAR} from the environment when it reads this
+# file, so the same env vars the app uses drive the backup too.
+#
+# Run the app under Litestream so replication starts before the app and stops
+# after it:
+#
+#   litestream replicate -config litestream.yml -exec "./server"
+#
+# Encryption: Litestream v0.5.x removed client-side age encryption, so the
+# replica is encrypted with S3 SSE-C (server-side encryption with a
+# customer-provided key). Litestream sends LITESTREAM_ENCRYPTION_KEY (base64 of
+# 32 random bytes, AES-256) with every upload and download; Backblaze encrypts
+# the objects at rest with it and does not keep the key. Lose the key and the
+# backups cannot be read. See the README for details and trade-offs.
+
+dbs:
+  - path: ${DATA_DIR}/beantrack.db
+    replica:
+      type: s3
+      bucket: ${B2_BUCKET}
+      path: beantrack
+      endpoint: ${B2_ENDPOINT}
+      region: ${B2_REGION}
+      access-key-id: ${B2_KEY_ID}
+      secret-access-key: ${B2_APPLICATION_KEY}
+      force-path-style: true
+      sse-customer-algorithm: AES256
+      sse-customer-key: ${LITESTREAM_ENCRYPTION_KEY}

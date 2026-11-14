@@ -41,6 +41,27 @@ def test_add_show_fetches_and_caches_episodes(
     ]
 
 
+def test_get_show_episodes_by_imdb(alice: TestClient) -> None:
+    alice.post("/api/tvlist/add", json=tv_add_payload())
+
+    response = alice.get("/api/tvlist/tt0903747/episodes")
+
+    assert response.status_code == 200
+    assert response.json()[0] == {
+        "id": 12192,
+        "season": 1,
+        "number": 1,
+        "title": "Pilot",
+        "image": "https://static.tvmaze.com/e1-o.jpg",
+    }
+
+
+def test_get_missing_show_episodes_is_404(alice: TestClient) -> None:
+    response = alice.get("/api/tvlist/tt9999999/episodes")
+
+    assert response.status_code == 404
+
+
 def test_get_tvlist_returns_added_shows(alice: TestClient) -> None:
     alice.post("/api/tvlist/add", json=tv_add_payload(current_episode=1))
     alice.post("/api/tvlist/add", json=tv_add_payload("tt0306414", status="completed"))

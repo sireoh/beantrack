@@ -3,6 +3,7 @@ from fastapi import APIRouter, Response, status
 from app.api.deps import CurrentUser, DbSession, TvMaze
 from app.schemas.common import ImdbId
 from app.schemas.tvlist import (
+    EpisodeOut,
     TvListAddRequest,
     TvListEntryOut,
     TvListOut,
@@ -25,6 +26,13 @@ def add_to_tvlist(
     """Add a show from the supplied catalog data to the logged-in user's TV list."""
     entry = list_service.add_tvshow(db, tvmaze=tvmaze, user=user, request=body)
     return TvListEntryOut.model_validate(entry)
+
+
+@router.get("/{imdb}/episodes", response_model=list[EpisodeOut])
+def get_episodes(imdb: ImdbId, _user: CurrentUser, db: DbSession) -> list[EpisodeOut]:
+    """Return the cached episodes for a show identified by IMDb id."""
+    episodes = list_service.get_episodes(db, imdb)
+    return [EpisodeOut.model_validate(episode) for episode in episodes]
 
 
 @router.delete("/{imdb}", status_code=status.HTTP_204_NO_CONTENT)

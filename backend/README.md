@@ -81,6 +81,7 @@ All routes are under `/api`. Interactive docs: http://localhost:8000/docs
 | GET | `/api/auth/me` | ✔ | Current user |
 | GET | `/api/tvlist` | ✔ | Full TV list |
 | POST | `/api/tvlist/add` | ✔ | `{"show": {"imdb": "tt0903747", "tvmaze_id": 169, "title": "Breaking Bad", "image": "...", "score": 9.2}, "status": "watching"}` |
+| GET | `/api/tvlist/{imdb}/episodes` | ✔ | Return the cached episodes for a TV show |
 | DELETE | `/api/tvlist/{imdb}` | ✔ | Remove a show from the current user's list |
 | GET | `/api/movielist` | ✔ | Full movie list |
 | POST | `/api/movielist/add` | ✔ | `{"imdb": "tt0133093", "status": "planned"}` |

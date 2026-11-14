@@ -10,7 +10,7 @@ from app.clients.omdb import OmdbClient
 from app.clients.tvmaze import TvMazeClient, TvMazeEpisode
 from app.core.errors import ConflictError, InvalidRequestError, NotFoundError
 from app.db.types import utcnow
-from app.models import MovieList, TvList, User, UserMovie, UserTvShow
+from app.models import Episode, MovieList, TvList, User, UserMovie, UserTvShow
 from app.repositories import media as media_repo
 from app.repositories import movielists as movielists_repo
 from app.repositories import tvlists as tvlists_repo
@@ -35,6 +35,12 @@ def get_movielist(db: Session, user: User) -> MovieList:
     if movielist is None:
         raise NotFoundError("Movie list not found")
     return movielist
+
+
+def get_episodes(db: Session, imdb: str) -> list[Episode]:
+    if media_repo.get_tvshow(db, imdb) is None:
+        raise NotFoundError("TV show not found")
+    return media_repo.get_episodes_for_tvshow(db, imdb)
 
 
 def add_tvshow(

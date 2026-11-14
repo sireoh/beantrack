@@ -19,6 +19,13 @@ def get_tvshow(db: Session, imdb: str) -> TvShow | None:
     return db.get(TvShow, imdb)
 
 
+def get_episodes_for_tvshow(db: Session, imdb: str) -> list[Episode]:
+    show = db.get(TvShow, imdb)
+    if show is None:
+        return []
+    return list(show.episodes)
+
+
 def get_episode(db: Session, episode_id: int) -> Episode | None:
     return db.get(Episode, episode_id)
 

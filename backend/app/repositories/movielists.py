@@ -19,6 +19,10 @@ def get_entry(db: Session, movielist_id: str, imdb: str) -> UserMovie | None:
     return db.get(UserMovie, (movielist_id, imdb))
 
 
+def delete_entry(db: Session, entry: UserMovie) -> None:
+    db.delete(entry)
+
+
 def add_entry(
     db: Session, *, movielist: MovieList, movie: Movie, status: WatchStatus, now: datetime
 ) -> UserMovie:

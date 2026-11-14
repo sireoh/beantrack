@@ -11,6 +11,7 @@ class MediaType(StrEnum):
 class SearchResult(BaseModel):
     # None when TVmaze has no IMDb id for a show; such results can't be added to a list.
     imdb: str | None
+    tvmaze_id: int | None = None
     title: str
     year: str | None
     image: str | None

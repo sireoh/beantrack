@@ -5,7 +5,7 @@ from __future__ import annotations
 from datetime import datetime
 from typing import TYPE_CHECKING
 
-from sqlalchemy import ForeignKey, String
+from sqlalchemy import ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.ids import new_id
@@ -60,16 +60,12 @@ class UserTvShow(Base):
     )
     imdb: Mapped[str] = mapped_column(ForeignKey("tvshows.imdb"), primary_key=True)
     status: Mapped[WatchStatus] = mapped_column(watch_status_column_type())
-    # Column is named `current_episode`; the attribute holds the id, the relationship the row.
-    current_episode_id: Mapped[int | None] = mapped_column(
-        "current_episode", ForeignKey("episodes.id", ondelete="SET NULL")
-    )
+    current_episode: Mapped[int] = mapped_column("current_episode", Integer, default=0)
     added_at: Mapped[datetime] = mapped_column(UTCDateTime(), default=utcnow)
     updated_at: Mapped[datetime] = mapped_column(UTCDateTime(), default=utcnow, onupdate=utcnow)
 
     tvlist: Mapped[TvList] = relationship(back_populates="entries")
     show: Mapped[TvShow] = relationship()
-    current_episode: Mapped[Episode | None] = relationship()
 
 
 class UserMovie(Base):

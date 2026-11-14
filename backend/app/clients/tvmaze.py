@@ -87,12 +87,37 @@ class TvMazeClient:
         return [
             SearchResult(
                 imdb=hit.show.externals.imdb,
+                tvmaze_id=hit.show.id,
                 title=hit.show.name,
                 year=hit.show.premiered[:4] if hit.show.premiered else None,
                 image=_best_image(hit.show.image),
                 score=hit.show.rating.average,
             )
             for hit in hits
+        ]
+
+    def get_episodes(self, tvmaze_id: int) -> list[TvMazeEpisode]:
+        """Fetch and parse the complete episode list for a TVmaze show."""
+        payload = get_json(
+            self._http,
+            "TVmaze",
+            f"{self._base_url}/shows/{tvmaze_id}",
+            params={"embed": "episodes"},
+        )
+        try:
+            episodes_payload = (payload.get("_embedded") or {}).get("episodes", [])
+            episodes = [_Episode.model_validate(item) for item in episodes_payload]
+        except (AttributeError, TypeError, ValidationError) as exc:
+            raise UpstreamError("TVmaze returned an unexpected response") from exc
+        return [
+            TvMazeEpisode(
+                id=ep.id,
+                title=ep.name or f"Episode {ep.number or ep.id}",
+                image=ep.image.original if ep.image else None,
+                season=ep.season,
+                number=ep.number,
+            )
+            for ep in episodes
         ]
 
     def get_show_by_imdb(self, imdb: str) -> TvMazeShowDetails:

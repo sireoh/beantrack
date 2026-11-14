@@ -1,6 +1,7 @@
-from fastapi import APIRouter, status
+from fastapi import APIRouter, Response, status
 
 from app.api.deps import CurrentUser, DbSession, Omdb
+from app.schemas.common import ImdbId
 from app.schemas.movielist import MovieListAddRequest, MovieListEntryOut, MovieListOut
 from app.services import lists as list_service
 
@@ -20,3 +21,10 @@ def add_to_movielist(
     """Add a movie (by IMDb id) to the logged-in user's movie list."""
     entry = list_service.add_movie(db, omdb=omdb, user=user, request=body)
     return MovieListEntryOut.model_validate(entry)
+
+
+@router.delete("/{imdb}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_from_movielist(imdb: ImdbId, user: CurrentUser, db: DbSession) -> Response:
+    """Remove a movie from the logged-in user's movie list."""
+    list_service.delete_movie(db, user=user, imdb=imdb)
+    return Response(status_code=status.HTTP_204_NO_CONTENT)

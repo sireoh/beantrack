@@ -12,6 +12,7 @@ def test_search_tv_uses_tvmaze(alice: TestClient, upstream: FakeUpstream) -> Non
     assert body["results"] == [
         {
             "imdb": "tt0903747",
+            "tvmaze_id": 169,
             "title": "Breaking Bad",
             "year": "2008",
             "image": "https://static.tvmaze.com/bb-original.jpg",
@@ -19,6 +20,7 @@ def test_search_tv_uses_tvmaze(alice: TestClient, upstream: FakeUpstream) -> Non
         },
         {
             "imdb": None,  # TVmaze knows no IMDb id for this one
+            "tvmaze_id": 999,
             "title": "Breaking Bad: Obscure Web Series",
             "year": None,
             "image": None,
@@ -37,6 +39,7 @@ def test_search_movie_uses_omdb_with_api_key(alice: TestClient, upstream: FakeUp
     assert response.json()["results"] == [
         {
             "imdb": "tt0133093",
+            "tvmaze_id": None,
             "title": "The Matrix",
             "year": "1999",
             "image": "https://m.media-amazon.com/matrix.jpg",

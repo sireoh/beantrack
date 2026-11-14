@@ -12,8 +12,9 @@ def get_for_user(db: Session, discord_id: str) -> TvList | None:
         select(TvList)
         .where(TvList.discord_id == discord_id)
         .options(
-            selectinload(TvList.entries).selectinload(UserTvShow.show),
-            selectinload(TvList.entries).selectinload(UserTvShow.current_episode),
+            selectinload(TvList.entries)
+            .selectinload(UserTvShow.show)
+            .selectinload(TvShow.episodes),
         )
     )
     return db.scalars(stmt).one_or_none()
@@ -23,25 +24,28 @@ def get_entry(db: Session, tvlist_id: str, imdb: str) -> UserTvShow | None:
     return db.get(UserTvShow, (tvlist_id, imdb))
 
 
+def delete_entry(db: Session, entry: UserTvShow) -> None:
+    db.delete(entry)
+
+
 def add_entry(
     db: Session,
     *,
     tvlist: TvList,
     show: TvShow,
     status: WatchStatus,
-    current_episode: Episode | None,
+    current_episode: int,
     now: datetime,
 ) -> UserTvShow:
     entry = UserTvShow(
         tvlist_id=tvlist.tvlist_id,
         imdb=show.imdb,
         status=status,
-        current_episode_id=current_episode.id if current_episode else None,
+        current_episode=current_episode,
         added_at=now,
         updated_at=now,
     )
     entry.show = show
-    entry.current_episode = current_episode
     db.add(entry)
     db.flush()
     return entry

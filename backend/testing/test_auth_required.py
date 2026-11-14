@@ -11,11 +11,11 @@ from app.core.security import hash_session_token, new_session_token
 from app.db.types import utcnow
 from app.repositories import sessions as sessions_repo
 from app.repositories import users as users_repo
-from testing.fakes import FakeUpstream
+from testing.fakes import FakeUpstream, tv_add_payload
 
 PROTECTED: list[tuple[str, str, dict[str, Any]]] = [
     ("GET", "/api/tvlist", {}),
-    ("POST", "/api/tvlist/add", {"json": {"imdb": "tt0903747"}}),
+    ("POST", "/api/tvlist/add", {"json": tv_add_payload()}),
     ("GET", "/api/movielist", {}),
     ("POST", "/api/movielist/add", {"json": {"imdb": "tt0133093"}}),
     ("GET", "/api/search", {"params": {"type": "tv", "q": "breaking"}}),
@@ -61,7 +61,7 @@ def test_expired_session_is_401(app: FastAPI, settings: Settings, db: Session) -
 def test_unauthenticated_requests_never_reach_upstream(
     client: TestClient, upstream: FakeUpstream
 ) -> None:
-    client.post("/api/tvlist/add", json={"imdb": "tt0903747"})
+    client.post("/api/tvlist/add", json=tv_add_payload())
     client.get("/api/search", params={"type": "movie", "q": "matrix"})
 
     assert upstream.requests == []

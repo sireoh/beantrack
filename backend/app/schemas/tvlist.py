@@ -1,11 +1,13 @@
 from datetime import datetime
 
+from pydantic import Field
+
 from app.models.enums import WatchStatus
 from app.schemas.common import ImdbId, MediaOut, ORMModel, RequestModel
 
 
 class TvShowOut(MediaOut):
-    pass
+    episodes_count: int
 
 
 class EpisodeOut(ORMModel):
@@ -19,7 +21,7 @@ class EpisodeOut(ORMModel):
 class TvListEntryOut(ORMModel):
     show: TvShowOut
     status: WatchStatus
-    current_episode: EpisodeOut | None
+    current_episode: int
     added_at: datetime
     updated_at: datetime
 
@@ -29,8 +31,24 @@ class TvListOut(ORMModel):
     entries: list[TvListEntryOut]
 
 
-class TvListAddRequest(RequestModel):
+class TvEpisodeData(RequestModel):
+    id: int
+    title: str
+    image: str | None = None
+    season: int
+    number: int | None = None
+
+
+class TvShowData(RequestModel):
     imdb: ImdbId
+    tvmaze_id: int
+    title: str
+    image: str | None = None
+    score: float | None = None
+
+
+class TvListAddRequest(RequestModel):
+    show: TvShowData
     status: WatchStatus = WatchStatus.PLANNED
-    # TVmaze episode id; must belong to the show being added.
-    current_episode: int | None = None
+    # Zero-based index into the separately cached episode list.
+    current_episode: int = Field(default=0, ge=0)

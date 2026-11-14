@@ -25,12 +25,16 @@ class TvShow(Base):
         order_by="[Episode.season, Episode.number]",
     )
 
+    @property
+    def episodes_count(self) -> int:
+        return len(self.episodes)
+
 
 class Episode(Base):
     __tablename__ = "episodes"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=False)  # TVmaze id
-    tvshow_imdb: Mapped[str] = mapped_column(
+    imdb: Mapped[str] = mapped_column(
         ForeignKey("tvshows.imdb", ondelete="CASCADE"), index=True
     )
     title: Mapped[str] = mapped_column(String(255))

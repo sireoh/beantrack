@@ -65,6 +65,29 @@ INTERSTELLAR = {
 MOVIES_BY_IMDB = {"tt0133093": THE_MATRIX, "tt0816692": INTERSTELLAR}
 
 
+def tv_add_payload(
+    imdb: str = "tt0903747",
+    *,
+    status: str | None = None,
+    current_episode: int | None = None,
+) -> dict[str, Any]:
+    show = TV_SHOWS_BY_IMDB[imdb]
+    payload: dict[str, Any] = {
+        "show": {
+            "imdb": imdb,
+            "tvmaze_id": show["id"],
+            "title": show["name"],
+            "image": (show.get("image") or {}).get("original"),
+            "score": show["rating"]["average"],
+        }
+    }
+    if status is not None:
+        payload["status"] = status
+    if current_episode is not None:
+        payload["current_episode"] = current_episode
+    return payload
+
+
 @dataclass
 class FakeDiscordUser:
     id: str = "100000000000000001"
@@ -115,8 +138,20 @@ class FakeUpstream:
         if path == "/lookup/shows":
             show = TV_SHOWS_BY_IMDB.get(params.get("imdb", ""))
             return httpx.Response(200, json=show) if show else httpx.Response(404, json=None)
-        if match := re.fullmatch(r"/shows/(\d+)/episodes", path):
-            return httpx.Response(200, json=EPISODES_BY_TVMAZE_ID.get(int(match.group(1)), []))
+        if match := re.fullmatch(r"/shows/(\d+)", path):
+            show = next(
+                (show for show in TV_SHOWS_BY_IMDB.values() if show["id"] == int(match.group(1))),
+                None,
+            )
+            if show is None:
+                return httpx.Response(404, json=None)
+            return httpx.Response(
+                200,
+                json={
+                    **show,
+                    "_embedded": {"episodes": EPISODES_BY_TVMAZE_ID[int(match.group(1))]},
+                },
+            )
         return httpx.Response(404)
 
     def _omdb(self, request: httpx.Request) -> httpx.Response:

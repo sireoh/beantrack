@@ -53,6 +53,23 @@ def test_add_same_movie_twice_is_conflict(alice: TestClient) -> None:
     assert alice.post("/api/movielist/add", json={"imdb": "tt0133093"}).status_code == 409
 
 
+def test_delete_movie_removes_only_the_user_entry(alice: TestClient, bob: TestClient) -> None:
+    alice.post("/api/movielist/add", json={"imdb": "tt0133093"})
+    bob.post("/api/movielist/add", json={"imdb": "tt0133093"})
+
+    response = alice.delete("/api/movielist/tt0133093")
+
+    assert response.status_code == 204
+    assert alice.get("/api/movielist").json()["entries"] == []
+    assert len(bob.get("/api/movielist").json()["entries"]) == 1
+
+
+def test_delete_missing_movie_is_404(alice: TestClient) -> None:
+    response = alice.delete("/api/movielist/tt0133093")
+
+    assert response.status_code == 404
+
+
 def test_add_unknown_movie_is_404(alice: TestClient) -> None:
     assert alice.post("/api/movielist/add", json={"imdb": "tt9999999"}).status_code == 404
 

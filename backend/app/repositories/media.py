@@ -10,8 +10,9 @@ from sqlalchemy.dialects.sqlite import insert
 from sqlalchemy.orm import Session
 
 from app.clients.omdb import OmdbMovie
-from app.clients.tvmaze import TvMazeShowDetails
+from app.clients.tvmaze import TvMazeEpisode
 from app.models import Episode, Movie, TvShow
+from app.schemas.tvlist import TvShowData
 
 
 def get_tvshow(db: Session, imdb: str) -> TvShow | None:
@@ -26,7 +27,7 @@ def get_movie(db: Session, imdb: str) -> Movie | None:
     return db.get(Movie, imdb)
 
 
-def insert_tvshow(db: Session, data: TvMazeShowDetails) -> TvShow:
+def insert_tvshow(db: Session, data: TvShowData) -> TvShow:
     db.execute(
         insert(TvShow)
         .values(
@@ -38,22 +39,26 @@ def insert_tvshow(db: Session, data: TvMazeShowDetails) -> TvShow:
         )
         .on_conflict_do_nothing()
     )
+    show = db.get(TvShow, data.imdb)
+    assert show is not None
+    return show
+
+
+def insert_episodes(db: Session, show: TvShow, episodes: list[TvMazeEpisode]) -> None:
     episode_rows: list[dict[str, Any]] = [
         {
             "id": ep.id,
-            "tvshow_imdb": data.imdb,
+            "imdb": show.imdb,
             "title": ep.title,
             "image": ep.image,
             "season": ep.season,
             "number": ep.number,
         }
-        for ep in data.episodes
+        for ep in episodes
     ]
     if episode_rows:
         db.execute(insert(Episode).on_conflict_do_nothing(), episode_rows)
-    show = db.get(TvShow, data.imdb)
-    assert show is not None
-    return show
+        db.expire(show, ["episodes"])
 
 
 def insert_movie(db: Session, data: OmdbMovie) -> Movie:

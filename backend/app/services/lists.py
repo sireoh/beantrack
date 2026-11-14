@@ -7,7 +7,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.clients.omdb import OmdbClient
-from app.clients.tvmaze import TvMazeClient
+from app.clients.tvmaze import TvMazeClient, TvMazeEpisode
 from app.core.errors import ConflictError, InvalidRequestError, NotFoundError
 from app.db.types import utcnow
 from app.models import MovieList, TvList, User, UserMovie, UserTvShow
@@ -19,6 +19,8 @@ from app.schemas.tvlist import TvListAddRequest
 
 TV_DUPLICATE = "Show is already in your TV list"
 MOVIE_DUPLICATE = "Movie is already in your movie list"
+TV_NOT_FOUND = "Show is not in your TV list"
+MOVIE_NOT_FOUND = "Movie is not in your movie list"
 
 
 def get_tvlist(db: Session, user: User) -> TvList:
@@ -39,19 +41,16 @@ def add_tvshow(
     db: Session, *, tvmaze: TvMazeClient, user: User, request: TvListAddRequest
 ) -> UserTvShow:
     tvlist = user.tvlist
-    if tvlists_repo.get_entry(db, tvlist.tvlist_id, request.imdb) is not None:
+    if tvlists_repo.get_entry(db, tvlist.tvlist_id, request.show.imdb) is not None:
         raise ConflictError(TV_DUPLICATE)
 
-    # Shared catalog: TVmaze is only called the first time anyone adds this show.
-    show = media_repo.get_tvshow(db, request.imdb)
+    # Shared catalog: the first add supplies show metadata, then fetches episodes.
+    show = media_repo.get_tvshow(db, request.show.imdb)
     if show is None:
-        show = media_repo.insert_tvshow(db, tvmaze.get_show_by_imdb(request.imdb))
-
-    current_episode = None
-    if request.current_episode is not None:
-        current_episode = media_repo.get_episode(db, request.current_episode)
-        if current_episode is None or current_episode.tvshow_imdb != show.imdb:
-            raise InvalidRequestError("current_episode is not an episode of this show")
+        show = media_repo.insert_tvshow(db, request.show)
+    if not show.episodes:
+        episodes = tvmaze.get_episodes(request.show.tvmaze_id)
+        media_repo.insert_episodes(db, show, episodes)
 
     with _duplicate_is_conflict(db, TV_DUPLICATE):
         entry = tvlists_repo.add_entry(
@@ -59,11 +58,19 @@ def add_tvshow(
             tvlist=tvlist,
             show=show,
             status=request.status,
-            current_episode=current_episode,
+            current_episode=request.current_episode,
             now=utcnow(),
         )
         db.commit()
     return entry
+
+
+def delete_tvshow(db: Session, *, user: User, imdb: str) -> None:
+    entry = tvlists_repo.get_entry(db, user.tvlist.tvlist_id, imdb)
+    if entry is None:
+        raise NotFoundError(TV_NOT_FOUND)
+    tvlists_repo.delete_entry(db, entry)
+    db.commit()
 
 
 def add_movie(
@@ -83,6 +90,14 @@ def add_movie(
         )
         db.commit()
     return entry
+
+
+def delete_movie(db: Session, *, user: User, imdb: str) -> None:
+    entry = movielists_repo.get_entry(db, user.movielist.movielist_id, imdb)
+    if entry is None:
+        raise NotFoundError(MOVIE_NOT_FOUND)
+    movielists_repo.delete_entry(db, entry)
+    db.commit()
 
 
 @contextmanager

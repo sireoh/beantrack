@@ -80,15 +80,20 @@ All routes are under `/api`. Interactive docs: http://localhost:8000/docs
 | POST | `/api/auth/logout` | – | Deletes the session |
 | GET | `/api/auth/me` | ✔ | Current user |
 | GET | `/api/tvlist` | ✔ | Full TV list |
-| POST | `/api/tvlist/add` | ✔ | `{"imdb": "tt0903747", "status": "watching", "current_episode": 12192}` |
+| POST | `/api/tvlist/add` | ✔ | `{"show": {"imdb": "tt0903747", "tvmaze_id": 169, "title": "Breaking Bad", "image": "...", "score": 9.2}, "status": "watching"}` |
+| DELETE | `/api/tvlist/{imdb}` | ✔ | Remove a show from the current user's list |
 | GET | `/api/movielist` | ✔ | Full movie list |
 | POST | `/api/movielist/add` | ✔ | `{"imdb": "tt0133093", "status": "planned"}` |
+| DELETE | `/api/movielist/{imdb}` | ✔ | Remove a movie from the current user's list |
 | GET | `/api/search?type=tv\|movie&q=` | ✔ | TVmaze for `tv`, OMDb for `movie` |
 | GET | `/api/health` | – | Liveness |
 
 `status` is one of `watching | completed | planned | dropped` (default `planned`).
-`current_episode` is a TVmaze episode id. Adding something already on your list returns 409;
-an unknown IMDb id returns 404; an upstream API failure returns 502.
+`current_episode` is a zero-based index into the cached episode list and defaults to `0`. Adding
+something already on your list returns 409. The add endpoint stores the supplied show metadata,
+then synchronously fetches and caches episodes from TVmaze with
+`/shows/{tvmaze_id}?embed=episodes`. The response includes `episodes_count` rather than the full
+episode list.
 
 ## Running locally
 

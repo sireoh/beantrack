@@ -1,0 +1,21 @@
+# Litestream: continuous replication of the SQLite database to Backblaze B2.
+#
+# Litestream expands ${VAR} from its process environment (it does NOT read .env),
+# so export the .env values first; see README "Backups".
+#
+# Run the API under Litestream so replication starts before the app and stops after it:
+#   litestream replicate -config litestream.yml -exec "uvicorn app.main:create_app --factory --host 0.0.0.0 --port 8000"
+#
+# B2 is S3-compatible: B2_ENDPOINT is the bucket's S3 endpoint, e.g.
+# https://s3.us-west-004.backblazeb2.com (shown on the bucket's page in the B2 console).
+
+dbs:
+  - path: ${DATA_DIR}/${DATABASE_NAME}
+    replica:
+      type: s3
+      bucket: ${B2_BUCKET_NAME}
+      path: beantrack
+      endpoint: ${B2_ENDPOINT}
+      access-key-id: ${B2_KEY_ID}
+      secret-access-key: ${B2_APPLICATION_KEY}
+      force-path-style: true

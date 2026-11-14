@@ -31,7 +31,7 @@ def list_backups(b2: B2) -> list[BackupOut]:
 
 @router.delete("/backups/{file_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_backup(file_id: str, b2: B2) -> Response:
-    """Delete a manual backup from the bucket. Litestream's files are never touched."""
+    """Delete a backup from the bucket. Only files under the backups folder can be deleted."""
     backup_service.delete_backup(b2, file_id)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 

@@ -1,6 +1,8 @@
 """Typed application settings, loaded from environment variables and `.env`."""
 
+from datetime import time
 from functools import lru_cache
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 from pathlib import Path
 
 from cryptography.fernet import Fernet
@@ -32,11 +34,37 @@ class Settings(BaseSettings):
     # Fernet key used to encrypt Discord OAuth tokens at rest.
     encryption_key: SecretStr
 
-    # Backblaze B2 (used by Litestream, not by the app itself; loaded so one .env drives both)
+    # Backblaze B2: manual + daily backups (leave empty to turn backups off)
     b2_key_id: str = ""
     b2_application_key: SecretStr = SecretStr("")
     b2_bucket_name: str = ""
-    b2_endpoint: str = ""
+
+    # Daily backup to B2, run by the API process itself (needs the B2_* values above).
+    # Each run costs ~2 B2 Class C calls (authorize + list), well under the free 2,500/day.
+    daily_backup_enabled: bool = True
+    daily_backup_time: time = time(3, 0)  # HH:MM, in daily_backup_timezone
+    # IANA time zone name, e.g. UTC, America/Vancouver, Europe/London. DST is handled.
+    daily_backup_timezone: str = "UTC"
+    daily_backup_keep: int = 7  # older daily backups are deleted; manual ones never are
+
+    @field_validator("daily_backup_timezone")
+    @classmethod
+    def _must_be_time_zone(cls, value: str) -> str:
+        try:
+            ZoneInfo(value)
+        except (ZoneInfoNotFoundError, ValueError) as exc:
+            raise ValueError(f"Unknown time zone {value!r}; use a name like America/Vancouver") from exc
+        return value
+
+    @property
+    def daily_backup_zone(self) -> ZoneInfo:
+        return ZoneInfo(self.daily_backup_timezone)
+
+    @property
+    def b2_configured(self) -> bool:
+        return bool(
+            self.b2_key_id and self.b2_application_key.get_secret_value() and self.b2_bucket_name
+        )
 
     # Sessions / cookies
     session_ttl_days: int = 30

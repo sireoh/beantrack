@@ -1,4 +1,4 @@
-# BeanTrack: backend (FastAPI + SQLite + Litestream) and frontend (nginx serving the
+# BeanTrack: backend (FastAPI + SQLite) and frontend (nginx serving the
 # pre-built SvelteKit site and proxying /api to the backend).
 #
 # All configuration comes from the root .env (copy .env.example). Compose substitutes the
@@ -34,12 +34,14 @@ services:
       DISCORD_CLIENT_SECRET: ${DISCORD_CLIENT_SECRET:?Set DISCORD_CLIENT_SECRET in .env}
       OMDB_API_KEY: ${OMDB_API_KEY:?Set OMDB_API_KEY in .env}
       ENCRYPTION_KEY: ${ENCRYPTION_KEY:?Set ENCRYPTION_KEY in .env}
-      # Backblaze B2: manual backups (API) and Litestream replication
+      # Backblaze B2: daily + manual backups
       B2_KEY_ID: ${B2_KEY_ID:-}
       B2_APPLICATION_KEY: ${B2_APPLICATION_KEY:-}
       B2_BUCKET_NAME: ${B2_BUCKET_NAME:-}
-      B2_ENDPOINT: ${B2_ENDPOINT:-}
-      LITESTREAM_ENABLED: ${LITESTREAM_ENABLED:-true}
+      DAILY_BACKUP_ENABLED: ${DAILY_BACKUP_ENABLED:-true}
+      DAILY_BACKUP_TIME: ${DAILY_BACKUP_TIME:-03:00}
+      DAILY_BACKUP_TIMEZONE: ${DAILY_BACKUP_TIMEZONE:-UTC}
+      DAILY_BACKUP_KEEP: ${DAILY_BACKUP_KEEP:-7}
     volumes:
       - ${DIRECTORY}/data:/app/data
     ports:

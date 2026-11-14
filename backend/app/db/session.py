@@ -16,7 +16,7 @@ def _set_sqlite_pragmas(dbapi_connection: Any, _connection_record: Any) -> None:
         return
     cursor = dbapi_connection.cursor()
     try:
-        # WAL lets readers and a writer work concurrently, and is required by Litestream.
+        # WAL lets readers and a writer work concurrently.
         cursor.execute("PRAGMA journal_mode=WAL")
         # Wait for a competing writer instead of failing immediately with "database is locked".
         cursor.execute(f"PRAGMA busy_timeout={BUSY_TIMEOUT_MS}")

@@ -130,6 +130,7 @@ class FakeUpstream:
     fail_hosts: set[str] = field(default_factory=set)
     # B2 bucket contents: file name -> (bytes, upload timestamp in ms)
     b2_files: dict[str, tuple[bytes, int]] = field(default_factory=dict)
+    b2_uploads: int = 0
 
     def transport(self) -> httpx.MockTransport:
         return httpx.MockTransport(self.handle)
@@ -287,7 +288,8 @@ class FakeUpstream:
             if request.headers.get("x-bz-content-sha1") != hashlib.sha1(data).hexdigest():
                 return httpx.Response(400, json={"message": "sha1 mismatch"})
             name = unquote(request.headers["x-bz-file-name"])
-            ts = 1_700_000_000_000 + len(self.b2_files) * 1000  # strictly increasing
+            self.b2_uploads += 1
+            ts = 1_700_000_000_000 + self.b2_uploads * 1000  # strictly increasing, even after deletes
             self.b2_files[name] = (data, ts)
             return httpx.Response(
                 200,

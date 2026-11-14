@@ -1,19 +1,22 @@
 """Backblaze B2 client (native API v2, https://www.backblaze.com/apidocs).
 
-Uses the same application key as Litestream (B2_KEY_ID / B2_APPLICATION_KEY) but talks
-to B2's native API through the shared httpx client, so no AWS SDK is needed and tests
-can mock it like every other upstream.
+Uses an application key (B2_KEY_ID / B2_APPLICATION_KEY) and talks to B2's native API
+through the shared httpx client, so no AWS SDK is needed and tests can mock it like
+every other upstream.
 """
 
 import hashlib
 from datetime import UTC, datetime
-from typing import Any
+from typing import TYPE_CHECKING, Any
 from urllib.parse import quote
 
 import httpx
 from pydantic import BaseModel
 
 from app.core.errors import AppError, NotFoundError, UpstreamError
+
+if TYPE_CHECKING:
+    from app.core.config import Settings
 
 AUTHORIZE_URL = "https://api.backblazeb2.com/b2api/v2/b2_authorize_account"
 
@@ -42,6 +45,15 @@ class B2Client:
         self._application_key = application_key
         self._bucket_name = bucket_name
         self._auth: _Auth | None = None
+
+    @classmethod
+    def from_settings(cls, http: httpx.Client, settings: "Settings") -> "B2Client":
+        return cls(
+            http,
+            key_id=settings.b2_key_id,
+            application_key=settings.b2_application_key.get_secret_value(),
+            bucket_name=settings.b2_bucket_name,
+        )
 
     # --- public API -------------------------------------------------------------
 

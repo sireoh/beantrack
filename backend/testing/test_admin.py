@@ -118,13 +118,13 @@ def test_backups_have_ids_and_can_be_deleted(admin: TestClient, upstream: FakeUp
 
 
 def test_delete_only_reaches_manual_backups(admin: TestClient, upstream: FakeUpstream) -> None:
-    litestream_file = "beantrack/generations/0/snapshot.ltx"
-    upstream.b2_files[litestream_file] = (b"litestream", 1)
+    other_file = "someone-else/important.bin"
+    upstream.b2_files[other_file] = (b"keep me", 1)
 
-    response = admin.delete(f"/api/admin/backups/{b2_file_id(litestream_file)}")
+    response = admin.delete(f"/api/admin/backups/{b2_file_id(other_file)}")
 
     assert response.status_code == 404
-    assert litestream_file in upstream.b2_files
+    assert other_file in upstream.b2_files
 
 
 def test_delete_backup_is_admin_only(alice: TestClient, client: TestClient) -> None:

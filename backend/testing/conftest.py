@@ -45,6 +45,7 @@ def settings(tmp_path: Path) -> Settings:
         b2_key_id=B2_TEST_KEY_ID,
         b2_application_key=B2_TEST_APP_KEY,  # type: ignore[arg-type]
         b2_bucket_name=B2_TEST_BUCKET,
+        daily_backup_enabled=False,  # no background thread in tests; run_once is tested directly
     )
 
 

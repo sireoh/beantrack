@@ -15,8 +15,9 @@ from app.api.routers import admin, auth, movielist, search, tvlist
 from app.core.config import Settings, get_settings
 from app.core.errors import AppError
 from app.db.session import build_engine, build_sessionmaker
+from app.services.daily_backup import start_scheduler
 
-USER_AGENT = "BeanTrack/0.1"
+USER_AGENT = "BeanTrack/0.2"
 
 
 async def _app_error_handler(_request: Request, exc: Exception) -> JSONResponse:
@@ -36,11 +37,14 @@ def create_app(
 
     @asynccontextmanager
     async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
+        scheduler = start_scheduler(http, settings)
         yield
+        if scheduler:
+            scheduler.stop()
         http.close()
         engine.dispose()
 
-    app = FastAPI(title="BeanTrack API", version="0.1.0", lifespan=lifespan)
+    app = FastAPI(title="BeanTrack API", version="0.2.0", lifespan=lifespan)
     app.state.settings = settings
     app.state.engine = engine
     app.state.sessionmaker = build_sessionmaker(engine)

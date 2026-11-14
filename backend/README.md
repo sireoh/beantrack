@@ -1,7 +1,7 @@
 # BeanTrack backend
 
 FastAPI + SQLAlchemy 2.0 + SQLite (WAL) API for tracking TV shows and movies.
-Login is Discord OAuth2; the database is replicated continuously to Backblaze B2 with Litestream.
+Login is Discord OAuth2; the database is backed up to Backblaze B2 once a day (and on demand).
 
 ## Architecture
 
@@ -29,7 +29,6 @@ backend/
 ├── migrations/               # Alembic (env.py reads the DB path from Settings)
 ├── testing/                  # pytest suite + fake upstream APIs
 ├── alembic.ini
-├── litestream.yml
 ├── pyproject.toml
 └── .env.example
 ```
@@ -175,61 +174,50 @@ the Alembic migration produces exactly the schema the models describe.
 
 Type-check with `uv run mypy`.
 
-## Backups (Litestream → Backblaze B2)
+## Backups (Backblaze B2)
 
-1. In B2, create a **private** bucket and an application key restricted to it. Put the key id,
-   key, bucket name and the bucket's S3 endpoint into `.env`.
-2. Install Litestream on the server (https://litestream.io/install/).
-3. Run the API under Litestream, so replication starts first and stops last:
+In B2, create a **private** bucket and an application key restricted to it, and put the key id,
+key and bucket name into `.env` (`B2_KEY_ID`, `B2_APPLICATION_KEY`, `B2_BUCKET_NAME`). Leave them
+empty to run without backups. Nothing else needs to be installed, so this works on Windows too.
 
-```bash
-set -a; . ./.env; set +a
-```
+Each backup uses SQLite's `VACUUM INTO` to write a consistent copy while the app keeps running,
+gzips it and uploads it to `manual-backups/` in the bucket through B2's native API.
 
-```bash
-litestream replicate -config litestream.yml -exec "uvicorn app.main:create_app --factory --host 0.0.0.0 --port 8000"
-```
+### Daily backup
 
-```shell
-litestream replicate `
-  -config .\litestream.yml `
-  -exec "python -m uvicorn app.main:create_app --factory --host 127.0.0.1 --port 8000"
-```
+While the API runs, a background thread takes one backup a day and keeps the newest few:
 
-Litestream ships WAL changes to B2 every few seconds. Run `alembic upgrade head` before starting
-it on a new server. In production, run this under systemd (or similar) with the env file loaded.
+| Variable | Default | Meaning |
+|---|---|---|
+| `DAILY_BACKUP_ENABLED` | `true` | Turn the daily backup on or off |
+| `DAILY_BACKUP_TIME` | `03:00` | Time of day, `HH:MM` |
+| `DAILY_BACKUP_TIMEZONE` | `UTC` | IANA time zone name, e.g. `America/Vancouver`; daylight saving is handled |
+| `DAILY_BACKUP_KEEP` | `7` | How many daily backups to keep; older ones are deleted |
 
-### Restore
+Daily backups are named `…-daily.db.gz`. Only those are pruned; manual and pre-restore backups
+are kept until you delete them. A run costs about 2 B2 Class C transactions (authorize + list),
+far under the free tier's 2,500 a day; uploads and deletes are Class A, which is free. Run a
+single uvicorn worker so the backup only runs once.
 
-Stop the app, then restore the latest replica into the data folder:
+### Manual backups and restore
 
-```bash
-set -a; . ./.env; set +a
-```
-
-```bash
-litestream restore -config litestream.yml -if-db-not-exists "$DATA_DIR/$DATABASE_NAME"
-```
-
-To restore to a point in time instead, add `-timestamp 2026-11-13T12:00:00Z`, or restore to a
-different file with `-o restored.db` to inspect it first.
-
-**Keep `ENCRYPTION_KEY` backed up separately** (e.g. in a password manager). Without it the
-restored Discord tokens can't be decrypted; everything else still works and users simply log in again.
-
-### Manual backups (API, works without Litestream)
-
-Admins can take on-demand snapshots from the Settings page or with `POST /api/admin/backup`.
-The app uses SQLite's `VACUUM INTO` to write a consistent copy while it keeps running, gzips it and
-uploads it to `manual-backups/` in the same bucket through B2's native API (same
-`B2_KEY_ID` / `B2_APPLICATION_KEY`; `B2_ENDPOINT` is only used by Litestream). This runs alongside
-Litestream, whose replica lives under `beantrack/`, and needs nothing installed, so it works on
-Windows too.
+Admins can take on-demand backups from the Settings page or with `POST /api/admin/backup`, and
+delete them with `DELETE /api/admin/backups/{id}`.
 
 Restoring (`POST /api/admin/restore`) first uploads a `-pre-restore` snapshot of the current data,
 then copies the chosen backup into the live database with SQLite's online backup API, so open
-connections and Litestream pick the change up. It refuses backups from a different Alembic schema
-revision. Sessions are restored too, so you may need to log in again afterwards.
+connections pick the change up. It refuses backups from a different Alembic schema revision.
+Sessions are restored too, so you may need to log in again afterwards.
+
+To restore by hand on a new server (no admin user yet), download a backup from the B2 web UI,
+stop the app, then unpack it into the data folder:
+
+```bash
+gunzip -c beantrack-20261114T030000Z-xxxxxxxx-daily.db.gz > data/beantrack.db
+```
+
+**Keep `ENCRYPTION_KEY` backed up separately** (e.g. in a password manager). Without it the
+restored Discord tokens can't be decrypted; everything else still works and users simply log in again.
 
 ### Roles
 
@@ -244,7 +232,7 @@ sqlite3 data/beantrack.db "UPDATE users SET role = 'admin' WHERE discord_id = '<
 
 - WAL mode, `busy_timeout=5000`, `synchronous=NORMAL` and `foreign_keys=ON` are set on every
   connection (`app/db/session.py`).
-- Don't copy `beantrack.db` while the app is running without its `-wal` file; use the Litestream
-  replica or `sqlite3 data/beantrack.db ".backup copy.db"`.
+- Don't copy `beantrack.db` while the app is running without its `-wal` file; take a backup
+  or use `sqlite3 data/beantrack.db ".backup copy.db"`.
 - Run a single uvicorn worker process per database file. SQLite allows one writer at a time;
   that's plenty for this app, and the busy timeout absorbs short waits.

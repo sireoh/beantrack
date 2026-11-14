@@ -9,7 +9,7 @@ Two images, published as tags of one GHCR package:
 
 | Image | What it is |
 |---|---|
-| `ghcr.io/sireoh/beantrack:backend` (`backend-<version>`) | FastAPI + SQLite, migrations on start, Litestream replication to B2 when configured |
+| `ghcr.io/sireoh/beantrack:backend` (`backend-<version>`) | FastAPI + SQLite, migrations on start, daily backup to B2 when configured |
 | `ghcr.io/sireoh/beantrack:frontend` (`frontend-<version>`) | nginx serving the pre-built static site and proxying `/api` to the backend |
 
 The browser only talks to the frontend container: the site calls the relative `/api`, and nginx
@@ -41,7 +41,7 @@ docker login ghcr.io -u sireoh
 From the repo root (set the version to whatever you are releasing):
 
 ```bash
-docker buildx build --platform linux/amd64 --push -t ghcr.io/sireoh/beantrack:backend -t ghcr.io/sireoh/beantrack:backend-0.1.0 ./backend
+docker buildx build --platform linux/amd64 --push -t ghcr.io/sireoh/beantrack:backend -t ghcr.io/sireoh/beantrack:backend-0.2.0 ./backend
 ```
 
 ```bash
@@ -84,15 +84,18 @@ COOKIE_SECURE=true
 
 Register the same redirect URI in the Discord developer portal. TLS is your proxy's job.
 
-### Data, Litestream and backups
+### Data and backups
 
 - The database is on the `DATA_VOLUME` volume (`/app/data` in the container), so it survives
   image updates. A host path also works; make it owned by uid 10001 first.
-- With the `B2_*` values set (and `LITESTREAM_ENABLED=true`), the backend runs under
-  `litestream replicate`. On a fresh server with an empty volume it first restores the
-  database from the replica. Without them it starts normally.
-- Manual backups/restores (Settings → Admin) use the same B2 key and work with or without
-  Litestream.
+- With the `B2_*` values set, the API uploads one snapshot a day at `DAILY_BACKUP_TIME` in
+  `DAILY_BACKUP_TIMEZONE` (an IANA name such as `America/Vancouver`; defaults to `UTC`) to
+  `manual-backups/…-daily.db.gz`, and keeps the newest `DAILY_BACKUP_KEEP`. That costs about
+  2 B2 Class C calls a day, far under the free tier's 2,500. Run a single uvicorn worker (the
+  default) so it only runs once.
+- Manual backups and restores (Settings → Admin) use the same B2 key. Daily backups show up in
+  the same list and restore the same way; manual ones are never pruned.
+- Leave the `B2_*` values empty to run without backups.
 
 ### Pulling a private package on the server
 

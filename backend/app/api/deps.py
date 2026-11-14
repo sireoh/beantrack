@@ -74,21 +74,11 @@ def require_admin(user: Annotated[User, Depends(get_current_user)]) -> User:
 
 
 def get_b2(http: HttpClient, settings: SettingsDep) -> B2Client:
-    configured = (
-        settings.b2_key_id
-        and settings.b2_application_key.get_secret_value()
-        and settings.b2_bucket_name
-    )
-    if not configured:
+    if not settings.b2_configured:
         raise AppError(
             "Backups are not configured: set B2_KEY_ID, B2_APPLICATION_KEY and B2_BUCKET_NAME"
         )
-    return B2Client(
-        http,
-        key_id=settings.b2_key_id,
-        application_key=settings.b2_application_key.get_secret_value(),
-        bucket_name=settings.b2_bucket_name,
-    )
+    return B2Client.from_settings(http, settings)
 
 
 TvMaze = Annotated[TvMazeClient, Depends(get_tvmaze)]

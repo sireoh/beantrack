@@ -1,11 +1,11 @@
 """Manual database snapshots to Backblaze B2, and restoring from them.
 
-Independent of Litestream (which keeps streaming WAL changes); this works anywhere,
+Used by the admin API and the daily backup; needs nothing installed, so it works anywhere,
 including Windows. Snapshots are gzip-compressed SQLite files under `BACKUP_PREFIX`.
 
 - Backup uses `VACUUM INTO`, which writes a consistent copy while the app keeps running.
 - Restore uses SQLite's online backup API to copy the snapshot *into* the live database,
-  so open connections (and Litestream, if running) see the change through normal locking.
+  so open connections see the change through normal locking.
   A safety snapshot of the current database is uploaded first.
 """
 
@@ -24,6 +24,7 @@ BACKUP_PREFIX = "manual-backups/"
 BACKUP_SUFFIX = ".db.gz"
 CONTENT_TYPE = "application/gzip"
 LOCK_TIMEOUT_SECONDS = 30
+DAILY_LABEL = "daily"
 
 
 def create_backup(b2: B2Client, db_path: Path, *, label: str | None = None) -> B2File:
@@ -41,9 +42,19 @@ def list_backups(b2: B2Client) -> list[B2File]:
     return sorted(files, key=lambda f: f.uploaded_at, reverse=True)
 
 
+def prune_daily_backups(b2: B2Client, keep: int) -> list[B2File]:
+    """Delete all but the newest `keep` daily backups. Manual and pre-restore backups
+    are never touched. Returns the deleted files."""
+    daily = [f for f in list_backups(b2) if f.name.endswith(f"-{DAILY_LABEL}{BACKUP_SUFFIX}")]
+    stale = daily[max(keep, 0):]
+    for file in stale:
+        b2.delete(file)
+    return stale
+
+
 def delete_backup(b2: B2Client, file_id: str) -> B2File:
-    """Delete one manual backup. Only files under BACKUP_PREFIX are looked up here, so
-    Litestream's replica (stored under its own path) can never be deleted this way."""
+    """Delete one backup. Only files under BACKUP_PREFIX are looked up here, so nothing
+    else in the bucket can be deleted this way."""
     backup = next((f for f in list_backups(b2) if f.id == file_id), None)
     if backup is None:
         raise NotFoundError("Backup not found")

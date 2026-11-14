@@ -85,8 +85,8 @@
 	<div class="card-body gap-4">
 		<h2 class="card-title">Admin · Database backups</h2>
 		<p class="text-sm text-base-content/70">
-			Manual snapshots of the SQLite database, stored in the B2 bucket next to the Litestream
-			replica.
+			Snapshots of the SQLite database in the B2 bucket: one taken automatically each day, plus
+			any you take here.
 		</p>
 
 		<div class="flex flex-wrap gap-2">

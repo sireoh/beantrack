@@ -1,0 +1,5 @@
+# Scripts and templates that run inside Linux containers must keep LF line endings,
+# even with core.autocrlf=true on Windows.
+*.sh text eol=lf
+*.template text eol=lf
+Dockerfile text eol=lf

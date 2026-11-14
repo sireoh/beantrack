@@ -36,7 +36,7 @@ def test_same_show_tracked_independently(alice: TestClient, bob: TestClient) -> 
     # ...and each keeps their own progress.
     alice_entry = alice.get("/api/tvlist").json()["entries"][0]
     bob_entry = bob.get("/api/tvlist").json()["entries"][0]
-    assert (alice_entry["status"], alice_entry["current_episode"]) == ("completed", 0)
+    assert (alice_entry["status"], alice_entry["current_episode"]) == ("completed", 1)  # last ep
     assert (bob_entry["status"], bob_entry["current_episode"]) == ("watching", 1)
 
 

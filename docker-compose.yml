@@ -1,0 +1,64 @@
+# BeanTrack: backend (FastAPI + SQLite + Litestream) and frontend (nginx serving the
+# pre-built SvelteKit site and proxying /api to the backend).
+#
+# All configuration comes from the root .env (copy .env.example). Compose substitutes the
+# ${VAR} values below; nothing is baked into the images.
+#
+#   docker compose pull && docker compose up -d     # on a server, from GHCR
+#   docker compose up -d --build                    # locally, from source
+
+name: beantrack
+
+services:
+  backend:
+    image: ${IMAGE_REPO:-ghcr.io/sireoh/beantrack}:${BACKEND_TAG:-backend}
+    build:
+      context: ./backend
+      platforms: [linux/amd64]
+    restart: unless-stopped
+    environment:
+      # Server / storage (DATA_DIR is the path inside the container, backed by the volume)
+      BACKEND_PORT: ${BACKEND_PORT:-8000}
+      FORWARDED_ALLOW_IPS: ${FORWARDED_ALLOW_IPS:-*}
+      DATA_DIR: /app/data
+      DATABASE_NAME: ${DATABASE_NAME:-beantrack.db}
+      # Public URLs, cookies, CORS
+      FRONTEND_URL: ${FRONTEND_URL:?Set FRONTEND_URL in .env}
+      DISCORD_REDIRECT_URI: ${DISCORD_REDIRECT_URI:?Set DISCORD_REDIRECT_URI in .env}
+      CORS_ORIGINS: ${CORS_ORIGINS:?Set CORS_ORIGINS in .env}
+      COOKIE_SECURE: ${COOKIE_SECURE:-true}
+      SESSION_TTL_DAYS: ${SESSION_TTL_DAYS:-30}
+      SESSION_COOKIE_NAME: ${SESSION_COOKIE_NAME:-beantrack_session}
+      # Secrets / API keys
+      DISCORD_CLIENT_ID: ${DISCORD_CLIENT_ID:?Set DISCORD_CLIENT_ID in .env}
+      DISCORD_CLIENT_SECRET: ${DISCORD_CLIENT_SECRET:?Set DISCORD_CLIENT_SECRET in .env}
+      OMDB_API_KEY: ${OMDB_API_KEY:?Set OMDB_API_KEY in .env}
+      ENCRYPTION_KEY: ${ENCRYPTION_KEY:?Set ENCRYPTION_KEY in .env}
+      # Backblaze B2: manual backups (API) and Litestream replication
+      B2_KEY_ID: ${B2_KEY_ID:-}
+      B2_APPLICATION_KEY: ${B2_APPLICATION_KEY:-}
+      B2_BUCKET_NAME: ${B2_BUCKET_NAME:-}
+      B2_ENDPOINT: ${B2_ENDPOINT:-}
+      LITESTREAM_ENABLED: ${LITESTREAM_ENABLED:-true}
+    volumes:
+      - ${DIRECTORY}/data:/app/data
+    ports:
+      # e.g. BACKEND_PUBLISH=127.0.0.1:8000 to reach it only from the host (your proxy)
+      - ${BACKEND_PUBLISH:-8000}:${BACKEND_PORT:-8000}
+
+  frontend:
+    image: ${IMAGE_REPO:-ghcr.io/sireoh/beantrack}:${FRONTEND_TAG:-frontend}
+    build:
+      context: ./frontend
+      platforms: [linux/amd64]
+    restart: unless-stopped
+    depends_on:
+      backend:
+        condition: service_healthy
+    environment:
+      NGINX_PORT: ${NGINX_PORT:-8080}
+      BACKEND_URL: http://backend:${BACKEND_PORT:-8000}
+      NGINX_MAX_BODY_SIZE: ${NGINX_MAX_BODY_SIZE:-10m}
+    ports:
+      # e.g. FRONTEND_PUBLISH=127.0.0.1:8080 behind a reverse proxy on the same host
+      - ${FRONTEND_PUBLISH:-8080}:${NGINX_PORT:-8080}

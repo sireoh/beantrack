@@ -1,0 +1,9 @@
+# The image only needs the pre-built site (build/) and the nginx template (nginx/).
+*
+!build/
+!nginx/
+
+# Never ship local config or secrets, even if they end up inside build/.
+**/.env
+**/.env.*
+**/*.map

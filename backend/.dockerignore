@@ -1,0 +1,35 @@
+# Only app/, migrations/, pyproject.toml, alembic.ini, litestream.yml and the
+# entrypoint are needed in the image.
+
+# Secrets and local config
+.env
+.env.*
+!.env.example
+
+# Local database, Litestream state and restored copies
+data/
+*.db
+*.db-wal
+*.db-shm
+.*.db-litestream/
+
+# Python caches / virtualenvs / build output
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+build/
+dist/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Not needed at runtime
+testing/
+bruno/
+README.md
+Dockerfile
+.dockerignore

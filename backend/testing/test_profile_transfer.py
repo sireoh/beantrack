@@ -52,7 +52,7 @@ def test_export_contains_only_list_data(alice: TestClient) -> None:
     (tv,) = body["tvlist"]
     assert tv["imdb"] == "tt0903747" and tv["tvmaze_id"] == 169
     assert (tv["status"], tv["current_episode"], tv["current_episode_id"]) == (
-        "watching",
+        "completed",  # episode index 1 is the fixture's last, so progress completed the show
         1,
         12193,
     )
@@ -74,7 +74,7 @@ def test_export_then_import_into_another_account(alice: TestClient, bob: TestCli
 
     assert result == {"imported": 2, "skipped": 0, "failed": 0, "failures": []}
     (tv,) = bob.get("/api/tvlist").json()["entries"]
-    assert tv["status"] == "watching" and tv["current_episode"] == 1
+    assert tv["status"] == "completed" and tv["current_episode"] == 1  # last episode
     assert tv["current_episode_metadata"]["id"] == 12193
     assert tv["added_at"] == alice.get("/api/tvlist").json()["entries"][0]["added_at"]
     (movie,) = bob.get("/api/movielist").json()["entries"]

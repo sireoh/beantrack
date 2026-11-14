@@ -5,6 +5,7 @@ from datetime import timedelta
 from sqlalchemy.orm import Session
 
 from app.clients.discord import DiscordOAuthClient
+from app.core.errors import AuthenticationError
 from app.core.security import TokenCipher, hash_session_token, new_session_token
 from app.db.types import utcnow
 from app.models import User
@@ -67,6 +68,25 @@ def resolve_session(db: Session, raw_token: str) -> User | None:
     """The user owning a valid, unexpired session token, or None."""
     session = sessions_repo.get_active(db, hash_session_token(raw_token), utcnow())
     return session.user if session else None
+
+
+def refresh_profile(
+    db: Session,
+    *,
+    user: User,
+    discord: DiscordOAuthClient,
+    cipher: TokenCipher,
+) -> User:
+    """Refresh the stored Discord username and avatar for an authenticated user."""
+    if not user.discord_access_token:
+        raise AuthenticationError("Discord account must be linked again")
+
+    profile = discord.get_current_user(cipher.decrypt(user.discord_access_token))
+    user.username = profile.username
+    user.avatar = profile.avatar
+    db.commit()
+    db.refresh(user)
+    return user
 
 
 def logout(db: Session, raw_token: str) -> None:

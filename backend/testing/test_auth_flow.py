@@ -112,6 +112,21 @@ def test_second_login_updates_last_login_and_profile(
     assert db.scalar(select(func.count()).select_from(UserSession)) == 2
 
 
+def test_profile_refresh_updates_avatar_and_username(
+    client: TestClient, db: Session, upstream: FakeUpstream
+) -> None:
+    _login(client)
+    upstream.discord_user.username = "beanfan_updated"
+    upstream.discord_user.avatar = "new-avatar"
+
+    response = client.post("/api/auth/profile/refresh")
+
+    assert response.status_code == 200
+    assert response.json()["username"] == "beanfan_updated"
+    assert response.json()["avatar"] == "new-avatar"
+    assert get_user(db, DISCORD_ID).avatar == "new-avatar"
+
+
 def test_callback_rejects_wrong_state(client: TestClient) -> None:
     client.get("/api/auth/login", follow_redirects=False)
 

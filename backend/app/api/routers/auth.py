@@ -94,3 +94,15 @@ def logout(request: Request, db: DbSession, settings: SettingsDep) -> Response:
 @router.get("/me", response_model=UserOut)
 def me(user: CurrentUser) -> UserOut:
     return UserOut.model_validate(user)
+
+
+@router.post("/profile/refresh", response_model=UserOut)
+def refresh_profile(
+    db: DbSession,
+    user: CurrentUser,
+    discord: Discord,
+    cipher: Cipher,
+) -> UserOut:
+    """Refresh the current user's profile data from Discord."""
+    user = auth_service.refresh_profile(db, user=user, discord=discord, cipher=cipher)
+    return UserOut.model_validate(user)

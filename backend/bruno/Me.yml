@@ -4,8 +4,8 @@ info:
   seq: 2
 
 http:
-  method: GET
-  url: "{{uri}}/api/auth/me"
+  method: POST
+  url: "{{uri}}/api/auth/profile/refresh"
   headers:
     - name: Cookie
       value: beantrack_session={{cookie_value}}

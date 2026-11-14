@@ -79,6 +79,7 @@ All routes are under `/api`. Interactive docs: http://localhost:8000/docs
 | GET | `/api/auth/callback` | – | Discord redirects here; sets the `beantrack_session` cookie |
 | POST | `/api/auth/logout` | – | Deletes the session |
 | GET | `/api/auth/me` | ✔ | Current user |
+| POST | `/api/auth/profile/refresh` | ✔ | Refresh username and avatar from Discord |
 | GET | `/api/tvlist` | ✔ | Full TV list |
 | POST | `/api/tvlist/add` | ✔ | `{"show": {"imdb": "tt0903747", "tvmaze_id": 169, "title": "Breaking Bad", "image": "...", "score": 9.2}, "status": "watching"}` |
 | GET | `/api/tvlist/{imdb}/episodes` | ✔ | Return the cached episodes for a TV show |
@@ -176,6 +177,12 @@ set -a; . ./.env; set +a
 
 ```bash
 litestream replicate -config litestream.yml -exec "uvicorn app.main:create_app --factory --host 0.0.0.0 --port 8000"
+```
+
+```shell
+litestream replicate `
+  -config .\litestream.yml `
+  -exec "python -m uvicorn app.main:create_app --factory --host 127.0.0.1 --port 8000"
 ```
 
 Litestream ships WAL changes to B2 every few seconds. Run `alembic upgrade head` before starting

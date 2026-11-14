@@ -246,3 +246,19 @@ def test_cors_allows_frontend_origin_with_credentials(alice: TestClient) -> None
     assert response.status_code == 200
     assert response.headers["access-control-allow-origin"] == "http://127.0.0.1:5173"
     assert response.headers["access-control-allow-credentials"] == "true"
+
+
+def test_completing_a_show_moves_progress_to_last_episode(alice: TestClient) -> None:
+    alice.post("/api/tvlist/add", json=tv_add_payload(status="watching"))
+
+    entry = alice.patch("/api/tvlist/tt0903747/status", json={"status": "completed"}).json()
+
+    assert entry["current_episode"] == 1  # the Breaking Bad fixture has 2 episodes
+    assert entry["current_episode_metadata"]["id"] == 12193
+
+
+def test_adding_a_completed_show_starts_at_last_episode(alice: TestClient) -> None:
+    entry = alice.post("/api/tvlist/add", json=tv_add_payload(status="completed")).json()
+
+    assert entry["current_episode"] == 1
+    assert entry["current_episode_metadata"]["id"] == 12193

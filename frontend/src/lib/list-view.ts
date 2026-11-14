@@ -1,8 +1,8 @@
 /** Filtering and sorting for the list tables (pure functions over list entries). */
-import type { WatchStatus } from '$lib/status';
+import { WATCH_STATUSES, type WatchStatus } from '$lib/status';
 import type { ListFilter } from '$lib/stores/lists';
 
-export type SortKey = 'title' | 'score';
+export type SortKey = 'title' | 'score' | 'status';
 export type SortDirection = 'asc' | 'desc';
 export interface SortState {
 	key: SortKey;
@@ -31,6 +31,12 @@ export function sortEntries<T>(entries: T[], sort: SortState | null, get: EntryA
 	return [...entries].sort((a, b) => {
 		if (sort.key === 'title') {
 			return sign * get.title(a).localeCompare(get.title(b), undefined, { sensitivity: 'base' });
+		}
+		if (sort.key === 'status') {
+			// Ascending = Watching, Completed, Planned, Dropped (the WATCH_STATUSES order).
+			const byStatus =
+				WATCH_STATUSES.indexOf(get.status(a)) - WATCH_STATUSES.indexOf(get.status(b));
+			return sign * byStatus;
 		}
 		const sa = get.score(a);
 		const sb = get.score(b);

@@ -24,6 +24,25 @@ TV_NOT_FOUND = "Show is not in your TV list"
 MOVIE_NOT_FOUND = "Movie is not in your movie list"
 
 
+def episode_metadata(episode: Episode) -> dict[str, Any]:
+    """The cached `current_episode_metadata` value for an episode."""
+    return {
+        "id": episode.id,
+        "season": episode.season,
+        "number": episode.number,
+        "title": episode.title,
+        "image": episode.image,
+    }
+
+
+def _jump_to_last_episode(entry: UserTvShow) -> None:
+    """Completed shows count as fully watched: progress moves to the final episode."""
+    episodes = entry.show.episodes
+    if episodes:
+        entry.current_episode = len(episodes) - 1
+        entry.current_episode_metadata = episode_metadata(episodes[-1])
+
+
 def get_tvlist(db: Session, user: User) -> TvList:
     tvlist = tvlists_repo.get_for_user(db, user.discord_id)
     if tvlist is None:  # every user gets one on creation, so this means data corruption
@@ -68,6 +87,8 @@ def add_tvshow(
             current_episode=request.current_episode,
             now=utcnow(),
         )
+        if request.status == WatchStatus.COMPLETED:
+            _jump_to_last_episode(entry)
         db.commit()
     return entry
 
@@ -97,6 +118,8 @@ def update_tv_status(db: Session, *, user: User, imdb: str, status: WatchStatus)
     if entry is None:
         raise NotFoundError(TV_NOT_FOUND)
     entry.status = status
+    if status == WatchStatus.COMPLETED:
+        _jump_to_last_episode(entry)
     db.commit()
     return entry
 

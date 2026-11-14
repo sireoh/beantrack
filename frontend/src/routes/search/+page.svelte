@@ -5,10 +5,17 @@
 	import { ApiError } from '$lib/api/client';
 	import LandingPage from '$lib/components/LandingPage.svelte';
 	import SearchBar from '$lib/components/SearchBar.svelte';
+	import StatusSelect from '$lib/components/StatusSelect.svelte';
 	import SearchMovieCard from '$lib/components/SearchMovieCard.svelte';
 	import SearchTVCard from '$lib/components/SearchTVCard.svelte';
 	import { ensureMovieList, ensureTvList, movieList, tvList } from '$lib/stores/lists';
-	import { addSearchResult, fetchSearch, searchMode, searchResults } from '$lib/stores/search';
+	import {
+		addSearchResult,
+		addStatus,
+		fetchSearch,
+		searchMode,
+		searchResults
+	} from '$lib/stores/search';
 	import { showError, showToast } from '$lib/stores/toasts';
 	import { user, userLoaded } from '$lib/stores/user';
 
@@ -75,7 +82,16 @@
 
 <svelte:head><title>{query ? `${query} · ` : ''}Search · BeanTrack</title></svelte:head>
 
-<div class="mb-6"><SearchBar /></div>
+{#if $user}
+	<div class="mb-6 flex flex-col gap-2 sm:flex-row">
+		<div class="min-w-0 flex-1"><SearchBar /></div>
+		<StatusSelect
+			label="Add as"
+			value={$addStatus}
+			onchange={(status) => addStatus.set(status)}
+		/>
+	</div>
+{/if}
 
 {#if !$userLoaded}
 	<div class="flex justify-center py-24"><span class="loading loading-lg loading-spinner"></span></div>

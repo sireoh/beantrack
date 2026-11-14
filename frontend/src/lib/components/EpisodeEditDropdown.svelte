@@ -3,9 +3,9 @@
 	import EditDropdown from './EditDropdown.svelte';
 	import TvEditPanel from './TvEditPanel.svelte';
 
-	let { entry }: { entry: TvListEntry } = $props();
+	let { entry, ondelete }: { entry: TvListEntry; ondelete: () => void } = $props();
 </script>
 
 <EditDropdown label="Edit {entry.show.title}">
-	<TvEditPanel {entry} />
+	<TvEditPanel {entry} {ondelete} />
 </EditDropdown>

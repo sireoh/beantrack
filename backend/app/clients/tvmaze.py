@@ -120,28 +120,22 @@ class TvMazeClient:
             for ep in episodes
         ]
 
-    def get_show_by_imdb(self, imdb: str) -> TvMazeShowDetails:
-        """Look a show up by IMDb id and fetch all of its episodes. Raises NotFoundError."""
-        show_payload = get_json(
+    def get_show(self, tvmaze_id: int, imdb: str) -> TvMazeShowDetails:
+        """Fetch a show and all of its episodes in one call (`?embed=episodes`)."""
+        payload = get_json(
             self._http,
             "TVmaze",
-            f"{self._base_url}/lookup/shows",
-            params={"imdb": imdb},
+            f"{self._base_url}/shows/{tvmaze_id}",
+            params={"embed": "episodes"},
             allow_404=True,
         )
-        if show_payload is None:
-            raise NotFoundError(f"No TV show found for IMDb id {imdb}")
+        if payload is None:
+            raise NotFoundError(f"No TV show found for TVmaze id {tvmaze_id}")
         try:
-            show = _Show.model_validate(show_payload)
-        except ValidationError as exc:
-            raise UpstreamError("TVmaze returned an unexpected response") from exc
-
-        episodes_payload = get_json(
-            self._http, "TVmaze", f"{self._base_url}/shows/{show.id}/episodes"
-        )
-        try:
-            episodes = [_Episode.model_validate(item) for item in episodes_payload or []]
-        except ValidationError as exc:
+            show = _Show.model_validate(payload)
+            episodes_payload = (payload.get("_embedded") or {}).get("episodes", [])
+            episodes = [_Episode.model_validate(item) for item in episodes_payload]
+        except (AttributeError, TypeError, ValidationError) as exc:
             raise UpstreamError("TVmaze returned an unexpected response") from exc
 
         return TvMazeShowDetails(
@@ -161,3 +155,20 @@ class TvMazeClient:
                 for ep in episodes
             ],
         )
+
+    def get_show_by_imdb(self, imdb: str) -> TvMazeShowDetails:
+        """Look a show up by IMDb id, then fetch it with all episodes. Raises NotFoundError."""
+        show_payload = get_json(
+            self._http,
+            "TVmaze",
+            f"{self._base_url}/lookup/shows",
+            params={"imdb": imdb},
+            allow_404=True,
+        )
+        if show_payload is None:
+            raise NotFoundError(f"No TV show found for IMDb id {imdb}")
+        try:
+            show = _Show.model_validate(show_payload)
+        except ValidationError as exc:
+            raise UpstreamError("TVmaze returned an unexpected response") from exc
+        return self.get_show(show.id, imdb)

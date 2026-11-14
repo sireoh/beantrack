@@ -1,13 +1,19 @@
-"""In-process fakes for TVmaze, OMDb and Discord, served through httpx.MockTransport."""
+"""In-process fakes for TVmaze, OMDb, Discord and Backblaze B2, served through httpx.MockTransport."""
 
+import base64
+import hashlib
 import json
 import re
+from urllib.parse import unquote
 from dataclasses import dataclass, field
 from typing import Any
 
 import httpx
 
 OMDB_TEST_KEY = "omdb-test-key"
+B2_TEST_KEY_ID = "b2-test-key-id"
+B2_TEST_APP_KEY = "b2-test-app-key"
+B2_TEST_BUCKET = "beantrack-test"
 
 BREAKING_BAD = {
     "id": 169,
@@ -117,6 +123,8 @@ class FakeUpstream:
     discord_user: FakeDiscordUser = field(default_factory=FakeDiscordUser)
     valid_discord_code: str = "good-code"
     fail_hosts: set[str] = field(default_factory=set)
+    # B2 bucket contents: file name -> (bytes, upload timestamp in ms)
+    b2_files: dict[str, tuple[bytes, int]] = field(default_factory=dict)
 
     def transport(self) -> httpx.MockTransport:
         return httpx.MockTransport(self.handle)
@@ -137,6 +145,8 @@ class FakeUpstream:
             return self._omdb(request)
         if host == "discord.com":
             return self._discord(request)
+        if host.endswith("backblazeb2.com"):
+            return self._b2(request)
         return httpx.Response(404)
 
     def _tvmaze(self, request: httpx.Request) -> httpx.Response:
@@ -216,4 +226,60 @@ class FakeUpstream:
                 "global_name": None,
             }
             return httpx.Response(200, content=json.dumps(user))
+        return httpx.Response(404)
+
+    def _b2(self, request: httpx.Request) -> httpx.Response:
+        host, path = request.url.host, request.url.path
+        token = "b2-account-token"
+        if host == "api.backblazeb2.com" and path == "/b2api/v2/b2_authorize_account":
+            credentials = base64.b64encode(f"{B2_TEST_KEY_ID}:{B2_TEST_APP_KEY}".encode()).decode()
+            if request.headers.get("authorization") != f"Basic {credentials}":
+                return httpx.Response(401, json={"code": "unauthorized", "message": "bad key"})
+            return httpx.Response(
+                200,
+                json={
+                    "accountId": "acct",
+                    "authorizationToken": token,
+                    "apiUrl": "https://api000.backblazeb2.com",
+                    "downloadUrl": "https://f000.backblazeb2.com",
+                    "allowed": {"bucketId": "bucket-1", "bucketName": B2_TEST_BUCKET},
+                },
+            )
+        if host == "api000.backblazeb2.com":
+            if request.headers.get("authorization") != token:
+                return httpx.Response(401, json={"message": "bad token"})
+            body = json.loads(request.content or b"{}")
+            if path == "/b2api/v2/b2_get_upload_url":
+                return httpx.Response(
+                    200,
+                    json={
+                        "uploadUrl": "https://pod-000.backblazeb2.com/upload",
+                        "authorizationToken": "upload-token",
+                    },
+                )
+            if path == "/b2api/v2/b2_list_file_names":
+                files = [
+                    {"fileName": name, "contentLength": len(data), "uploadTimestamp": ts}
+                    for name, (data, ts) in sorted(self.b2_files.items())
+                    if name.startswith(body.get("prefix", ""))
+                ]
+                return httpx.Response(200, json={"files": files, "nextFileName": None})
+        if host == "pod-000.backblazeb2.com" and request.method == "POST":
+            if request.headers.get("authorization") != "upload-token":
+                return httpx.Response(401, json={"message": "bad upload token"})
+            data = request.content
+            if request.headers.get("x-bz-content-sha1") != hashlib.sha1(data).hexdigest():
+                return httpx.Response(400, json={"message": "sha1 mismatch"})
+            name = unquote(request.headers["x-bz-file-name"])
+            ts = 1_700_000_000_000 + len(self.b2_files) * 1000  # strictly increasing
+            self.b2_files[name] = (data, ts)
+            return httpx.Response(
+                200, json={"fileName": name, "contentLength": len(data), "uploadTimestamp": ts}
+            )
+        if host == "f000.backblazeb2.com" and request.method == "GET":
+            prefix = f"/file/{B2_TEST_BUCKET}/"
+            name = unquote(path[len(prefix):]) if path.startswith(prefix) else ""
+            if name not in self.b2_files:
+                return httpx.Response(404, json={"message": "not found"})
+            return httpx.Response(200, content=self.b2_files[name][0])
         return httpx.Response(404)

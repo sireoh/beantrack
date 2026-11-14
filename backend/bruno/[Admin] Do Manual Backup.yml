@@ -1,0 +1,18 @@
+info:
+  name: "[Admin] Do Manual Backup"
+  type: http
+  seq: 13
+
+http:
+  method: POST
+  url: "{{uri}}/api/admin/backup"
+  headers:
+    - name: Cookie
+      value: beantrack_session={{cookie_value}}
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false

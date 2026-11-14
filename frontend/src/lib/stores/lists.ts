@@ -84,6 +84,24 @@ export function replaceMovieEntry(entry: MovieListEntry): void {
 	);
 }
 
+export function removeTvEntry(imdb: string): void {
+	tvList.update((list) =>
+		list ? { ...list, entries: list.entries.filter((e) => e.show.imdb !== imdb) } : list
+	);
+}
+
+export function removeMovieEntry(imdb: string): void {
+	movieList.update((list) =>
+		list ? { ...list, entries: list.entries.filter((e) => e.movie.imdb !== imdb) } : list
+	);
+}
+
+/** Drop the cached lists so the next page that needs them refetches (e.g. after an import). */
+export function invalidateLists(): void {
+	tvList.set(null);
+	movieList.set(null);
+}
+
 /** Forget everything user-specific (logout / expired session). */
 export function resetLists(): void {
 	tvList.set(null);

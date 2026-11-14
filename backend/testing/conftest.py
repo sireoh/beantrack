@@ -17,10 +17,16 @@ from app.core.security import hash_session_token, new_session_token
 from app.db.base import Base
 from app.db.types import utcnow
 from app.main import create_app
-from app.models import User
+from app.models import User, UserRole
 from app.repositories import sessions as sessions_repo
 from app.repositories import users as users_repo
-from testing.fakes import OMDB_TEST_KEY, FakeUpstream
+from testing.fakes import (
+    B2_TEST_APP_KEY,
+    B2_TEST_BUCKET,
+    B2_TEST_KEY_ID,
+    OMDB_TEST_KEY,
+    FakeUpstream,
+)
 
 
 @pytest.fixture
@@ -36,6 +42,9 @@ def settings(tmp_path: Path) -> Settings:
         encryption_key=Fernet.generate_key().decode(),  # type: ignore[arg-type]
         cookie_secure=False,  # TestClient talks plain http
         frontend_url="http://localhost:5173/",
+        b2_key_id=B2_TEST_KEY_ID,
+        b2_application_key=B2_TEST_APP_KEY,  # type: ignore[arg-type]
+        b2_bucket_name=B2_TEST_BUCKET,
     )
 
 
@@ -106,6 +115,15 @@ def alice(login_as: LoginAs) -> TestClient:
 @pytest.fixture
 def bob(login_as: LoginAs) -> TestClient:
     return login_as("222222222222222222", "bob")
+
+
+@pytest.fixture
+def admin(login_as: LoginAs, db: Session) -> TestClient:
+    test_client = login_as("999999999999999999", "root")
+    user = get_user(db, "999999999999999999")
+    user.role = UserRole.ADMIN
+    db.commit()
+    return test_client
 
 
 def get_user(db: Session, discord_id: str) -> User:

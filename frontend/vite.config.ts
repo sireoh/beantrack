@@ -3,20 +3,25 @@ import { sveltekit } from '@sveltejs/kit/vite';
 import { defineConfig, loadEnv } from 'vite';
 
 export default defineConfig(({ mode }) => {
-	const env = loadEnv(mode, process.cwd(), 'PUBLIC_');
+	// '' loads every variable from .env (not only PUBLIC_*); they stay in this config file.
+	const env = loadEnv(mode, process.cwd(), '');
 
-	// Serve the dev site on the same hostname as the API (e.g. 127.0.0.1 for both).
-	// The session cookie is SameSite=Lax, so the browser only sends it to the API when
-	// both run on the same site; localhost vs 127.0.0.1 counts as different sites.
-	let host = '127.0.0.1';
-	try {
-		host = new URL(env.PUBLIC_API_URL).hostname;
-	} catch {
-		// PUBLIC_API_URL missing or relative: keep the default.
-	}
+	// The browser calls /api on the dev server itself and Vite forwards it to the backend.
+	// So the site works from any device on the network (e.g. a phone at http://<LAN-IP>:5173)
+	// and the session cookie is first-party, with no CORS or localhost/127.0.0.1 mix-ups.
+	const apiTarget = env.API_PROXY_TARGET || 'http://127.0.0.1:8000';
 
 	return {
 		plugins: [tailwindcss(), sveltekit()],
-		server: { host, port: 5173, strictPort: true }
+		server: {
+			host: '0.0.0.0', // reachable from other devices on the LAN
+			port: 5173,
+			strictPort: true,
+			proxy: { '/api': { target: apiTarget } }
+		},
+		preview: {
+			host: '0.0.0.0',
+			proxy: { '/api': { target: apiTarget } }
+		}
 	};
 });

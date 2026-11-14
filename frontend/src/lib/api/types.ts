@@ -5,6 +5,8 @@ import type { WatchStatus } from '$lib/status';
 
 export type MediaType = 'tv' | 'movie';
 
+export type UserRole = 'user' | 'admin';
+
 export interface User {
 	discord_id: string;
 	username: string;
@@ -12,6 +14,7 @@ export interface User {
 	avatar_url: string | null;
 	created_at: string;
 	last_login: string;
+	role: UserRole;
 }
 
 // --- Search (GET /api/search) ---------------------------------------------------
@@ -109,4 +112,43 @@ export interface MovieList {
 export interface MovieAddRequest {
 	movie: { imdb: string; title: string; image: string | null };
 	status?: WatchStatus;
+}
+
+// --- Profile export / import -----------------------------------------------------
+
+/** The export file: list data only (no show/movie/episode metadata). */
+export interface ProfileExport {
+	format: 'beantrack-export';
+	version: number;
+	exported_at: string;
+	tvlist: {
+		imdb: string;
+		tvmaze_id: number | null;
+		status: WatchStatus;
+		current_episode: number;
+		current_episode_id: number | null;
+		added_at: string | null;
+		updated_at: string | null;
+	}[];
+	movielist: { imdb: string; status: WatchStatus; added_at: string | null; updated_at: string | null }[];
+}
+
+export interface ProfileImportResult {
+	imported: number;
+	skipped: number; // already in the list
+	failed: number;
+	failures: { kind: MediaType; imdb: string | null; reason: string }[];
+}
+
+// --- Admin backups ---------------------------------------------------------------
+
+export interface Backup {
+	name: string;
+	size: number; // bytes
+	created_at: string;
+}
+
+export interface RestoreResult {
+	restored: Backup;
+	safety_backup: Backup;
 }

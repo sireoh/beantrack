@@ -91,6 +91,11 @@ All routes are under `/api`. Interactive docs: http://localhost:8000/docs
 | PATCH | `/api/movielist/{imdb}/status` | ✔ | `{"status": "completed"}` |
 | DELETE | `/api/movielist/{imdb}` | ✔ | Remove a movie from the current user's list |
 | GET | `/api/search?type=tv\|movie&q=` | ✔ | TVmaze for `tv`, OMDb for `movie` |
+| GET | `/api/auth/profile/export` | ✔ | Download your list entries (no show/movie metadata) |
+| POST | `/api/auth/profile/import` | ✔ | Body: an export file. Adds missing entries, returns `{imported, skipped, failed, failures}` |
+| POST | `/api/admin/backup` | admin | Snapshot the database (`VACUUM INTO`) and upload it to B2 |
+| GET | `/api/admin/backups` | admin | Manual backups, newest first |
+| POST | `/api/admin/restore` | admin | `{"name": "manual-backups/…"}`; uploads a safety backup, then restores |
 | GET | `/api/health` | – | Liveness |
 
 `status` is one of `watching | completed | planned | dropped` (default `planned`).
@@ -132,7 +137,7 @@ uv run uvicorn app.main:create_app --factory --reload
 ```
 
 ```bash
-python -m uvicorn app.main:create_app --factory --reload
+python -m uvicorn app.main:create_app --factory --reload --host 0.0.0.0 --port 8000
 ```
 
 With plain pip instead of uv:
@@ -207,6 +212,29 @@ different file with `-o restored.db` to inspect it first.
 
 **Keep `ENCRYPTION_KEY` backed up separately** (e.g. in a password manager). Without it the
 restored Discord tokens can't be decrypted; everything else still works and users simply log in again.
+
+### Manual backups (API, works without Litestream)
+
+Admins can take on-demand snapshots from the Settings page or with `POST /api/admin/backup`.
+The app uses SQLite's `VACUUM INTO` to write a consistent copy while it keeps running, gzips it and
+uploads it to `manual-backups/` in the same bucket through B2's native API (same
+`B2_KEY_ID` / `B2_APPLICATION_KEY`; `B2_ENDPOINT` is only used by Litestream). This runs alongside
+Litestream, whose replica lives under `beantrack/`, and needs nothing installed, so it works on
+Windows too.
+
+Restoring (`POST /api/admin/restore`) first uploads a `-pre-restore` snapshot of the current data,
+then copies the chosen backup into the live database with SQLite's online backup API, so open
+connections and Litestream pick the change up. It refuses backups from a different Alembic schema
+revision. Sessions are restored too, so you may need to log in again afterwards.
+
+### Roles
+
+`users.role` is `user` (default) or `admin`. Every `/api/admin/*` route returns 403 for non-admins.
+There is no UI for granting it; set it in the database:
+
+```bash
+sqlite3 data/beantrack.db "UPDATE users SET role = 'admin' WHERE discord_id = '<your id>';"
+```
 
 ### Notes on SQLite
 

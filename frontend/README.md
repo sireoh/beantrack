@@ -20,19 +20,23 @@ cp .env.example .env
 npm run dev
 ```
 
-Open the site on **the same hostname as `PUBLIC_API_URL`**, e.g. http://127.0.0.1:5173 for
-`PUBLIC_API_URL=http://127.0.0.1:8000`. The dev server binds to that hostname automatically.
-The login cookie is `SameSite=Lax`, and browsers treat `localhost` and `127.0.0.1` as different
-sites, so mixing them makes you look logged out.
+The dev server listens on all interfaces (`0.0.0.0:5173`) and proxies `/api` to the backend
+(`API_PROXY_TARGET`, default `http://127.0.0.1:8000`). The browser only ever talks to the dev
+server, so the site works from your phone at `http://<your-LAN-IP>:5173` and the session cookie is
+first-party. Keep `PUBLIC_API_URL` **empty** for this; if it's set, the browser calls that URL
+directly, which a phone can't reach when it says `127.0.0.1`.
 
-The backend's `.env` must match for local development:
+Discord sends you back to one fixed redirect URI, so pick the address you'll use for login and set
+the backend's `.env` to it (and register the same redirect URI in the Discord developer portal).
+To log in from both laptop and phone, use the LAN IP on both:
 
 ```
-DISCORD_REDIRECT_URI=http://127.0.0.1:8000/api/auth/callback   # also registered in the Discord app
-FRONTEND_URL=http://127.0.0.1:5173/                             # where Discord login lands
-CORS_ORIGINS=["http://127.0.0.1:5173"]                          # (this is the default)
-COOKIE_SECURE=false                                             # plain http locally
+DISCORD_REDIRECT_URI=http://<LAN-IP>:5173/api/auth/callback   # through the Vite proxy
+FRONTEND_URL=http://<LAN-IP>:5173/
+COOKIE_SECURE=false                                            # plain http locally
 ```
+
+Windows may ask to allow Node through the firewall the first time; allow it on private networks.
 
 Other scripts: `npm run check` (svelte-check + TypeScript), `npm run build` (static site in
 `build/`), `npm run preview`.
@@ -41,7 +45,8 @@ Other scripts: `npm run check` (svelte-check + TypeScript), `npm run build` (sta
 
 | Variable | Meaning |
 |---|---|
-| `PUBLIC_API_URL` | API origin, e.g. `http://127.0.0.1:8000` (empty = same origin as the site) |
+| `API_PROXY_TARGET` | Backend the dev/preview server forwards `/api` to (default `http://127.0.0.1:8000`) |
+| `PUBLIC_API_URL` | Leave empty (calls go through the proxy). Only set it when the API lives on another origin in production |
 | `PUBLIC_DAISYUI_THEME` | Default daisyUI theme; empty or missing means `dark`. A user's dark/light choice (saved in `localStorage`) overrides it |
 
 ## Structure
@@ -79,5 +84,13 @@ src/
   shows `current_episode + 1 / episodes_count` once an episode has been chosen, and `0 / N` before.
 - Progress changes use `PATCH /api/tvlist/{imdb}/progress`; status changes use
   `PATCH /api/tvlist/{imdb}/status` and `PATCH /api/movielist/{imdb}/status`.
-- `GET /api/search` requires login, so logged-out visitors to `/search` see the login landing page.
-- Search results added from `/search` start with status `planned`.
+- `GET /api/search` requires login, so search bars are hidden when logged out and `/search` shows
+  the login landing page.
+- Search results are added with the status picked next to the search box on `/search`
+  (`addStatus` store, saved in `localStorage`). Adding or setting a show as Completed moves its
+  progress to the last episode (done by the backend).
+- Delete (with confirmation) is in every row's edit menu/modal: `DELETE /api/tvlist/{imdb}`,
+  `DELETE /api/movielist/{imdb}`.
+- `/settings`: export/import via `/api/auth/profile/export` and `/import`; the admin section
+  (only rendered when `user.role === 'admin'`, and enforced by the backend) uses
+  `/api/admin/backup`, `/api/admin/backups` and `/api/admin/restore`.

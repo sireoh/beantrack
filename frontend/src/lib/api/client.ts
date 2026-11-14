@@ -4,10 +4,14 @@
 import { API_URL } from '$lib/config';
 import type { WatchStatus } from '$lib/status';
 import type {
+	Backup,
 	Episode,
 	MovieAddRequest,
 	MovieList,
 	MovieListEntry,
+	ProfileExport,
+	ProfileImportResult,
+	RestoreResult,
 	SearchMovieCard,
 	SearchResponse,
 	SearchTVCard,
@@ -90,10 +94,22 @@ export const api = {
 		request<TvListEntry>('PATCH', `/api/tvlist/${enc(imdb)}/progress`, body),
 	updateTvStatus: (imdb: string, status: WatchStatus) =>
 		request<TvListEntry>('PATCH', `/api/tvlist/${enc(imdb)}/status`, { status }),
+	deleteTv: (imdb: string) => request<void>('DELETE', `/api/tvlist/${enc(imdb)}`),
 
 	// Movie list
 	getMovieList: () => request<MovieList>('GET', '/api/movielist'),
 	addMovie: (body: MovieAddRequest) => request<MovieListEntry>('POST', '/api/movielist/add', body),
 	updateMovieStatus: (imdb: string, status: WatchStatus) =>
-		request<MovieListEntry>('PATCH', `/api/movielist/${enc(imdb)}/status`, { status })
+		request<MovieListEntry>('PATCH', `/api/movielist/${enc(imdb)}/status`, { status }),
+	deleteMovie: (imdb: string) => request<void>('DELETE', `/api/movielist/${enc(imdb)}`),
+
+	// Profile (watchlist export / import)
+	exportProfile: () => request<ProfileExport>('GET', '/api/auth/profile/export'),
+	importProfile: (data: unknown) =>
+		request<ProfileImportResult>('POST', '/api/auth/profile/import', data),
+
+	// Admin (role checked by the backend too)
+	createBackup: () => request<Backup>('POST', '/api/admin/backup'),
+	listBackups: () => request<Backup[]>('GET', '/api/admin/backups'),
+	restoreBackup: (name: string) => request<RestoreResult>('POST', '/api/admin/restore', { name })
 };

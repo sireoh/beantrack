@@ -8,6 +8,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base
 from app.db.types import UTCDateTime, utcnow
+from app.models.enums import UserRole, user_role_column_type
 
 if TYPE_CHECKING:
     from app.models.lists import MovieList, TvList
@@ -21,6 +22,9 @@ class User(Base):
     avatar: Mapped[str | None] = mapped_column(String(128))  # Discord avatar hash
     created_at: Mapped[datetime] = mapped_column(UTCDateTime(), default=utcnow)
     last_login: Mapped[datetime] = mapped_column(UTCDateTime(), default=utcnow)
+    role: Mapped[UserRole] = mapped_column(
+        user_role_column_type(), default=UserRole.USER, server_default=UserRole.USER.value
+    )
 
     # Discord OAuth tokens, Fernet-encrypted with ENCRYPTION_KEY. Never stored in plaintext.
     discord_access_token: Mapped[str | None] = mapped_column(Text)

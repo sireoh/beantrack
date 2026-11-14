@@ -7,7 +7,12 @@ import { api } from '$lib/api/client';
 import type { Episode, MovieListEntry, TvListEntry } from '$lib/api/types';
 import type { WatchStatus } from '$lib/status';
 import { ensureEpisodes } from '$lib/stores/episodes';
-import { replaceMovieEntry, replaceTvEntry } from '$lib/stores/lists';
+import {
+	removeMovieEntry,
+	removeTvEntry,
+	replaceMovieEntry,
+	replaceTvEntry
+} from '$lib/stores/lists';
 
 export { ensureEpisodes as loadEpisodes };
 
@@ -58,6 +63,16 @@ export async function setTvStatus(entry: TvListEntry, status: WatchStatus): Prom
 export async function setMovieStatus(entry: MovieListEntry, status: WatchStatus): Promise<void> {
 	if (status === entry.status) return;
 	replaceMovieEntry(await api.updateMovieStatus(entry.movie.imdb, status));
+}
+
+export async function deleteTvEntry(imdb: string): Promise<void> {
+	await api.deleteTv(imdb);
+	removeTvEntry(imdb);
+}
+
+export async function deleteMovieEntry(imdb: string): Promise<void> {
+	await api.deleteMovie(imdb);
+	removeMovieEntry(imdb);
 }
 
 /** `S1.E2`, or `S1 Special` for episodes without a number. */

@@ -18,9 +18,10 @@
 	} from '$lib/list-edit';
 	import { episodes } from '$lib/stores/episodes';
 	import { showError } from '$lib/stores/toasts';
+	import DeleteEntryButton from './DeleteEntryButton.svelte';
 	import StatusPicker from './StatusPicker.svelte';
 
-	let { entry }: { entry: TvListEntry } = $props();
+	let { entry, ondelete }: { entry: TvListEntry; ondelete: () => void } = $props();
 
 	let query = $state('');
 	let busy = $state(false);
@@ -130,4 +131,6 @@
 			onchange={(status) => run(() => setTvStatus(entry, status))}
 		/>
 	</div>
+
+	<DeleteEntryButton {ondelete} />
 </div>

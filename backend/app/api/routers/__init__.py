@@ -1,3 +1,3 @@
-from app.api.routers import auth, movielist, search, tvlist
+from app.api.routers import admin, auth, movielist, search, tvlist
 
-__all__ = ["auth", "movielist", "search", "tvlist"]
+__all__ = ["admin", "auth", "movielist", "search", "tvlist"]

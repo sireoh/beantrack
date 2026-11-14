@@ -1,8 +1,9 @@
 <script lang="ts">
 	import { Pencil, Star } from 'lucide-svelte';
 	import type { TvListEntry } from '$lib/api/types';
-	import { episodeCode } from '$lib/list-edit';
+	import { deleteTvEntry, episodeCode } from '$lib/list-edit';
 	import {
+		closeDropdown,
 		filterEntries,
 		nextSort,
 		sortEntries,
@@ -11,6 +12,8 @@
 		type SortState
 	} from '$lib/list-view';
 	import { tvFilter, tvList } from '$lib/stores/lists';
+	import { showError, showToast } from '$lib/stores/toasts';
+	import ConfirmModal from './ConfirmModal.svelte';
 	import EditMobileModal from './EditMobileModal.svelte';
 	import EpisodeEditDropdown from './EpisodeEditDropdown.svelte';
 	import Poster from './Poster.svelte';
@@ -45,6 +48,27 @@
 		editingImdb = imdb;
 		modalOpen = true;
 	}
+
+	// Delete confirmation (shared by every layout).
+	let deleting = $state<{ imdb: string; title: string } | null>(null);
+	let confirmOpen = $state(false);
+
+	function askDelete(entry: TvListEntry) {
+		closeDropdown();
+		modalOpen = false;
+		deleting = { imdb: entry.show.imdb, title: entry.show.title };
+		confirmOpen = true;
+	}
+
+	async function confirmDelete() {
+		if (!deleting) return;
+		try {
+			await deleteTvEntry(deleting.imdb);
+			showToast(`Removed ${deleting.title}`, 'success', 2500);
+		} catch (e) {
+			showError(e);
+		}
+	}
 </script>
 
 {#if rows.length === 0}
@@ -55,8 +79,8 @@
 		<table class="table">
 			<thead>
 				<tr>
-					<th class="w-2 pr-0"><span class="sr-only">Status</span></th>
-					<th class="w-28">Image</th>
+					<SortHeader label="" key="status" {sort} {onsort} class="w-24" />
+					<th class="w-28 text-center">Image</th>
 					<SortHeader label="Title" key="title" {sort} {onsort} />
 					<SortHeader label="Score" key="score" {sort} {onsort} />
 					<th>Progress</th>
@@ -67,7 +91,7 @@
 				{#each rows as entry (entry.show.imdb)}
 					{@const meta = entry.current_episode_metadata}
 					<tr class="hover:bg-base-200/60">
-						<td class="pr-0"><StatusSliver status={entry.status} /></td>
+						<td><StatusSliver status={entry.status} /></td>
 						<td>
 							<Poster
 								src={meta?.image ?? entry.show.image}
@@ -95,7 +119,7 @@
 						<td class="whitespace-nowrap tabular-nums">
 							{progress(entry)} / {entry.show.episodes_count}
 						</td>
-						<td><EpisodeEditDropdown {entry} /></td>
+						<td><EpisodeEditDropdown {entry} ondelete={() => askDelete(entry)} /></td>
 					</tr>
 				{/each}
 			</tbody>
@@ -107,8 +131,8 @@
 		<table class="table table-sm">
 			<thead>
 				<tr>
-					<th class="w-2 pr-0"><span class="sr-only">Status</span></th>
-					<th class="w-14">Image</th>
+					<SortHeader label="" key="status" {sort} {onsort} class="w-16" />
+					<th class="w-14 text-center">Image</th>
 					<SortHeader label="Title" key="title" {sort} {onsort} />
 					<th class="w-12">Edit</th>
 				</tr>
@@ -116,7 +140,7 @@
 			<tbody>
 				{#each rows as entry (entry.show.imdb)}
 					<tr>
-						<td class="pr-0"><StatusSliver status={entry.status} /></td>
+						<td><StatusSliver status={entry.status} /></td>
 						<td><Poster src={entry.show.image} imdb={entry.show.imdb} alt={entry.show.title} /></td>
 						<td class="w-full font-semibold">{entry.show.title}</td>
 						<td>
@@ -137,5 +161,17 @@
 {/if}
 
 <EditMobileModal bind:open={modalOpen} title={editing?.show.title ?? ''}>
-	{#if editing}<TvEditPanel entry={editing} />{/if}
+	{#if editing}
+		{@const entry = editing}
+		<TvEditPanel {entry} ondelete={() => askDelete(entry)} />
+	{/if}
 </EditMobileModal>
+
+<ConfirmModal
+	bind:open={confirmOpen}
+	title="Remove {deleting?.title ?? 'this show'} from your list?"
+	message="Your progress for this show will be deleted."
+	confirmLabel="Delete"
+	danger
+	onconfirm={confirmDelete}
+/>

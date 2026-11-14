@@ -1,7 +1,7 @@
 import { get, writable } from 'svelte/store';
 import { api } from '$lib/api/client';
 import type { MediaType, SearchMovieCard, SearchTVCard } from '$lib/api/types';
-import { WatchStatus } from '$lib/status';
+import { WATCH_STATUSES, WatchStatus } from '$lib/status';
 import { persisted } from './persisted';
 import { addMovieEntry, addTvEntry } from './lists';
 
@@ -10,6 +10,13 @@ export const searchMode = persisted<MediaType>(
 	'beantrack.searchMode',
 	'tv',
 	(v): v is MediaType => v === 'tv' || v === 'movie'
+);
+
+/** Status that "Add" uses on /search; remembered across reloads. */
+export const addStatus = persisted<WatchStatus>(
+	'beantrack.addStatus',
+	WatchStatus.Planned,
+	(v): v is WatchStatus => (WATCH_STATUSES as readonly string[]).includes(v)
 );
 
 /** Results of the latest search, tagged with the type they were searched as. */
@@ -26,10 +33,11 @@ export async function fetchSearch(type: MediaType, query: string): Promise<Searc
 		: { type, query, items: (await api.searchMovies(query)).results };
 }
 
-/** Add the search result at `index` to the matching list (as "planned"). */
+/** Add the search result at `index` to the matching list, with the chosen `addStatus`. */
 export async function addSearchResult(index: number): Promise<void> {
 	const results = get(searchResults);
 	if (!results) return;
+	const status = get(addStatus);
 
 	if (results.type === 'tv') {
 		const card = results.items[index];
@@ -42,7 +50,7 @@ export async function addSearchResult(index: number): Promise<void> {
 				image: card.image,
 				score: card.score
 			},
-			status: WatchStatus.Planned
+			status
 		});
 		addTvEntry(entry);
 	} else {
@@ -50,7 +58,7 @@ export async function addSearchResult(index: number): Promise<void> {
 		if (!card) return;
 		const entry = await api.addMovie({
 			movie: { imdb: card.imdb, title: card.title, image: card.image },
-			status: WatchStatus.Planned
+			status
 		});
 		addMovieEntry(entry);
 	}

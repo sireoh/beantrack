@@ -6,11 +6,13 @@ from datetime import timedelta
 from fastapi import APIRouter, Request, Response, status
 from fastapi.responses import RedirectResponse
 
-from app.api.deps import Cipher, CurrentUser, DbSession, Discord, SettingsDep
+from app.api.deps import Cipher, CurrentUser, DbSession, Discord, Omdb, SettingsDep, TvMaze
 from app.core.config import Settings
 from app.core.errors import AppError
+from app.schemas.profile import ProfileExport, ProfileImportRequest, ProfileImportResult
 from app.schemas.user import UserOut
 from app.services import auth as auth_service
+from app.services import profile as profile_service
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -106,3 +108,17 @@ def refresh_profile(
     """Refresh the current user's profile data from Discord."""
     user = auth_service.refresh_profile(db, user=user, discord=discord, cipher=cipher)
     return UserOut.model_validate(user)
+
+
+@router.get("/profile/export", response_model=ProfileExport)
+def export_profile(user: CurrentUser, db: DbSession) -> ProfileExport:
+    """The current user's TV and movie list entries (no show/movie/episode metadata)."""
+    return profile_service.export_profile(db, user)
+
+
+@router.post("/profile/import", response_model=ProfileImportResult)
+def import_profile(
+    body: ProfileImportRequest, user: CurrentUser, db: DbSession, tvmaze: TvMaze, omdb: Omdb
+) -> ProfileImportResult:
+    """Add entries from an export file; titles missing from the shared cache are fetched."""
+    return profile_service.import_profile(db, user=user, tvmaze=tvmaze, omdb=omdb, request=body)

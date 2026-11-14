@@ -7,12 +7,14 @@ import httpx
 from fastapi import Depends, HTTPException, Request, status
 from sqlalchemy.orm import Session, sessionmaker
 
+from app.clients.b2 import B2Client
 from app.clients.discord import DiscordOAuthClient
 from app.clients.omdb import OmdbClient
 from app.clients.tvmaze import TvMazeClient
 from app.core.config import Settings
+from app.core.errors import AppError
 from app.core.security import TokenCipher
-from app.models import User
+from app.models import User, UserRole
 from app.services import auth as auth_service
 
 
@@ -64,8 +66,35 @@ def get_current_user(request: Request, db: DbSession, settings: SettingsDep) -> 
     return user
 
 
+def require_admin(user: Annotated[User, Depends(get_current_user)]) -> User:
+    """401 when logged out (via get_current_user), 403 for anyone who isn't an admin."""
+    if user.role != UserRole.ADMIN:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admins only")
+    return user
+
+
+def get_b2(http: HttpClient, settings: SettingsDep) -> B2Client:
+    configured = (
+        settings.b2_key_id
+        and settings.b2_application_key.get_secret_value()
+        and settings.b2_bucket_name
+    )
+    if not configured:
+        raise AppError(
+            "Backups are not configured: set B2_KEY_ID, B2_APPLICATION_KEY and B2_BUCKET_NAME"
+        )
+    return B2Client(
+        http,
+        key_id=settings.b2_key_id,
+        application_key=settings.b2_application_key.get_secret_value(),
+        bucket_name=settings.b2_bucket_name,
+    )
+
+
 TvMaze = Annotated[TvMazeClient, Depends(get_tvmaze)]
 Omdb = Annotated[OmdbClient, Depends(get_omdb)]
 Discord = Annotated[DiscordOAuthClient, Depends(get_discord)]
 Cipher = Annotated[TokenCipher, Depends(get_cipher)]
 CurrentUser = Annotated[User, Depends(get_current_user)]
+AdminUser = Annotated[User, Depends(require_admin)]
+B2 = Annotated[B2Client, Depends(get_b2)]

@@ -16,5 +16,8 @@
 	<main class="mx-auto w-full max-w-7xl flex-1 px-3 py-4 sm:px-6 sm:py-6">
 		{@render children()}
 	</main>
+	<footer class="footer footer-center bg-base-200 p-4 text-sm text-base-content/70">
+		<p>© 2026 Vincent Fung</p>
+	</footer>
 </div>
 <Toasts />

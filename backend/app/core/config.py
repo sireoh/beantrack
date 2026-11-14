@@ -44,6 +44,9 @@ class Settings(BaseSettings):
     cookie_secure: bool = True
     # Where the browser is sent after a successful Discord login.
     frontend_url: str = "/"
+    # Browser origins allowed to call the API with credentials (the SvelteKit frontend).
+    # In .env, as JSON: CORS_ORIGINS=["http://127.0.0.1:5173"]
+    cors_origins: list[str] = ["http://127.0.0.1:5173", "http://localhost:5173"]
 
     @field_validator("encryption_key")
     @classmethod

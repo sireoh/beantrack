@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<link rel="icon" href="%sveltekit.assets%/favicon.svg" />
+		<title>BeanTrack</title>
+		<script>
+			// Apply the theme before first paint to avoid a flash of the wrong theme.
+			// Saved choice (localStorage) > PUBLIC_DAISYUI_THEME > "dark".
+			(function () {
+				var fallback = '%sveltekit.env.PUBLIC_DAISYUI_THEME%';
+				if (!fallback || fallback.charAt(0) === '%') fallback = 'dark';
+				var saved = null;
+				try {
+					saved = localStorage.getItem('beantrack.theme');
+				} catch (e) {}
+				document.documentElement.setAttribute('data-theme', saved || fallback);
+				document.documentElement.setAttribute('data-default-theme', fallback);
+			})();
+		</script>
+		%sveltekit.head%
+	</head>
+	<body data-sveltekit-preload-data="hover">
+		<div style="display: contents">%sveltekit.body%</div>
+	</body>
+</html>

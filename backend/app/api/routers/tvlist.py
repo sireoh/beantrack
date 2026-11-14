@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Response, status
 
 from app.api.deps import CurrentUser, DbSession, TvMaze
-from app.schemas.common import ImdbId
+from app.schemas.common import ImdbId, StatusUpdateRequest
 from app.schemas.tvlist import (
     EpisodeOut,
     TvListAddRequest,
@@ -45,6 +45,15 @@ def update_progress(
 ) -> TvListEntryOut:
     """Update a user's clamped episode progress and cached metadata."""
     entry = list_service.update_tv_progress(db, user=user, imdb=imdb, request=body)
+    return TvListEntryOut.model_validate(entry)
+
+
+@router.patch("/{imdb}/status", response_model=TvListEntryOut)
+def update_status(
+    imdb: ImdbId, body: StatusUpdateRequest, user: CurrentUser, db: DbSession
+) -> TvListEntryOut:
+    """Change the watch status of a show in the logged-in user's TV list."""
+    entry = list_service.update_tv_status(db, user=user, imdb=imdb, status=body.status)
     return TvListEntryOut.model_validate(entry)
 
 

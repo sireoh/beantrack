@@ -8,6 +8,7 @@ from contextlib import asynccontextmanager
 
 import httpx
 from fastapi import APIRouter, FastAPI, Request
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from app.api.routers import auth, movielist, search, tvlist
@@ -45,6 +46,14 @@ def create_app(
     app.state.sessionmaker = build_sessionmaker(engine)
     app.state.http_client = http
     app.add_exception_handler(AppError, _app_error_handler)
+    # The frontend runs on its own origin and sends the session cookie with every request.
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=settings.cors_origins,
+        allow_credentials=True,
+        allow_methods=["GET", "POST", "PATCH", "DELETE"],
+        allow_headers=["Content-Type"],
+    )
 
     api = APIRouter()
 

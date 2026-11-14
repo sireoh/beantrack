@@ -209,3 +209,40 @@ def test_add_show_fails_when_episode_fetch_fails(alice: TestClient, upstream: Fa
 
     assert response.status_code == 502
     assert alice.get("/api/tvlist").json()["entries"] == []
+
+
+def test_update_status(alice: TestClient) -> None:
+    alice.post("/api/tvlist/add", json=tv_add_payload())
+
+    response = alice.patch("/api/tvlist/tt0903747/status", json={"status": "dropped"})
+
+    assert response.status_code == 200, response.text
+    assert response.json()["status"] == "dropped"
+    assert alice.get("/api/tvlist").json()["entries"][0]["status"] == "dropped"
+
+
+def test_update_status_validates_and_requires_entry(alice: TestClient) -> None:
+    assert (
+        alice.patch("/api/tvlist/tt0903747/status", json={"status": "watching"}).status_code
+        == 404
+    )
+    alice.post("/api/tvlist/add", json=tv_add_payload())
+    assert (
+        alice.patch("/api/tvlist/tt0903747/status", json={"status": "binging"}).status_code
+        == 422
+    )
+
+
+def test_cors_allows_frontend_origin_with_credentials(alice: TestClient) -> None:
+    response = alice.options(
+        "/api/tvlist/tt0903747/status",
+        headers={
+            "Origin": "http://127.0.0.1:5173",
+            "Access-Control-Request-Method": "PATCH",
+            "Access-Control-Request-Headers": "content-type",
+        },
+    )
+
+    assert response.status_code == 200
+    assert response.headers["access-control-allow-origin"] == "http://127.0.0.1:5173"
+    assert response.headers["access-control-allow-credentials"] == "true"

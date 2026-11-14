@@ -11,7 +11,7 @@ from app.clients.omdb import OmdbClient
 from app.clients.tvmaze import TvMazeClient, TvMazeEpisode
 from app.core.errors import ConflictError, InvalidRequestError, NotFoundError
 from app.db.types import utcnow
-from app.models import Episode, MovieList, TvList, User, UserMovie, UserTvShow
+from app.models import Episode, MovieList, TvList, User, UserMovie, UserTvShow, WatchStatus
 from app.repositories import media as media_repo
 from app.repositories import movielists as movielists_repo
 from app.repositories import tvlists as tvlists_repo
@@ -90,6 +90,26 @@ def update_tv_progress(
         current_episode=current_episode,
         current_episode_metadata=metadata,
     )
+
+
+def update_tv_status(db: Session, *, user: User, imdb: str, status: WatchStatus) -> UserTvShow:
+    entry = tvlists_repo.get_entry(db, user.tvlist.tvlist_id, imdb)
+    if entry is None:
+        raise NotFoundError(TV_NOT_FOUND)
+    entry.status = status
+    db.commit()
+    return entry
+
+
+def update_movie_status(
+    db: Session, *, user: User, imdb: str, status: WatchStatus
+) -> UserMovie:
+    entry = movielists_repo.get_entry(db, user.movielist.movielist_id, imdb)
+    if entry is None:
+        raise NotFoundError(MOVIE_NOT_FOUND)
+    entry.status = status
+    db.commit()
+    return entry
 
 
 def delete_tvshow(db: Session, *, user: User, imdb: str) -> None:

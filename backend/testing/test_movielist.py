@@ -90,3 +90,20 @@ def test_movie_data_is_fetched_once_and_shared(
     assert request.url.params["apikey"] == "omdb-test-key"
     assert db.scalar(select(func.count()).select_from(Movie)) == 1
     assert db.get(Movie, "tt0133093").score == 8.7
+
+
+def test_update_movie_status(alice: TestClient, bob: TestClient) -> None:
+    alice.post("/api/movielist/add", json=movie_add_payload())
+    bob.post("/api/movielist/add", json=movie_add_payload())
+
+    response = alice.patch("/api/movielist/tt0133093/status", json={"status": "completed"})
+
+    assert response.status_code == 200, response.text
+    assert response.json()["status"] == "completed"
+    assert bob.get("/api/movielist").json()["entries"][0]["status"] == "planned"
+
+
+def test_update_status_of_missing_movie_is_404(alice: TestClient) -> None:
+    response = alice.patch("/api/movielist/tt0133093/status", json={"status": "completed"})
+
+    assert response.status_code == 404

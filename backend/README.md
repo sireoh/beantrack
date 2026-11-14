@@ -84,9 +84,11 @@ All routes are under `/api`. Interactive docs: http://localhost:8000/docs
 | POST | `/api/tvlist/add` | ✔ | `{"show": {"imdb": "tt0903747", "tvmaze_id": 169, "title": "Breaking Bad", "image": "...", "score": 9.2}, "status": "watching"}` |
 | GET | `/api/tvlist/{imdb}/episodes` | ✔ | Return the cached episodes for a TV show |
 | PATCH | `/api/tvlist/{imdb}/progress` | ✔ | Update clamped episode progress and current episode metadata |
+| PATCH | `/api/tvlist/{imdb}/status` | ✔ | `{"status": "watching"}` |
 | DELETE | `/api/tvlist/{imdb}` | ✔ | Remove a show from the current user's list |
 | GET | `/api/movielist` | ✔ | Full movie list |
 | POST | `/api/movielist/add` | ✔ | `{"movie": {"imdb": "tt0133093", "title": "The Matrix", "image": "..."}, "status": "planned"}` |
+| PATCH | `/api/movielist/{imdb}/status` | ✔ | `{"status": "completed"}` |
 | DELETE | `/api/movielist/{imdb}` | ✔ | Remove a movie from the current user's list |
 | GET | `/api/search?type=tv\|movie&q=` | ✔ | TVmaze for `tv`, OMDb for `movie` |
 | GET | `/api/health` | – | Liveness |

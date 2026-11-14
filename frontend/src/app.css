@@ -1,0 +1,6 @@
+@import 'tailwindcss';
+
+/* All daisyUI themes are available so PUBLIC_DAISYUI_THEME can name any of them. */
+@plugin 'daisyui' {
+	themes: all;
+}

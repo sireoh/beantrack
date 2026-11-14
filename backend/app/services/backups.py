@@ -16,7 +16,7 @@ from contextlib import closing
 from pathlib import Path
 
 from app.clients.b2 import B2Client, B2File
-from app.core.errors import ConflictError, InvalidRequestError
+from app.core.errors import ConflictError, InvalidRequestError, NotFoundError
 from app.core.ids import new_id
 from app.db.types import utcnow
 
@@ -39,6 +39,16 @@ def list_backups(b2: B2Client) -> list[B2File]:
     """Manual backups, newest first."""
     files = [f for f in b2.list_files(BACKUP_PREFIX) if f.name.endswith(BACKUP_SUFFIX)]
     return sorted(files, key=lambda f: f.uploaded_at, reverse=True)
+
+
+def delete_backup(b2: B2Client, file_id: str) -> B2File:
+    """Delete one manual backup. Only files under BACKUP_PREFIX are looked up here, so
+    Litestream's replica (stored under its own path) can never be deleted this way."""
+    backup = next((f for f in list_backups(b2) if f.id == file_id), None)
+    if backup is None:
+        raise NotFoundError("Backup not found")
+    b2.delete(backup)
+    return backup
 
 
 def restore_backup(b2: B2Client, db_path: Path, name: str) -> tuple[B2File, B2File]:

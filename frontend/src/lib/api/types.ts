@@ -7,6 +7,8 @@ export type MediaType = 'tv' | 'movie';
 
 export type UserRole = 'user' | 'admin';
 
+export type ThemeName = 'light' | 'dark';
+
 export interface User {
 	discord_id: string;
 	username: string;
@@ -15,6 +17,8 @@ export interface User {
 	created_at: string;
 	last_login: string;
 	role: UserRole;
+	/** Saved light/dark preference; null until the user picks one. */
+	theme: ThemeName | null;
 }
 
 // --- Search (GET /api/search) ---------------------------------------------------
@@ -143,6 +147,7 @@ export interface ProfileImportResult {
 // --- Admin backups ---------------------------------------------------------------
 
 export interface Backup {
+	id: string; // B2 file id
 	name: string;
 	size: number; // bytes
 	created_at: string;

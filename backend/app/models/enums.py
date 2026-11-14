@@ -41,3 +41,20 @@ def user_role_column_type() -> Enum:
         values_callable=lambda enum_cls: [member.value for member in enum_cls],
         validate_strings=True,
     )
+
+
+class Theme(StrEnum):
+    LIGHT = "light"
+    DARK = "dark"
+
+
+def theme_column_type() -> Enum:
+    return Enum(
+        Theme,
+        name="theme",
+        native_enum=False,
+        create_constraint=False,
+        length=16,
+        values_callable=lambda enum_cls: [member.value for member in enum_cls],
+        validate_strings=True,
+    )

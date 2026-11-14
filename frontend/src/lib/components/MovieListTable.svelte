@@ -20,6 +20,7 @@
 	import Poster from './Poster.svelte';
 	import SortHeader from './SortHeader.svelte';
 	import StatusSliver from './StatusSliver.svelte';
+	import TitleLink from './TitleLink.svelte';
 
 	const accessors: EntryAccessors<MovieListEntry> = {
 		status: (e) => e.status,
@@ -82,7 +83,9 @@
 					<tr class="hover:bg-base-200/60">
 						<td><StatusSliver status={entry.status} /></td>
 						<td><Poster src={entry.movie.image} imdb={entry.movie.imdb} alt={entry.movie.title} /></td>
-						<td class="w-full font-semibold">{entry.movie.title}</td>
+						<td class="w-full font-semibold">
+							<TitleLink imdb={entry.movie.imdb} title={entry.movie.title} />
+						</td>
 						<td class="whitespace-nowrap">
 							{#if entry.movie.score !== null}
 								<span class="flex items-center gap-1">
@@ -120,7 +123,9 @@
 					<tr>
 						<td><StatusSliver status={entry.status} /></td>
 						<td><Poster src={entry.movie.image} imdb={entry.movie.imdb} alt={entry.movie.title} /></td>
-						<td class="w-full font-semibold">{entry.movie.title}</td>
+						<td class="w-full font-semibold">
+							<TitleLink imdb={entry.movie.imdb} title={entry.movie.title} />
+						</td>
 						<td>
 							<button
 								type="button"

@@ -4,3 +4,27 @@
 @plugin 'daisyui' {
 	themes: all;
 }
+
+/*
+ * Popover menus anchored to their trigger (EditDropdown). Default placement: below the
+ * button, right edges aligned. If that would overflow the viewport, the browser tries the
+ * flipped placements (above, and/or growing to the right) before giving up.
+ */
+.anchored-menu {
+	position: fixed;
+	inset: auto;
+	margin: 0.25rem 0;
+	position-area: block-end span-inline-start;
+	position-try-fallbacks: flip-block, flip-inline, flip-block flip-inline;
+	max-height: calc(100dvh - 1rem);
+	overflow-y: auto;
+}
+
+/* Browsers without anchor positioning: show the menu centred instead of at the corner. */
+@supports not (position-area: block-end) {
+	.anchored-menu {
+		inset: 0;
+		margin: auto;
+		height: fit-content;
+	}
+}

@@ -6,6 +6,7 @@ from app.schemas.common import ORMModel, RequestModel
 class BackupOut(ORMModel):
     """A manual database snapshot stored in the B2 bucket."""
 
+    id: str  # B2 file id, used by DELETE /api/admin/backups/{id}
     name: str
     size: int  # bytes (gzip-compressed)
     created_at: datetime

@@ -15,6 +15,11 @@ B2_TEST_KEY_ID = "b2-test-key-id"
 B2_TEST_APP_KEY = "b2-test-app-key"
 B2_TEST_BUCKET = "beantrack-test"
 
+
+def b2_file_id(name: str) -> str:
+    """Fake B2 fileId for a file name (real ones are opaque and contain no slashes)."""
+    return "4_z" + hashlib.sha1(name.encode()).hexdigest()[:24]
+
 BREAKING_BAD = {
     "id": 169,
     "name": "Breaking Bad",
@@ -259,11 +264,22 @@ class FakeUpstream:
                 )
             if path == "/b2api/v2/b2_list_file_names":
                 files = [
-                    {"fileName": name, "contentLength": len(data), "uploadTimestamp": ts}
+                    {
+                        "fileId": b2_file_id(name),
+                        "fileName": name,
+                        "contentLength": len(data),
+                        "uploadTimestamp": ts,
+                    }
                     for name, (data, ts) in sorted(self.b2_files.items())
                     if name.startswith(body.get("prefix", ""))
                 ]
                 return httpx.Response(200, json={"files": files, "nextFileName": None})
+            if path == "/b2api/v2/b2_delete_file_version":
+                name = body.get("fileName", "")
+                if name not in self.b2_files or body.get("fileId") != b2_file_id(name):
+                    return httpx.Response(400, json={"message": "file not present"})
+                del self.b2_files[name]
+                return httpx.Response(200, json={"fileId": body["fileId"], "fileName": name})
         if host == "pod-000.backblazeb2.com" and request.method == "POST":
             if request.headers.get("authorization") != "upload-token":
                 return httpx.Response(401, json={"message": "bad upload token"})
@@ -274,7 +290,13 @@ class FakeUpstream:
             ts = 1_700_000_000_000 + len(self.b2_files) * 1000  # strictly increasing
             self.b2_files[name] = (data, ts)
             return httpx.Response(
-                200, json={"fileName": name, "contentLength": len(data), "uploadTimestamp": ts}
+                200,
+                json={
+                    "fileId": b2_file_id(name),
+                    "fileName": name,
+                    "contentLength": len(data),
+                    "uploadTimestamp": ts,
+                },
             )
         if host == "f000.backblazeb2.com" and request.method == "GET":
             prefix = f"/file/{B2_TEST_BUCKET}/"

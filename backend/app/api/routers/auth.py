@@ -10,7 +10,7 @@ from app.api.deps import Cipher, CurrentUser, DbSession, Discord, Omdb, Settings
 from app.core.config import Settings
 from app.core.errors import AppError
 from app.schemas.profile import ProfileExport, ProfileImportRequest, ProfileImportResult
-from app.schemas.user import UserOut
+from app.schemas.user import ThemeUpdateRequest, UserOut
 from app.services import auth as auth_service
 from app.services import profile as profile_service
 
@@ -122,3 +122,11 @@ def import_profile(
 ) -> ProfileImportResult:
     """Add entries from an export file; titles missing from the shared cache are fetched."""
     return profile_service.import_profile(db, user=user, tvmaze=tvmaze, omdb=omdb, request=body)
+
+
+@router.patch("/profile/theme", response_model=UserOut)
+def update_theme(body: ThemeUpdateRequest, user: CurrentUser, db: DbSession) -> UserOut:
+    """Save the user's light/dark preference on their account."""
+    user.theme = body.theme
+    db.commit()
+    return UserOut.model_validate(user)

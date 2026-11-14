@@ -1,6 +1,6 @@
 """ORM models. Importing this package registers every table on `Base.metadata`."""
 
-from app.models.enums import UserRole, WatchStatus
+from app.models.enums import Theme, UserRole, WatchStatus
 from app.models.lists import MovieList, TvList, UserMovie, UserTvShow
 from app.models.media import Episode, Movie, TvShow
 from app.models.user import User, UserSession
@@ -9,6 +9,7 @@ __all__ = [
     "Episode",
     "Movie",
     "MovieList",
+    "Theme",
     "TvList",
     "TvShow",
     "User",

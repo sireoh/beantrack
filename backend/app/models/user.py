@@ -8,7 +8,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base
 from app.db.types import UTCDateTime, utcnow
-from app.models.enums import UserRole, user_role_column_type
+from app.models.enums import Theme, UserRole, theme_column_type, user_role_column_type
 
 if TYPE_CHECKING:
     from app.models.lists import MovieList, TvList
@@ -25,6 +25,8 @@ class User(Base):
     role: Mapped[UserRole] = mapped_column(
         user_role_column_type(), default=UserRole.USER, server_default=UserRole.USER.value
     )
+    # Light/dark preference; null until the user picks one (the browser decides until then).
+    theme: Mapped[Theme | None] = mapped_column(theme_column_type(), nullable=True)
 
     # Discord OAuth tokens, Fernet-encrypted with ENCRYPTION_KEY. Never stored in plaintext.
     discord_access_token: Mapped[str | None] = mapped_column(Text)

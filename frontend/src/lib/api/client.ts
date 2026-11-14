@@ -19,6 +19,7 @@ import type {
 	TvList,
 	TvListEntry,
 	TvProgressRequest,
+	ThemeName,
 	User
 } from './types';
 
@@ -79,6 +80,7 @@ export const api = {
 	// Auth
 	me: () => request<User>('GET', '/api/auth/me'),
 	logout: () => request<void>('POST', '/api/auth/logout'),
+	setTheme: (theme: ThemeName) => request<User>('PATCH', '/api/auth/profile/theme', { theme }),
 
 	// Search
 	searchTv: (q: string) =>
@@ -111,5 +113,6 @@ export const api = {
 	// Admin (role checked by the backend too)
 	createBackup: () => request<Backup>('POST', '/api/admin/backup'),
 	listBackups: () => request<Backup[]>('GET', '/api/admin/backups'),
-	restoreBackup: (name: string) => request<RestoreResult>('POST', '/api/admin/restore', { name })
+	restoreBackup: (name: string) => request<RestoreResult>('POST', '/api/admin/restore', { name }),
+	deleteBackup: (id: string) => request<void>('DELETE', `/api/admin/backups/${enc(id)}`)
 };

@@ -157,3 +157,16 @@ def test_logout_revokes_session(client: TestClient, db: Session) -> None:
 
     assert db.scalar(select(func.count()).select_from(UserSession)) == 0
     assert client.get("/api/tvlist").status_code == 401
+
+
+
+def test_theme_preference_is_saved_on_the_account(client: TestClient) -> None:
+    _login(client)
+    assert client.get("/api/auth/me").json()["theme"] is None
+
+    response = client.patch("/api/auth/profile/theme", json={"theme": "light"})
+
+    assert response.status_code == 200, response.text
+    assert response.json()["theme"] == "light"
+    assert client.get("/api/auth/me").json()["theme"] == "light"
+    assert client.patch("/api/auth/profile/theme", json={"theme": "pink"}).status_code == 422

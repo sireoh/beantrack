@@ -2,8 +2,8 @@ from datetime import datetime
 
 from pydantic import computed_field
 
-from app.models.enums import UserRole
-from app.schemas.common import ORMModel
+from app.models.enums import Theme, UserRole
+from app.schemas.common import ORMModel, RequestModel
 
 
 class UserOut(ORMModel):
@@ -13,6 +13,7 @@ class UserOut(ORMModel):
     created_at: datetime
     last_login: datetime
     role: UserRole
+    theme: Theme | None
 
     @computed_field  # type: ignore[prop-decorator]
     @property
@@ -20,3 +21,7 @@ class UserOut(ORMModel):
         if self.avatar is None:
             return None
         return f"https://cdn.discordapp.com/avatars/{self.discord_id}/{self.avatar}.png"
+
+
+class ThemeUpdateRequest(RequestModel):
+    theme: Theme

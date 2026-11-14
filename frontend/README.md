@@ -47,7 +47,7 @@ Other scripts: `npm run check` (svelte-check + TypeScript), `npm run build` (sta
 |---|---|
 | `API_PROXY_TARGET` | Backend the dev/preview server forwards `/api` to (default `http://127.0.0.1:8000`) |
 | `PUBLIC_API_URL` | Leave empty (calls go through the proxy). Only set it when the API lives on another origin in production |
-| `PUBLIC_DAISYUI_THEME` | Default daisyUI theme; empty or missing means `dark`. A user's dark/light choice (saved in `localStorage`) overrides it |
+| `PUBLIC_DAISYUI_THEME` | Last-resort theme, only used if the browser reports no light/dark preference. Order: the account's saved theme (when logged in) > the theme cached in `localStorage` > `prefers-color-scheme` > this > `dark` |
 
 ## Structure
 

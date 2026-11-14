@@ -59,7 +59,10 @@ export function countByStatus<T>(entries: T[], status: (entry: T) => WatchStatus
 	return counts;
 }
 
-/** Blur the focused element: closes daisyUI focus-based dropdowns after a choice. */
+/** Close menus after a choice: blurs focus-based daisyUI dropdowns and hides open popovers. */
 export function closeDropdown(): void {
 	(document.activeElement as HTMLElement | null)?.blur();
+	for (const popover of document.querySelectorAll<HTMLElement>('[popover]:popover-open')) {
+		popover.hidePopover();
+	}
 }

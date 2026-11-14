@@ -2,7 +2,7 @@
 
 from typing import cast
 
-from fastapi import APIRouter, Depends, Request, status
+from fastapi import APIRouter, Depends, Request, Response, status
 from sqlalchemy import Engine
 
 from app.api.deps import B2, DbSession, SettingsDep, require_admin
@@ -14,7 +14,7 @@ router = APIRouter(prefix="/admin", tags=["admin"], dependencies=[Depends(requir
 
 
 def _out(file: B2File) -> BackupOut:
-    return BackupOut(name=file.name, size=file.size, created_at=file.uploaded_at)
+    return BackupOut(id=file.id, name=file.name, size=file.size, created_at=file.uploaded_at)
 
 
 @router.post("/backup", response_model=BackupOut, status_code=status.HTTP_201_CREATED)
@@ -27,6 +27,13 @@ def create_backup(b2: B2, settings: SettingsDep) -> BackupOut:
 def list_backups(b2: B2) -> list[BackupOut]:
     """Manual backups in the bucket, newest first."""
     return [_out(f) for f in backup_service.list_backups(b2)]
+
+
+@router.delete("/backups/{file_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_backup(file_id: str, b2: B2) -> Response:
+    """Delete a manual backup from the bucket. Litestream's files are never touched."""
+    backup_service.delete_backup(b2, file_id)
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
 @router.post("/restore", response_model=RestoreOut)

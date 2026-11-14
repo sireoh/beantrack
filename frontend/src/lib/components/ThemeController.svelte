@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { Moon, Sun } from 'lucide-svelte';
-	import { chooseTheme, theme } from '$lib/stores/theme';
+	import { theme } from '$lib/stores/theme';
+	import { setThemePreference } from '$lib/stores/user';
 </script>
 
 <label class="flex cursor-pointer items-center justify-between gap-2">
@@ -12,7 +13,7 @@
 			class="toggle toggle-sm"
 			aria-label="Dark mode"
 			checked={$theme !== 'light'}
-			onchange={(e) => chooseTheme(e.currentTarget.checked ? 'dark' : 'light')}
+			onchange={(e) => setThemePreference(e.currentTarget.checked ? 'dark' : 'light')}
 		/>
 		<Moon size={16} aria-hidden="true" />
 	</span>

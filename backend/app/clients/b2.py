@@ -19,6 +19,7 @@ AUTHORIZE_URL = "https://api.backblazeb2.com/b2api/v2/b2_authorize_account"
 
 
 class B2File(BaseModel):
+    id: str  # B2 fileId (identifies this exact file version)
     name: str
     size: int
     uploaded_at: datetime
@@ -79,6 +80,15 @@ class B2Client:
             start = page.get("nextFileName")
             if not start:
                 return files
+
+    def delete(self, file: B2File) -> None:
+        auth = self._authorize()
+        self._json(
+            "POST",
+            f"{auth.api_url}/b2api/v2/b2_delete_file_version",
+            auth.token,
+            {"fileName": file.name, "fileId": file.id},
+        )
 
     def download(self, name: str) -> bytes:
         auth = self._authorize()
@@ -157,6 +167,7 @@ def _body(response: httpx.Response) -> dict[str, Any]:
 
 def _to_file(item: dict[str, Any]) -> B2File:
     return B2File(
+        id=str(item["fileId"]),
         name=str(item["fileName"]),
         size=int(item.get("contentLength") or 0),
         uploaded_at=datetime.fromtimestamp(int(item["uploadTimestamp"]) / 1000, tz=UTC),

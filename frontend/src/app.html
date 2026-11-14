@@ -7,7 +7,9 @@
 		<title>BeanTrack</title>
 		<script>
 			// Apply the theme before first paint to avoid a flash of the wrong theme.
-			// Saved choice (localStorage) > PUBLIC_DAISYUI_THEME > "dark".
+			// Cached choice (localStorage; also the logged-in account's theme from last visit)
+			// > system preference (prefers-color-scheme) > PUBLIC_DAISYUI_THEME > "dark".
+			// Once logged in, the theme saved on the account is applied (stores/user.ts).
 			(function () {
 				var fallback = '%sveltekit.env.PUBLIC_DAISYUI_THEME%';
 				if (!fallback || fallback.charAt(0) === '%') fallback = 'dark';
@@ -15,8 +17,12 @@
 				try {
 					saved = localStorage.getItem('beantrack.theme');
 				} catch (e) {}
-				document.documentElement.setAttribute('data-theme', saved || fallback);
-				document.documentElement.setAttribute('data-default-theme', fallback);
+				var system = null;
+				if (window.matchMedia) {
+					if (window.matchMedia('(prefers-color-scheme: dark)').matches) system = 'dark';
+					else if (window.matchMedia('(prefers-color-scheme: light)').matches) system = 'light';
+				}
+				document.documentElement.setAttribute('data-theme', saved || system || fallback);
 			})();
 		</script>
 		%sveltekit.head%

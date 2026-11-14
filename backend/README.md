@@ -83,7 +83,7 @@ All routes are under `/api`. Interactive docs: http://localhost:8000/docs
 | GET | `/api/tvlist` | ✔ | Full TV list |
 | POST | `/api/tvlist/add` | ✔ | `{"show": {"imdb": "tt0903747", "tvmaze_id": 169, "title": "Breaking Bad", "image": "...", "score": 9.2}, "status": "watching"}` |
 | GET | `/api/tvlist/{imdb}/episodes` | ✔ | Return the cached episodes for a TV show |
-| PATCH | `/api/tvlist/{imdb}/progress` | ✔ | Update clamped episode progress and current episode metadata |
+| PATCH | `/api/tvlist/{imdb}/progress` | ✔ | Update clamped episode progress and current episode metadata; also syncs status (see below) in the same commit |
 | PATCH | `/api/tvlist/{imdb}/status` | ✔ | `{"status": "watching"}` |
 | DELETE | `/api/tvlist/{imdb}` | ✔ | Remove a show from the current user's list |
 | GET | `/api/movielist` | ✔ | Full movie list |
@@ -92,13 +92,17 @@ All routes are under `/api`. Interactive docs: http://localhost:8000/docs
 | DELETE | `/api/movielist/{imdb}` | ✔ | Remove a movie from the current user's list |
 | GET | `/api/search?type=tv\|movie&q=` | ✔ | TVmaze for `tv`, OMDb for `movie` |
 | GET | `/api/auth/profile/export` | ✔ | Download your list entries (no show/movie metadata) |
+| PATCH | `/api/auth/profile/theme` | ✔ | `{"theme": "dark"}` (`light` or `dark`); saved on the account |
 | POST | `/api/auth/profile/import` | ✔ | Body: an export file. Adds missing entries, returns `{imported, skipped, failed, failures}` |
 | POST | `/api/admin/backup` | admin | Snapshot the database (`VACUUM INTO`) and upload it to B2 |
-| GET | `/api/admin/backups` | admin | Manual backups, newest first |
+| GET | `/api/admin/backups` | admin | Manual backups, newest first (each has a B2 file `id`) |
+| DELETE | `/api/admin/backups/{id}` | admin | Delete one manual backup; files outside `manual-backups/` are never touched |
 | POST | `/api/admin/restore` | admin | `{"name": "manual-backups/…"}`; uploads a safety backup, then restores |
 | GET | `/api/health` | – | Liveness |
 
 `status` is one of `watching | completed | planned | dropped` (default `planned`).
+Progress and status stay in sync (`services/lists.py`): reaching the last episode sets Completed; moving off the last episode of a Completed show sets Watching; setting Completed jumps to the last episode. Planned and Dropped are otherwise left alone.
+
 `current_episode` is a zero-based index into the cached episode list and defaults to `0`. Adding
 something already on your list returns 409. The add endpoint stores the supplied show metadata,
 then synchronously fetches and caches episodes from TVmaze with

@@ -1,7 +1,7 @@
-<!-- Admin only (the backend enforces it too): manual B2 snapshots and restore. -->
+<!-- Admin only (the backend enforces it too): manual B2 snapshots, restore and delete. -->
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { DatabaseBackup, History, RefreshCw } from 'lucide-svelte';
+	import { DatabaseBackup, History, RefreshCw, Trash2 } from 'lucide-svelte';
 	import { api, ApiError } from '$lib/api/client';
 	import type { Backup } from '$lib/api/types';
 	import { formatBytes, formatDateTime } from '$lib/format';
@@ -13,8 +13,11 @@
 	let backups = $state<Backup[] | null>(null);
 	let listError = $state<string | null>(null);
 	let creating = $state(false);
+
 	let restoreTarget = $state<Backup | null>(null);
-	let confirmOpen = $state(false);
+	let restoreOpen = $state(false);
+	let deleteTarget = $state<Backup | null>(null);
+	let deleteOpen = $state(false);
 
 	const describe = (b: Backup) => `${formatDateTime(b.created_at)} · ${formatBytes(b.size)}`;
 
@@ -42,7 +45,7 @@
 
 	function askRestore(backup: Backup) {
 		restoreTarget = backup;
-		confirmOpen = true;
+		restoreOpen = true;
 	}
 
 	async function restore() {
@@ -57,6 +60,22 @@
 		} catch (e) {
 			showError(e);
 		}
+	}
+
+	function askDelete(backup: Backup) {
+		deleteTarget = backup;
+		deleteOpen = true;
+	}
+
+	async function remove() {
+		if (!deleteTarget) return;
+		try {
+			await api.deleteBackup(deleteTarget.id);
+			showToast(`Deleted backup from ${formatDateTime(deleteTarget.created_at)}`, 'success');
+		} catch (e) {
+			showError(e);
+		}
+		await refresh();
 	}
 
 	onMount(refresh);
@@ -82,7 +101,7 @@
 			</button>
 		</div>
 
-		<h3 class="font-semibold">Restore</h3>
+		<h3 class="font-semibold">Backups</h3>
 		{#if listError}
 			<div role="alert" class="alert alert-error">{listError}</div>
 		{:else if backups === null}
@@ -90,17 +109,26 @@
 		{:else if backups.length === 0}
 			<p class="text-sm text-base-content/60">No manual backups yet.</p>
 		{:else}
-			<ul class="menu w-full rounded-box bg-base-100 p-1">
-				{#each backups as backup (backup.name)}
-					<li>
-						<button type="button" class="justify-between" onclick={() => askRestore(backup)}>
-							<span>
-								{describe(backup)}
-								{#if backup.name.includes('-pre-restore')}
-									<span class="ml-1 badge badge-ghost badge-sm">before restore</span>
-								{/if}
-							</span>
-							<span class="flex items-center gap-1 text-sm opacity-70"><History size={16} /> Restore</span>
+			<ul class="flex flex-col divide-y divide-base-300 rounded-box bg-base-100">
+				{#each backups as backup (backup.id)}
+					<li class="flex flex-wrap items-center gap-2 px-3 py-2">
+						<span class="min-w-0 flex-1">
+							{describe(backup)}
+							{#if backup.name.includes('-pre-restore')}
+								<span class="ml-1 badge badge-ghost badge-sm">before restore</span>
+							{/if}
+						</span>
+						<button type="button" class="btn btn-sm" onclick={() => askRestore(backup)}>
+							<History size={16} /> Restore
+						</button>
+						<button
+							type="button"
+							class="btn btn-ghost btn-sm text-error"
+							aria-label="Delete backup from {formatDateTime(backup.created_at)}"
+							onclick={() => askDelete(backup)}
+						>
+							<Trash2 size={16} />
+							<span class="hidden sm:inline">Delete</span>
 						</button>
 					</li>
 				{/each}
@@ -110,7 +138,7 @@
 </section>
 
 <ConfirmModal
-	bind:open={confirmOpen}
+	bind:open={restoreOpen}
 	title="Restore this backup?"
 	message={restoreTarget
 		? `The live database will be replaced with the backup from ${describe(restoreTarget)}. ` +
@@ -119,4 +147,14 @@
 	confirmLabel="Restore"
 	danger
 	onconfirm={restore}
+/>
+
+<ConfirmModal
+	bind:open={deleteOpen}
+	title={deleteTarget
+		? `Delete backup from ${formatDateTime(deleteTarget.created_at)}? This can't be undone.`
+		: 'Delete backup?'}
+	confirmLabel="Delete"
+	danger
+	onconfirm={remove}
 />

@@ -262,3 +262,75 @@ def test_adding_a_completed_show_starts_at_last_episode(alice: TestClient) -> No
 
     assert entry["current_episode"] == 1
     assert entry["current_episode_metadata"]["id"] == 12193
+
+
+def _episode(episode_id: int, number: int) -> dict[str, object]:
+    return {"id": episode_id, "season": 1, "number": number, "title": "x", "image": None}
+
+
+def _step(client: TestClient, delta: int, episode_id: int, number: int) -> dict[str, object]:
+    response = client.patch(
+        "/api/tvlist/tt0903747/progress",
+        json={"delta": delta, "current_episode_metadata": _episode(episode_id, number)},
+    )
+    assert response.status_code == 200, response.text
+    body: dict[str, object] = response.json()
+    return body
+
+
+def _jump(client: TestClient, index: int) -> dict[str, object]:
+    episode_id, number = (12192, 1) if index == 0 else (12193, 2)
+    response = client.patch(
+        "/api/tvlist/tt0903747/progress",
+        json={"set_to": index, "current_episode_metadata": _episode(episode_id, number)},
+    )
+    assert response.status_code == 200, response.text
+    body: dict[str, object] = response.json()
+    return body
+
+
+# Breaking Bad fixture: 2 episodes, so index 1 is the last one.
+
+
+def test_increment_to_last_episode_completes_the_show(alice: TestClient) -> None:
+    alice.post("/api/tvlist/add", json=tv_add_payload(status="watching"))
+
+    entry = _step(alice, 1, 12193, 2)
+
+    assert (entry["current_episode"], entry["status"]) == (1, "completed")
+
+
+def test_decrement_from_completed_last_episode_resumes_watching(alice: TestClient) -> None:
+    alice.post("/api/tvlist/add", json=tv_add_payload(status="completed"))  # sits on last ep
+
+    entry = _step(alice, -1, 12192, 1)
+
+    assert (entry["current_episode"], entry["status"]) == (0, "watching")
+
+
+def test_picking_last_episode_completes_even_planned_or_dropped(alice: TestClient) -> None:
+    alice.post("/api/tvlist/add", json=tv_add_payload(status="dropped"))
+
+    entry = _jump(alice, 1)
+
+    assert entry["status"] == "completed"
+
+
+def test_picking_earlier_episode_of_completed_show_resumes_watching(alice: TestClient) -> None:
+    alice.post("/api/tvlist/add", json=tv_add_payload(status="completed"))
+
+    entry = _jump(alice, 0)
+
+    assert (entry["current_episode"], entry["status"]) == (0, "watching")
+
+
+def test_progress_before_last_episode_keeps_planned(alice: TestClient) -> None:
+    alice.post("/api/tvlist/add", json=tv_add_payload(status="planned"))
+
+    assert _jump(alice, 0)["status"] == "planned"
+
+
+def test_progress_before_last_episode_keeps_dropped(alice: TestClient) -> None:
+    alice.post("/api/tvlist/add", json=tv_add_payload(status="dropped"))
+
+    assert _jump(alice, 0)["status"] == "dropped"

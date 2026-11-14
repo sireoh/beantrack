@@ -35,6 +35,20 @@ def episode_metadata(episode: Episode) -> dict[str, Any]:
     }
 
 
+def _sync_status_with_progress(entry: UserTvShow) -> None:
+    """After a progress change: reaching the last episode completes the show, and moving off
+    the last episode of a completed show puts it back to Watching. Planned and Dropped are
+    otherwise left alone. Together with `_jump_to_last_episode` (Completed -> last episode)
+    this is the only place the progress/status rules live."""
+    episode_count = len(entry.show.episodes)
+    if episode_count == 0:
+        return
+    if entry.current_episode == episode_count - 1:
+        entry.status = WatchStatus.COMPLETED
+    elif entry.status == WatchStatus.COMPLETED:
+        entry.status = WatchStatus.WATCHING
+
+
 def _jump_to_last_episode(entry: UserTvShow) -> None:
     """Completed shows count as fully watched: progress moves to the final episode."""
     episodes = entry.show.episodes
@@ -105,6 +119,8 @@ def update_tv_progress(
     requested = request.set_to if request.set_to is not None else entry.current_episode + request.delta
     current_episode = min(max(requested, 0), max_index)
     metadata: dict[str, Any] = request.current_episode_metadata.model_dump()
+    entry.current_episode = current_episode
+    _sync_status_with_progress(entry)  # committed together with the progress below
     return tvlists_repo.update_progress(
         db,
         entry,

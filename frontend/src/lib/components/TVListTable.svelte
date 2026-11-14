@@ -19,6 +19,7 @@
 	import Poster from './Poster.svelte';
 	import SortHeader from './SortHeader.svelte';
 	import StatusSliver from './StatusSliver.svelte';
+	import TitleLink from './TitleLink.svelte';
 	import TvEditPanel from './TvEditPanel.svelte';
 
 	const accessors: EntryAccessors<TvListEntry> = {
@@ -101,7 +102,7 @@
 							/>
 						</td>
 						<td class="w-full">
-							<div class="font-semibold">{entry.show.title}</div>
+							<div class="font-semibold"><TitleLink imdb={entry.show.imdb} title={entry.show.title} /></div>
 							{#if meta}
 								<div class="text-sm text-base-content/70">{meta.title} - {episodeCode(meta)}</div>
 							{/if}
@@ -142,7 +143,9 @@
 					<tr>
 						<td><StatusSliver status={entry.status} /></td>
 						<td><Poster src={entry.show.image} imdb={entry.show.imdb} alt={entry.show.title} /></td>
-						<td class="w-full font-semibold">{entry.show.title}</td>
+						<td class="w-full font-semibold">
+							<TitleLink imdb={entry.show.imdb} title={entry.show.title} />
+						</td>
 						<td>
 							<button
 								type="button"

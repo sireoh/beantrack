@@ -9,10 +9,10 @@ from typing import Any
 from sqlalchemy.dialects.sqlite import insert
 from sqlalchemy.orm import Session
 
-from app.clients.omdb import OmdbMovie
 from app.clients.tvmaze import TvMazeEpisode
 from app.models import Episode, Movie, TvShow
 from app.schemas.tvlist import TvShowData
+from app.schemas.movielist import MovieData
 
 
 def get_tvshow(db: Session, imdb: str) -> TvShow | None:
@@ -68,10 +68,10 @@ def insert_episodes(db: Session, show: TvShow, episodes: list[TvMazeEpisode]) ->
         db.expire(show, ["episodes"])
 
 
-def insert_movie(db: Session, data: OmdbMovie) -> Movie:
+def insert_movie(db: Session, data: MovieData, score: float | None) -> Movie:
     db.execute(
         insert(Movie)
-        .values(imdb=data.imdb, title=data.title, image=data.image, score=data.score)
+        .values(imdb=data.imdb, title=data.title, image=data.image, score=score)
         .on_conflict_do_nothing()
     )
     movie = db.get(Movie, data.imdb)

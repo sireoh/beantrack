@@ -8,6 +8,12 @@ class MovieOut(MediaOut):
     pass
 
 
+class MovieData(RequestModel):
+    imdb: ImdbId
+    title: str
+    image: str | None = None
+
+
 class MovieListEntryOut(ORMModel):
     movie: MovieOut
     status: WatchStatus
@@ -21,5 +27,5 @@ class MovieListOut(ORMModel):
 
 
 class MovieListAddRequest(RequestModel):
-    imdb: ImdbId
+    movie: MovieData
     status: WatchStatus = WatchStatus.PLANNED

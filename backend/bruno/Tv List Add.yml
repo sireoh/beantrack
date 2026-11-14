@@ -1,0 +1,31 @@
+info:
+  name: Tv List Add
+  type: http
+  seq: 10
+
+http:
+  method: POST
+  url: "{{uri}}/api/tvlist/add"
+  headers:
+    - name: Cookie
+      value: beantrack_session={{cookie_value}}
+  body:
+    type: json
+    data: |-
+      {
+        "show": {
+            "imdb": "tt10986410",
+            "tvmaze_id": 44458,
+            "title": "Ted Lasso",
+            "image": "https://static.tvmaze.com/uploads/images/original_untouched/634/1585930.jpg",
+            "score": 8.1
+          },
+        "status": "watching"
+      }
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false

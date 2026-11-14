@@ -11,13 +11,13 @@ from app.core.security import hash_session_token, new_session_token
 from app.db.types import utcnow
 from app.repositories import sessions as sessions_repo
 from app.repositories import users as users_repo
-from testing.fakes import FakeUpstream, tv_add_payload
+from testing.fakes import FakeUpstream, movie_add_payload, tv_add_payload
 
 PROTECTED: list[tuple[str, str, dict[str, Any]]] = [
     ("GET", "/api/tvlist", {}),
     ("POST", "/api/tvlist/add", {"json": tv_add_payload()}),
     ("GET", "/api/movielist", {}),
-    ("POST", "/api/movielist/add", {"json": {"imdb": "tt0133093"}}),
+    ("POST", "/api/movielist/add", {"json": movie_add_payload()}),
     ("GET", "/api/search", {"params": {"type": "tv", "q": "breaking"}}),
     ("GET", "/api/search", {"params": {"type": "movie", "q": "matrix"}}),
     ("GET", "/api/auth/me", {}),

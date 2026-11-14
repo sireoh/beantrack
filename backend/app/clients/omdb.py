@@ -75,6 +75,16 @@ class OmdbClient:
             )
         return results
 
+    def get_rating(self, imdb: str) -> float | None:
+        """Fetch only the IMDb rating for a movie."""
+        payload = self._get({"i": imdb, "type": "movie"})
+        if payload.get("Response") == "False":
+            error = str(payload.get("Error", ""))
+            if "not found" in error.lower() or "incorrect imdb id" in error.lower():
+                raise NotFoundError(f"No movie found for IMDb id {imdb}")
+            raise UpstreamError(f"OMDb error: {error or 'unknown'}")
+        return _float_or_none(payload.get("imdbRating"))
+
     def get_movie(self, imdb: str) -> OmdbMovie:
         """Fetch one movie by IMDb id. Raises NotFoundError if OMDb doesn't know it."""
         payload = self._get({"i": imdb, "type": "movie"})

@@ -85,7 +85,7 @@ All routes are under `/api`. Interactive docs: http://localhost:8000/docs
 | PATCH | `/api/tvlist/{imdb}/progress` | ✔ | Update clamped episode progress and current episode metadata |
 | DELETE | `/api/tvlist/{imdb}` | ✔ | Remove a show from the current user's list |
 | GET | `/api/movielist` | ✔ | Full movie list |
-| POST | `/api/movielist/add` | ✔ | `{"imdb": "tt0133093", "status": "planned"}` |
+| POST | `/api/movielist/add` | ✔ | `{"movie": {"imdb": "tt0133093", "title": "The Matrix", "image": "..."}, "status": "planned"}` |
 | DELETE | `/api/movielist/{imdb}` | ✔ | Remove a movie from the current user's list |
 | GET | `/api/search?type=tv\|movie&q=` | ✔ | TVmaze for `tv`, OMDb for `movie` |
 | GET | `/api/health` | – | Liveness |
@@ -98,6 +98,10 @@ then synchronously fetches and caches episodes from TVmaze with
 episode list. Progress updates accept exactly one of `set_to` or `delta`, plus the required
 `current_episode_metadata` episode object, for example
 `{"id": 1874762, "season": 1, "number": 1, "title": "Pilot", "image": "..."}`.
+
+Movie ratings are fetched from OMDb only when `/api/movielist/add` first inserts
+the shared movie catalog row. OMDb's `imdbRating` is stored and returned as `score`;
+later users reuse the cached value without another detail request.
 
 ## Running locally
 

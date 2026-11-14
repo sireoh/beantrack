@@ -1,6 +1,6 @@
 from fastapi.testclient import TestClient
 
-from testing.fakes import tv_add_payload
+from testing.fakes import movie_add_payload, tv_add_payload
 
 
 def test_users_have_separate_lists(alice: TestClient, bob: TestClient) -> None:
@@ -41,8 +41,8 @@ def test_same_show_tracked_independently(alice: TestClient, bob: TestClient) -> 
 
 
 def test_movie_entries_are_isolated(alice: TestClient, bob: TestClient) -> None:
-    alice.post("/api/movielist/add", json={"imdb": "tt0133093"})
+    alice.post("/api/movielist/add", json=movie_add_payload())
 
     assert bob.get("/api/movielist").json()["entries"] == []
-    assert bob.post("/api/movielist/add", json={"imdb": "tt0133093"}).status_code == 201
+    assert bob.post("/api/movielist/add", json=movie_add_payload()).status_code == 201
     assert len(alice.get("/api/movielist").json()["entries"]) == 1

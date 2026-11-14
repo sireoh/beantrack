@@ -1,7 +1,7 @@
 info:
   name: Progress By Index
   type: http
-  seq: 5
+  seq: 8
 
 http:
   method: PATCH

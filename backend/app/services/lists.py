@@ -104,12 +104,14 @@ def add_movie(
     db: Session, *, omdb: OmdbClient, user: User, request: MovieListAddRequest
 ) -> UserMovie:
     movielist = user.movielist
-    if movielists_repo.get_entry(db, movielist.movielist_id, request.imdb) is not None:
+    if movielists_repo.get_entry(db, movielist.movielist_id, request.movie.imdb) is not None:
         raise ConflictError(MOVIE_DUPLICATE)
 
-    movie = media_repo.get_movie(db, request.imdb)
+    movie = media_repo.get_movie(db, request.movie.imdb)
     if movie is None:
-        movie = media_repo.insert_movie(db, omdb.get_movie(request.imdb))
+        movie = media_repo.insert_movie(
+            db, request.movie, score=omdb.get_rating(request.movie.imdb)
+        )
 
     with _duplicate_is_conflict(db, MOVIE_DUPLICATE):
         entry = movielists_repo.add_entry(

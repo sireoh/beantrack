@@ -88,6 +88,20 @@ def tv_add_payload(
     return payload
 
 
+def movie_add_payload(imdb: str = "tt0133093", *, status: str | None = None) -> dict[str, Any]:
+    movie = MOVIES_BY_IMDB[imdb]
+    payload: dict[str, Any] = {
+        "movie": {
+            "imdb": imdb,
+            "title": movie["Title"],
+            "image": None if movie["Poster"] == "N/A" else movie["Poster"],
+        }
+    }
+    if status is not None:
+        payload["status"] = status
+    return payload
+
+
 @dataclass
 class FakeDiscordUser:
     id: str = "100000000000000001"

@@ -3,7 +3,7 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.models import Movie
-from testing.fakes import FakeUpstream
+from testing.fakes import FakeUpstream, movie_add_payload
 
 
 def test_get_movielist_starts_empty(alice: TestClient) -> None:
@@ -14,7 +14,9 @@ def test_get_movielist_starts_empty(alice: TestClient) -> None:
 
 
 def test_add_movie_returns_entry(alice: TestClient) -> None:
-    response = alice.post("/api/movielist/add", json={"imdb": "tt0133093", "status": "completed"})
+    response = alice.post(
+        "/api/movielist/add", json=movie_add_payload(status="completed")
+    )
 
     assert response.status_code == 201, response.text
     entry = response.json()
@@ -28,7 +30,7 @@ def test_add_movie_returns_entry(alice: TestClient) -> None:
 
 
 def test_add_movie_maps_omdb_na_to_null(alice: TestClient) -> None:
-    entry = alice.post("/api/movielist/add", json={"imdb": "tt0816692"}).json()
+    entry = alice.post("/api/movielist/add", json=movie_add_payload("tt0816692")).json()
 
     assert entry["movie"]["image"] is None
     assert entry["movie"]["score"] is None
@@ -36,8 +38,8 @@ def test_add_movie_maps_omdb_na_to_null(alice: TestClient) -> None:
 
 
 def test_get_movielist_returns_added_movies(alice: TestClient) -> None:
-    alice.post("/api/movielist/add", json={"imdb": "tt0133093", "status": "watching"})
-    alice.post("/api/movielist/add", json={"imdb": "tt0816692"})
+    alice.post("/api/movielist/add", json=movie_add_payload(status="watching"))
+    alice.post("/api/movielist/add", json=movie_add_payload("tt0816692"))
 
     entries = alice.get("/api/movielist").json()["entries"]
 
@@ -48,14 +50,14 @@ def test_get_movielist_returns_added_movies(alice: TestClient) -> None:
 
 
 def test_add_same_movie_twice_is_conflict(alice: TestClient) -> None:
-    alice.post("/api/movielist/add", json={"imdb": "tt0133093"})
+    alice.post("/api/movielist/add", json=movie_add_payload())
 
-    assert alice.post("/api/movielist/add", json={"imdb": "tt0133093"}).status_code == 409
+    assert alice.post("/api/movielist/add", json=movie_add_payload()).status_code == 409
 
 
 def test_delete_movie_removes_only_the_user_entry(alice: TestClient, bob: TestClient) -> None:
-    alice.post("/api/movielist/add", json={"imdb": "tt0133093"})
-    bob.post("/api/movielist/add", json={"imdb": "tt0133093"})
+    alice.post("/api/movielist/add", json=movie_add_payload())
+    bob.post("/api/movielist/add", json=movie_add_payload())
 
     response = alice.delete("/api/movielist/tt0133093")
 
@@ -71,14 +73,20 @@ def test_delete_missing_movie_is_404(alice: TestClient) -> None:
 
 
 def test_add_unknown_movie_is_404(alice: TestClient) -> None:
-    assert alice.post("/api/movielist/add", json={"imdb": "tt9999999"}).status_code == 404
+    payload = movie_add_payload()
+    payload["movie"]["imdb"] = "tt9999999"
+    assert alice.post("/api/movielist/add", json=payload).status_code == 404
 
 
 def test_movie_data_is_fetched_once_and_shared(
     alice: TestClient, bob: TestClient, upstream: FakeUpstream, db: Session
 ) -> None:
-    alice.post("/api/movielist/add", json={"imdb": "tt0133093"})
-    bob.post("/api/movielist/add", json={"imdb": "tt0133093"})
+    alice.post("/api/movielist/add", json=movie_add_payload())
+    bob.post("/api/movielist/add", json=movie_add_payload())
 
     assert upstream.count("www.omdbapi.com") == 1
+    request = upstream.requests[0]
+    assert request.url.params["i"] == "tt0133093"
+    assert request.url.params["apikey"] == "omdb-test-key"
     assert db.scalar(select(func.count()).select_from(Movie)) == 1
+    assert db.get(Movie, "tt0133093").score == 8.7

@@ -2,6 +2,7 @@
 
 from collections.abc import Iterator
 from contextlib import contextmanager
+from typing import Any
 
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
@@ -15,7 +16,7 @@ from app.repositories import media as media_repo
 from app.repositories import movielists as movielists_repo
 from app.repositories import tvlists as tvlists_repo
 from app.schemas.movielist import MovieListAddRequest
-from app.schemas.tvlist import TvListAddRequest
+from app.schemas.tvlist import TvListAddRequest, TvProgressRequest
 
 TV_DUPLICATE = "Show is already in your TV list"
 MOVIE_DUPLICATE = "Movie is already in your movie list"
@@ -69,6 +70,26 @@ def add_tvshow(
         )
         db.commit()
     return entry
+
+
+def update_tv_progress(
+    db: Session, *, user: User, imdb: str, request: TvProgressRequest
+) -> UserTvShow:
+    entry = tvlists_repo.get_entry(db, user.tvlist.tvlist_id, imdb)
+    if entry is None:
+        raise NotFoundError(TV_NOT_FOUND)
+
+    episode_count = len(entry.show.episodes)
+    max_index = max(episode_count - 1, 0)
+    requested = request.set_to if request.set_to is not None else entry.current_episode + request.delta
+    current_episode = min(max(requested, 0), max_index)
+    metadata: dict[str, Any] = request.current_episode_metadata.model_dump()
+    return tvlists_repo.update_progress(
+        db,
+        entry,
+        current_episode=current_episode,
+        current_episode_metadata=metadata,
+    )
 
 
 def delete_tvshow(db: Session, *, user: User, imdb: str) -> None:

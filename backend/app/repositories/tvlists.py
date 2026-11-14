@@ -49,3 +49,16 @@ def add_entry(
     db.add(entry)
     db.flush()
     return entry
+
+
+def update_progress(
+    db: Session,
+    entry: UserTvShow,
+    *,
+    current_episode: int,
+    current_episode_metadata: dict[str, object],
+) -> UserTvShow:
+    entry.current_episode = current_episode
+    entry.current_episode_metadata = current_episode_metadata
+    db.commit()
+    return entry

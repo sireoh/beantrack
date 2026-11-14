@@ -3,9 +3,9 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import TYPE_CHECKING
+from typing import Any, TYPE_CHECKING
 
-from sqlalchemy import ForeignKey, Integer, String
+from sqlalchemy import JSON, ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.ids import new_id
@@ -61,6 +61,7 @@ class UserTvShow(Base):
     imdb: Mapped[str] = mapped_column(ForeignKey("tvshows.imdb"), primary_key=True)
     status: Mapped[WatchStatus] = mapped_column(watch_status_column_type())
     current_episode: Mapped[int] = mapped_column("current_episode", Integer, default=0)
+    current_episode_metadata: Mapped[dict[str, Any] | None] = mapped_column(JSON, nullable=True)
     added_at: Mapped[datetime] = mapped_column(UTCDateTime(), default=utcnow)
     updated_at: Mapped[datetime] = mapped_column(UTCDateTime(), default=utcnow, onupdate=utcnow)
 

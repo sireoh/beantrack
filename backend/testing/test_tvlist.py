@@ -56,6 +56,69 @@ def test_get_show_episodes_by_imdb(alice: TestClient) -> None:
     }
 
 
+def test_update_progress_sets_and_clamps_metadata(alice: TestClient) -> None:
+    alice.post("/api/tvlist/add", json=tv_add_payload())
+
+    response = alice.patch(
+        "/api/tvlist/tt0903747/progress",
+        json={
+            "set_to": 100,
+            "current_episode_metadata": {
+                "id": 1874762,
+                "season": 1,
+                "number": 1,
+                "title": "Pilot",
+                "image": "https://static.tvmaze.com/uploads/images/original_untouched/342/856397.jpg",
+            },
+        },
+    )
+
+    assert response.status_code == 200
+    assert response.json()["current_episode"] == 1
+    assert response.json()["current_episode_metadata"]["id"] == 1874762
+
+
+def test_update_progress_applies_delta_and_clamps_to_zero(alice: TestClient) -> None:
+    alice.post("/api/tvlist/add", json=tv_add_payload(current_episode=1))
+
+    response = alice.patch(
+        "/api/tvlist/tt0903747/progress",
+        json={
+            "delta": -1000,
+            "current_episode_metadata": {
+                "id": 1874762,
+                "season": 1,
+                "number": 1,
+                "title": "Pilot",
+                "image": None,
+            },
+        },
+    )
+
+    assert response.status_code == 200
+    assert response.json()["current_episode"] == 0
+
+
+def test_update_progress_requires_exactly_one_operation_and_metadata(alice: TestClient) -> None:
+    alice.post("/api/tvlist/add", json=tv_add_payload())
+
+    both = alice.patch(
+        "/api/tvlist/tt0903747/progress",
+        json={"set_to": 1, "delta": 1, "current_episode_metadata": tv_add_payload()["show"]},
+    )
+    neither = alice.patch(
+        "/api/tvlist/tt0903747/progress",
+        json={"current_episode_metadata": tv_add_payload()["show"]},
+    )
+    missing_metadata = alice.patch(
+        "/api/tvlist/tt0903747/progress", json={"set_to": 1}
+    )
+
+    assert both.status_code == 422
+    assert neither.status_code == 422
+    assert missing_metadata.status_code == 422
+
+
 def test_get_missing_show_episodes_is_404(alice: TestClient) -> None:
     response = alice.get("/api/tvlist/tt9999999/episodes")
 

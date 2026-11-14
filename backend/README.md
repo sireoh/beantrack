@@ -82,6 +82,7 @@ All routes are under `/api`. Interactive docs: http://localhost:8000/docs
 | GET | `/api/tvlist` | ✔ | Full TV list |
 | POST | `/api/tvlist/add` | ✔ | `{"show": {"imdb": "tt0903747", "tvmaze_id": 169, "title": "Breaking Bad", "image": "...", "score": 9.2}, "status": "watching"}` |
 | GET | `/api/tvlist/{imdb}/episodes` | ✔ | Return the cached episodes for a TV show |
+| PATCH | `/api/tvlist/{imdb}/progress` | ✔ | Update clamped episode progress and current episode metadata |
 | DELETE | `/api/tvlist/{imdb}` | ✔ | Remove a show from the current user's list |
 | GET | `/api/movielist` | ✔ | Full movie list |
 | POST | `/api/movielist/add` | ✔ | `{"imdb": "tt0133093", "status": "planned"}` |
@@ -94,7 +95,9 @@ All routes are under `/api`. Interactive docs: http://localhost:8000/docs
 something already on your list returns 409. The add endpoint stores the supplied show metadata,
 then synchronously fetches and caches episodes from TVmaze with
 `/shows/{tvmaze_id}?embed=episodes`. The response includes `episodes_count` rather than the full
-episode list.
+episode list. Progress updates accept exactly one of `set_to` or `delta`, plus the required
+`current_episode_metadata` episode object, for example
+`{"id": 1874762, "season": 1, "number": 1, "title": "Pilot", "image": "..."}`.
 
 ## Running locally
 

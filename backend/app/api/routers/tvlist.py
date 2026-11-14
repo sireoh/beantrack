@@ -7,6 +7,7 @@ from app.schemas.tvlist import (
     TvListAddRequest,
     TvListEntryOut,
     TvListOut,
+    TvProgressRequest,
 )
 from app.services import lists as list_service
 
@@ -33,6 +34,18 @@ def get_episodes(imdb: ImdbId, _user: CurrentUser, db: DbSession) -> list[Episod
     """Return the cached episodes for a show identified by IMDb id."""
     episodes = list_service.get_episodes(db, imdb)
     return [EpisodeOut.model_validate(episode) for episode in episodes]
+
+
+@router.patch("/{imdb}/progress", response_model=TvListEntryOut)
+def update_progress(
+    imdb: ImdbId,
+    body: TvProgressRequest,
+    user: CurrentUser,
+    db: DbSession,
+) -> TvListEntryOut:
+    """Update a user's clamped episode progress and cached metadata."""
+    entry = list_service.update_tv_progress(db, user=user, imdb=imdb, request=body)
+    return TvListEntryOut.model_validate(entry)
 
 
 @router.delete("/{imdb}", status_code=status.HTTP_204_NO_CONTENT)

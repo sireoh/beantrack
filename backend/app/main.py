@@ -17,7 +17,7 @@ from app.core.errors import AppError
 from app.db.session import build_engine, build_sessionmaker
 from app.services.daily_backup import start_scheduler
 
-USER_AGENT = "BeanTrack/0.2"
+USER_AGENT = "BeanTrack/0.3"
 
 
 async def _app_error_handler(_request: Request, exc: Exception) -> JSONResponse:
@@ -44,7 +44,7 @@ def create_app(
         http.close()
         engine.dispose()
 
-    app = FastAPI(title="BeanTrack API", version="0.2.0", lifespan=lifespan)
+    app = FastAPI(title="BeanTrack API", version="0.3.0", lifespan=lifespan)
     app.state.settings = settings
     app.state.engine = engine
     app.state.sessionmaker = build_sessionmaker(engine)

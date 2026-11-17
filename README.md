@@ -41,11 +41,11 @@ docker login ghcr.io -u sireoh
 From the repo root (set the version to whatever you are releasing):
 
 ```bash
-docker buildx build --platform linux/amd64 --push -t ghcr.io/sireoh/beantrack:backend -t ghcr.io/sireoh/beantrack:backend-0.2.0 ./backend
+docker buildx build --platform linux/amd64 --push -t ghcr.io/sireoh/beantrack:backend -t ghcr.io/sireoh/beantrack:backend-0.3.0 ./backend
 ```
 
 ```bash
-docker buildx build --platform linux/amd64 --push -t ghcr.io/sireoh/beantrack:frontend -t ghcr.io/sireoh/beantrack:frontend-0.1.0 ./frontend
+docker buildx build --platform linux/amd64 --push -t ghcr.io/sireoh/beantrack:frontend -t ghcr.io/sireoh/beantrack:frontend-0.2.0 ./frontend
 ```
 
 ### Run

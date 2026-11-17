@@ -183,7 +183,7 @@ def _with_imdb(db: Session, kind: DiscoverKind, items: list[DiscoverItem]) -> li
     ids = [item.tmdb_id for item in items]
     if not ids:
         return items
-    rows = db.execute(select(model.tmdb_id, model.imdb).where(model.tmdb_id.in_(ids))).tuples()
+    rows = db.execute(select(model.tmdb_id, model.imdb).where(model.tmdb_id.in_(ids)))
     known = {tmdb_id: imdb for tmdb_id, imdb in rows}
     for item in items:
         item.imdb = known.get(item.tmdb_id)

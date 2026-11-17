@@ -11,6 +11,7 @@ name: beantrack
 
 services:
   backend:
+    user: "1000:1000"
     image: ${IMAGE_REPO:-ghcr.io/sireoh/beantrack}:${BACKEND_TAG:-backend}
     build:
       context: ./backend

@@ -12,4 +12,14 @@ export const DEFAULT_THEME = env.PUBLIC_DAISYUI_THEME?.trim() || 'dark';
 /** Starts the backend's Discord OAuth flow (a full-page navigation, not a fetch). */
 export const LOGIN_URL = `${API_URL}/api/auth/login`;
 
+/** LOGIN_URL that brings the user back to app path `next` (e.g. "/discover/tv") afterwards. */
+export const loginUrl = (next?: string | null): string =>
+	next && next.startsWith('/') && !next.startsWith('//')
+		? `${LOGIN_URL}?next=${encodeURIComponent(next)}`
+		: LOGIN_URL;
+
+/** TMDB poster for a `poster_path`, or null when there is none. */
+export const tmdbPosterUrl = (posterPath: string | null): string | null =>
+	posterPath ? `https://image.tmdb.org/t/p/w500${posterPath}` : null;
+
 export const imdbUrl = (imdb: string): string => `https://www.imdb.com/title/${imdb}/`;

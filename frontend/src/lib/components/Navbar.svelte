@@ -18,6 +18,13 @@
 	// Search needs a login, and /search has its own search bar.
 	const showSearch = $derived($user !== null && page.url.pathname !== '/search');
 
+	// Come back to this page after logging in.
+	const loginPageHref = $derived(
+		page.url.pathname === '/login'
+			? '/login' + page.url.search
+			: `/login?next=${encodeURIComponent(page.url.pathname + page.url.search)}`
+	);
+
 	async function handleLogout() {
 		closeDropdown();
 		await logout();
@@ -74,7 +81,7 @@
 					</ul>
 				</div>
 			{:else}
-				<a href="/login" class="btn btn-sm btn-primary">
+				<a href={loginPageHref} class="btn btn-sm btn-primary">
 					<LogIn size={16} />
 					<span class="hidden sm:inline">Login</span>
 				</a>

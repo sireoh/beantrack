@@ -7,7 +7,7 @@ from typing import Any
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
-from app.clients.omdb import OmdbClient
+from app.clients.omdb import OmdbClient, OmdbMovie
 from app.clients.tvmaze import TvMazeClient, TvMazeEpisode
 from app.core.errors import ConflictError, InvalidRequestError, NotFoundError
 from app.db.types import utcnow
@@ -160,17 +160,23 @@ def delete_tvshow(db: Session, *, user: User, imdb: str) -> None:
 
 
 def add_movie(
-    db: Session, *, omdb: OmdbClient, user: User, request: MovieListAddRequest
+    db: Session,
+    *,
+    omdb: OmdbClient,
+    user: User,
+    request: MovieListAddRequest,
+    details: OmdbMovie | None = None,
 ) -> UserMovie:
+    """Add a movie. Pass `details` when the caller already fetched the movie from OMDb, so
+    its rating isn't fetched a second time (it is only needed for movies new to the catalog)."""
     movielist = user.movielist
     if movielists_repo.get_entry(db, movielist.movielist_id, request.movie.imdb) is not None:
         raise ConflictError(MOVIE_DUPLICATE)
 
     movie = media_repo.get_movie(db, request.movie.imdb)
     if movie is None:
-        movie = media_repo.insert_movie(
-            db, request.movie, score=omdb.get_rating(request.movie.imdb)
-        )
+        score = details.score if details else omdb.get_rating(request.movie.imdb)
+        movie = media_repo.insert_movie(db, request.movie, score=score)
 
     with _duplicate_is_conflict(db, MOVIE_DUPLICATE):
         entry = movielists_repo.add_entry(

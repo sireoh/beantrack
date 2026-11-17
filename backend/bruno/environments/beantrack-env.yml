@@ -4,5 +4,5 @@ variables:
     value: http://127.0.0.1:8000
     description: ""
   - name: cookie_value
-    value: sk9ifnOFiIlZJN964BbqCykjjyTBrT-P3DBg_0PUOGE
+    value: 4tX9c6llo0ZspZ9UDlvQgccBNfIIfoYDFiYMwL0zJMU
     description: ""

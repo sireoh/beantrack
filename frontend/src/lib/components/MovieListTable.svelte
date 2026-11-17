@@ -5,6 +5,7 @@
 	import {
 		closeDropdown,
 		filterEntries,
+		DEFAULT_SORT,
 		nextSort,
 		sortEntries,
 		type EntryAccessors,
@@ -28,7 +29,7 @@
 		score: (e) => e.movie.score
 	};
 
-	let sort = $state<SortState | null>(null);
+	let sort = $state<SortState | null>(DEFAULT_SORT);
 	const rows = $derived(
 		sortEntries(filterEntries($movieList?.entries ?? [], $movieFilter, accessors), sort, accessors)
 	);

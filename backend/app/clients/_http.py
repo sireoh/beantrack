@@ -11,11 +11,12 @@ def get_json(
     url: str,
     *,
     params: dict[str, str] | None = None,
+    headers: dict[str, str] | None = None,
     allow_404: bool = False,
 ) -> Any | None:
     """GET a JSON document. Returns None on 404 when `allow_404`; raises UpstreamError otherwise."""
     try:
-        response = http.get(url, params=params)
+        response = http.get(url, params=params, headers=headers)
     except httpx.HTTPError as exc:
         raise UpstreamError(f"{service} is unreachable") from exc
     if allow_404 and response.status_code == 404:

@@ -90,6 +90,10 @@ All routes are under `/api`. Interactive docs: http://localhost:8000/docs
 | PATCH | `/api/movielist/{imdb}/status` | ✔ | `{"status": "completed"}` |
 | DELETE | `/api/movielist/{imdb}` | ✔ | Remove a movie from the current user's list |
 | GET | `/api/search?type=tv\|movie&q=` | ✔ | TVmaze for `tv`, OMDb for `movie` |
+| GET | `/api/discover/tv?page=N` | – | Popular shows from TMDB (`page` 1–500), cached per page in SQLite |
+| GET | `/api/discover/movies?page=N` | – | Popular movies from TMDB, cached the same way |
+| POST | `/api/discover/tv/add` | ✔ | `{"tmdb_id": 1396, "status": "watching"}`: TMDB → IMDb id → TVmaze, then the normal TV add |
+| POST | `/api/discover/movies/add` | ✔ | `{"tmdb_id": 603}`: TMDB → IMDb id → OMDb, then the normal movie add |
 | GET | `/api/auth/profile/export` | ✔ | Download your list entries (no show/movie metadata) |
 | PATCH | `/api/auth/profile/theme` | ✔ | `{"theme": "dark"}` (`light` or `dark`); saved on the account |
 | POST | `/api/auth/profile/import` | ✔ | Body: an export file. Adds missing entries, returns `{imported, skipped, failed, failures}` |
@@ -97,6 +101,7 @@ All routes are under `/api`. Interactive docs: http://localhost:8000/docs
 | GET | `/api/admin/backups` | admin | Manual backups, newest first (each has a B2 file `id`) |
 | DELETE | `/api/admin/backups/{id}` | admin | Delete one manual backup; files outside `manual-backups/` are never touched |
 | POST | `/api/admin/restore` | admin | `{"name": "manual-backups/…"}`; uploads a safety backup, then restores |
+| DELETE | `/api/admin/discover-cache` | admin | Empty both Discover cache tables |
 | GET | `/api/health` | – | Liveness |
 
 `status` is one of `watching | completed | planned | dropped` (default `planned`).
@@ -113,6 +118,27 @@ episode list. Progress updates accept exactly one of `set_to` or `delta`, plus t
 Movie ratings are fetched from OMDb only when `/api/movielist/add` first inserts
 the shared movie catalog row. OMDb's `imdbRating` is stored and returned as `score`;
 later users reuse the cached value without another detail request.
+
+### Discover (TMDB)
+
+`TMDB_BEARER_TOKEN` (TMDB's "API Read Access Token") enables Discover; without it the discover
+routes answer 400. Each page of `/discover/tv` and `/discover/movie` is stored in
+`discovercache_tv` / `discovercache_movies` (one row per page: results JSON, `total_pages`,
+`fetched_at`) and served from there while it is younger than `DISCOVER_CACHE_HOURS` (24). Older
+pages are fetched again on the next request; if TMDB is down, the expired page is served instead
+of an error. TMDB never returns pages above 500, so `total_pages` is capped there.
+
+Discover results have no IMDb id. Adding one asks TMDB for it (`/tv/{id}/external_ids` or
+`/movie/{id}`), then runs the same add as search, so the list entry is identical. The TMDB id is
+then saved on the catalog row (`tvshows.tmdb_id` / `movies.tmdb_id`), and Discover results for
+known titles carry their `imdb`, which the frontend uses to show "Added".
+
+### Client IP
+
+Each session stores the IP it logged in from (`sessions.ip_address`). Behind a reverse proxy the
+connection comes from the proxy, so `X-Forwarded-For` (read right to left) or `X-Real-IP` is used,
+but only when the request comes from an address in `FORWARDED_ALLOW_IPS`
+(`app/core/client_ip.py`). In Docker, uvicorn uses the same variable for `--forwarded-allow-ips`.
 
 ## Running locally
 
@@ -136,11 +162,7 @@ uv run alembic upgrade head
 ```
 
 ```bash
-uv run uvicorn app.main:create_app --factory --reload
-```
-
-```bash
-python -m uvicorn app.main:create_app --factory --reload --host 0.0.0.0 --port 8000
+uv run uvicorn app.main:create_app --factory --reload --host 0.0.0.0 --port 8000
 ```
 
 With plain pip instead of uv:

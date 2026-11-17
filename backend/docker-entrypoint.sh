@@ -5,7 +5,7 @@ set -eu
 
 : "${DATA_DIR:=/app/data}"
 : "${BACKEND_PORT:=8000}"
-: "${FORWARDED_ALLOW_IPS:=*}"
+: "${FORWARDED_ALLOW_IPS:=127.0.0.1,::1,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16}"
 export DATA_DIR
 
 mkdir -p "$DATA_DIR"

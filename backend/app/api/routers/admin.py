@@ -9,6 +9,7 @@ from app.api.deps import B2, DbSession, SettingsDep, require_admin
 from app.clients.b2 import B2File
 from app.schemas.admin import BackupOut, RestoreOut, RestoreRequest
 from app.services import backups as backup_service
+from app.services import discover as discover_service
 
 router = APIRouter(prefix="/admin", tags=["admin"], dependencies=[Depends(require_admin)])
 
@@ -33,6 +34,13 @@ def list_backups(b2: B2) -> list[BackupOut]:
 def delete_backup(file_id: str, b2: B2) -> Response:
     """Delete a backup from the bucket. Only files under the backups folder can be deleted."""
     backup_service.delete_backup(b2, file_id)
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+@router.delete("/discover-cache", status_code=status.HTTP_204_NO_CONTENT)
+def clear_discover_cache(db: DbSession) -> Response:
+    """Empty the cached TMDB discover pages; they are fetched again on the next visit."""
+    discover_service.clear_cache(db)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 

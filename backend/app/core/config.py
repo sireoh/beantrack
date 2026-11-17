@@ -1,5 +1,6 @@
 """Typed application settings, loaded from environment variables and `.env`."""
 
+import ipaddress
 from datetime import time
 from functools import lru_cache
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
@@ -30,6 +31,15 @@ class Settings(BaseSettings):
 
     # External APIs
     omdb_api_key: SecretStr
+    # TMDB "API Read Access Token" (v4 bearer token). Only the Discover pages need it.
+    tmdb_bearer_token: SecretStr = SecretStr("")
+    # How long a cached TMDB discover page is served before it is fetched again.
+    discover_cache_hours: int = 24
+
+    # Reverse proxies allowed to report the client's IP (X-Forwarded-For / X-Real-IP):
+    # comma-separated IPs or CIDR ranges. Uvicorn reads the same variable in Docker.
+    # From anyone else the headers are ignored and the connection's own IP is used.
+    forwarded_allow_ips: str = "127.0.0.1"
 
     # Fernet key used to encrypt Discord OAuth tokens at rest.
     encryption_key: SecretStr
@@ -59,6 +69,23 @@ class Settings(BaseSettings):
     @property
     def daily_backup_zone(self) -> ZoneInfo:
         return ZoneInfo(self.daily_backup_timezone)
+
+    @field_validator("forwarded_allow_ips")
+    @classmethod
+    def _must_be_networks(cls, value: str) -> str:
+        for item in value.split(","):
+            item = item.strip()
+            if item and item != "*":
+                ipaddress.ip_network(item, strict=False)  # ValueError -> ValidationError
+        return value
+
+    @property
+    def trusted_proxies(self) -> list[ipaddress.IPv4Network | ipaddress.IPv6Network] | None:
+        """Parsed FORWARDED_ALLOW_IPS. None means "*" (trust every peer)."""
+        items = [i.strip() for i in self.forwarded_allow_ips.split(",") if i.strip()]
+        if "*" in items:
+            return None
+        return [ipaddress.ip_network(i, strict=False) for i in items]
 
     @property
     def b2_configured(self) -> bool:

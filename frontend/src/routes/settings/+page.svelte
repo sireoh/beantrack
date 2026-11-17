@@ -1,5 +1,6 @@
 <script lang="ts">
 	import AdminBackups from '$lib/components/AdminBackups.svelte';
+	import AdminDiscoverCache from '$lib/components/AdminDiscoverCache.svelte';
 	import LandingPage from '$lib/components/LandingPage.svelte';
 	import WatchlistTransfer from '$lib/components/WatchlistTransfer.svelte';
 	import { user, userLoaded } from '$lib/stores/user';
@@ -17,6 +18,7 @@
 		<WatchlistTransfer />
 		{#if $user.role === 'admin'}
 			<AdminBackups />
+			<AdminDiscoverCache />
 		{/if}
 	</div>
 {/if}

@@ -17,6 +17,8 @@ class TvShow(Base):
     score: Mapped[float | None] = mapped_column(Float)
     # TVmaze's own show id, kept so episodes can be (re)fetched without another lookup.
     tvmaze_id: Mapped[int | None] = mapped_column(Integer, unique=True)
+    # TMDB id, learned when the show is added from Discover; marks Discover cards as added.
+    tmdb_id: Mapped[int | None] = mapped_column(Integer, index=True)
 
     episodes: Mapped[list[Episode]] = relationship(
         back_populates="show",
@@ -52,3 +54,4 @@ class Movie(Base):
     title: Mapped[str] = mapped_column(String(255))
     image: Mapped[str | None] = mapped_column(String(512))
     score: Mapped[float | None] = mapped_column(Float)
+    tmdb_id: Mapped[int | None] = mapped_column(Integer, index=True)  # see TvShow.tmdb_id

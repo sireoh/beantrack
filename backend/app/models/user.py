@@ -56,5 +56,6 @@ class UserSession(Base):
     created_at: Mapped[datetime] = mapped_column(UTCDateTime(), default=utcnow)
     expires_at: Mapped[datetime] = mapped_column(UTCDateTime())
     device_info: Mapped[str | None] = mapped_column(String(512))  # User-Agent
+    ip_address: Mapped[str | None] = mapped_column(String(45))  # client IP at login
 
     user: Mapped[User] = relationship(back_populates="sessions")

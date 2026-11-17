@@ -47,6 +47,34 @@ export interface SearchResponse<T> {
 	results: T[];
 }
 
+// --- Discover (GET /api/discover/tv | /api/discover/movies) -----------------------
+
+/** A TMDB discover result; the same shape for TV and movies. */
+export interface DiscoverItem {
+	tmdb_id: number;
+	title: string;
+	/** first_air_date (TV) / release_date (movies), YYYY-MM-DD. */
+	date: string | null;
+	/** vote_average; null when nobody has voted. */
+	score: number | null;
+	poster_path: string | null;
+	genre_ids: number[];
+	/** Known once the title has been added from Discover; used to mark it as added. */
+	imdb: string | null;
+}
+
+export interface DiscoverPage {
+	type: MediaType;
+	page: number;
+	total_pages: number;
+	results: DiscoverItem[];
+}
+
+export interface DiscoverAddRequest {
+	tmdb_id: number;
+	status?: WatchStatus;
+}
+
 // --- TV list ---------------------------------------------------------------------
 
 export interface TvShow {

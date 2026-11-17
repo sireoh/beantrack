@@ -5,6 +5,8 @@ import { API_URL } from '$lib/config';
 import type { WatchStatus } from '$lib/status';
 import type {
 	Backup,
+	DiscoverAddRequest,
+	DiscoverPage,
 	Episode,
 	MovieAddRequest,
 	MovieList,
@@ -88,6 +90,15 @@ export const api = {
 	searchMovies: (q: string) =>
 		request<SearchResponse<SearchMovieCard>>('GET', `/api/search?type=movie&q=${enc(q)}`),
 
+	// Discover (public; adding needs a login)
+	discoverTv: (page: number) => request<DiscoverPage>('GET', `/api/discover/tv?page=${page}`),
+	discoverMovies: (page: number) =>
+		request<DiscoverPage>('GET', `/api/discover/movies?page=${page}`),
+	addDiscoverTv: (body: DiscoverAddRequest) =>
+		request<TvListEntry>('POST', '/api/discover/tv/add', body),
+	addDiscoverMovie: (body: DiscoverAddRequest) =>
+		request<MovieListEntry>('POST', '/api/discover/movies/add', body),
+
 	// TV list
 	getTvList: () => request<TvList>('GET', '/api/tvlist'),
 	addTv: (body: TvAddRequest) => request<TvListEntry>('POST', '/api/tvlist/add', body),
@@ -114,5 +125,6 @@ export const api = {
 	createBackup: () => request<Backup>('POST', '/api/admin/backup'),
 	listBackups: () => request<Backup[]>('GET', '/api/admin/backups'),
 	restoreBackup: (name: string) => request<RestoreResult>('POST', '/api/admin/restore', { name }),
-	deleteBackup: (id: string) => request<void>('DELETE', `/api/admin/backups/${enc(id)}`)
+	deleteBackup: (id: string) => request<void>('DELETE', `/api/admin/backups/${enc(id)}`),
+	clearDiscoverCache: () => request<void>('DELETE', '/api/admin/discover-cache')
 };

@@ -4,6 +4,15 @@
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<link rel="icon" href="%sveltekit.assets%/favicon.svg" />
+		<!-- Installable app (PWA); placeholder icons live in static/icons/. -->
+		<link rel="manifest" href="%sveltekit.assets%/manifest.webmanifest" />
+		<meta name="theme-color" content="#1d232a" media="(prefers-color-scheme: dark)" />
+		<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+		<link rel="apple-touch-icon" href="%sveltekit.assets%/icons/apple-touch-icon.png" />
+		<meta name="apple-mobile-web-app-capable" content="yes" />
+		<meta name="mobile-web-app-capable" content="yes" />
+		<meta name="apple-mobile-web-app-title" content="BeanTrack" />
+		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 		<title>BeanTrack</title>
 		<script>
 			// Apply the theme before first paint to avoid a flash of the wrong theme.

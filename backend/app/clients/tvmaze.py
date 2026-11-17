@@ -156,8 +156,8 @@ class TvMazeClient:
             ],
         )
 
-    def get_show_by_imdb(self, imdb: str) -> TvMazeShowDetails:
-        """Look a show up by IMDb id, then fetch it with all episodes. Raises NotFoundError."""
+    def lookup_by_imdb(self, imdb: str) -> SearchResult | None:
+        """The show with this IMDb id (`/lookup/shows`), shaped like a search result, or None."""
         show_payload = get_json(
             self._http,
             "TVmaze",
@@ -166,9 +166,23 @@ class TvMazeClient:
             allow_404=True,
         )
         if show_payload is None:
-            raise NotFoundError(f"No TV show found for IMDb id {imdb}")
+            return None
         try:
             show = _Show.model_validate(show_payload)
         except ValidationError as exc:
             raise UpstreamError("TVmaze returned an unexpected response") from exc
-        return self.get_show(show.id, imdb)
+        return SearchResult(
+            imdb=imdb,
+            tvmaze_id=show.id,
+            title=show.name,
+            year=show.premiered[:4] if show.premiered else None,
+            image=_best_image(show.image),
+            score=show.rating.average,
+        )
+
+    def get_show_by_imdb(self, imdb: str) -> TvMazeShowDetails:
+        """Look a show up by IMDb id, then fetch it with all episodes. Raises NotFoundError."""
+        found = self.lookup_by_imdb(imdb)
+        if found is None or found.tvmaze_id is None:
+            raise NotFoundError(f"No TV show found for IMDb id {imdb}")
+        return self.get_show(found.tvmaze_id, imdb)

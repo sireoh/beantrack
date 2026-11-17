@@ -23,6 +23,7 @@ def login_with_discord(
     code: str,
     device_info: str | None,
     session_ttl: timedelta,
+    ip_address: str | None = None,
 ) -> str:
     """Complete the OAuth callback. Returns the raw session token for the cookie.
 
@@ -59,6 +60,7 @@ def login_with_discord(
         created_at=now,
         expires_at=now + session_ttl,
         device_info=device_info[:MAX_DEVICE_INFO_LENGTH] if device_info else None,
+        ip_address=ip_address,
     )
     db.commit()
     return raw_token

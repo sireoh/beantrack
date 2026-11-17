@@ -84,6 +84,20 @@ COOKIE_SECURE=true
 
 Register the same redirect URI in the Discord developer portal. TLS is your proxy's job.
 
+Sessions record the visitor's IP from `X-Forwarded-For`, trusted only from the addresses in
+`FORWARDED_ALLOW_IPS`. The default (private ranges) covers the Docker network and a proxy on
+your LAN; if your proxy reaches the server from a public address, add that address too.
+
+### Discover and the installable app
+
+- Set `TMDB_BEARER_TOKEN` to enable the Discover carousels on the home page and the
+  `/discover/tv` and `/discover/movies` pages. Pages are cached in SQLite for
+  `DISCOVER_CACHE_HOURS`; admins can clear the cache in Settings.
+- The site is a PWA: "Add to Home Screen" (iOS) or "Install app" (Android / desktop Chrome). The
+  service worker only caches the app shell, never `/api`. Replace the placeholder icons in
+  `frontend/static/icons/` (192, 512, maskable 512 with the artwork inside the middle 80%, and
+  the 180×180 `apple-touch-icon.png`) and rebuild the frontend.
+
 ### Data and backups
 
 - The database is on the `DATA_VOLUME` volume (`/app/data` in the container), so it survives

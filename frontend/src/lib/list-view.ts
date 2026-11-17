@@ -9,6 +9,9 @@ export interface SortState {
 	dir: SortDirection;
 }
 
+/** Lists open sorted by status: Watching, Completed, Planned, Dropped. */
+export const DEFAULT_SORT: SortState = { key: 'status', dir: 'asc' };
+
 export interface EntryAccessors<T> {
 	status: (entry: T) => WatchStatus;
 	title: (entry: T) => string;

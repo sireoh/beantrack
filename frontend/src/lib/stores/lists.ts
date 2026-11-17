@@ -2,7 +2,7 @@
  * The user's TV and movie lists. Fetched once, then patched in place after every change,
  * so navigating between pages never refetches.
  */
-import { get, writable } from 'svelte/store';
+import { derived, get, writable } from 'svelte/store';
 import { api } from '$lib/api/client';
 import type { MovieList, MovieListEntry, TvList, TvListEntry } from '$lib/api/types';
 import type { StatusFilter } from '$lib/status';
@@ -10,6 +10,13 @@ import { episodes } from './episodes';
 
 export const tvList = writable<TvList | null>(null);
 export const movieList = writable<MovieList | null>(null);
+
+/** IMDb ids in each list, for marking search / Discover cards as already added. */
+export const tvImdbs = derived(tvList, (list) => new Set(list?.entries.map((e) => e.show.imdb)));
+export const movieImdbs = derived(
+	movieList,
+	(list) => new Set(list?.entries.map((e) => e.movie.imdb))
+);
 
 /** Text + status filter for each list page (kept while navigating away and back). */
 export interface ListFilter {

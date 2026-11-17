@@ -30,6 +30,22 @@ server {
         try_files $uri =404;
     }
 
+    # PWA: always revalidate the service worker and manifest, so a deploy shows up on the
+    # next visit instead of being stuck behind a cached copy.
+    location = /service-worker.js {
+        default_type application/javascript;
+        add_header Cache-Control "no-cache";
+        add_header Service-Worker-Allowed "/";
+        try_files $uri =404;
+    }
+
+    location = /manifest.webmanifest {
+        types { }
+        default_type application/manifest+json;
+        add_header Cache-Control "no-cache";
+        try_files $uri =404;
+    }
+
     # Single-page app: unknown paths get index.html (adapter-static fallback).
     location / {
         add_header Cache-Control "no-cache";

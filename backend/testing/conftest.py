@@ -25,6 +25,7 @@ from testing.fakes import (
     B2_TEST_BUCKET,
     B2_TEST_KEY_ID,
     OMDB_TEST_KEY,
+    TMDB_TEST_TOKEN,
     FakeUpstream,
 )
 
@@ -39,6 +40,7 @@ def settings(tmp_path: Path) -> Settings:
         discord_client_secret="test-client-secret",  # type: ignore[arg-type]
         discord_redirect_uri="http://testserver/api/auth/callback",
         omdb_api_key=OMDB_TEST_KEY,  # type: ignore[arg-type]
+        tmdb_bearer_token=TMDB_TEST_TOKEN,  # type: ignore[arg-type]
         encryption_key=Fernet.generate_key().decode(),  # type: ignore[arg-type]
         cookie_secure=False,  # TestClient talks plain http
         frontend_url="http://localhost:5173/",

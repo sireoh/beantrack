@@ -14,6 +14,7 @@ def create(
     created_at: datetime,
     expires_at: datetime,
     device_info: str | None,
+    ip_address: str | None = None,
 ) -> UserSession:
     row = UserSession(
         session_id=session_id,
@@ -21,6 +22,7 @@ def create(
         created_at=created_at,
         expires_at=expires_at,
         device_info=device_info,
+        ip_address=ip_address,
     )
     db.add(row)
     db.flush()

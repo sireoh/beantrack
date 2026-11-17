@@ -5,12 +5,14 @@
 	import {
 		closeDropdown,
 		filterEntries,
+		DEFAULT_SORT,
 		nextSort,
 		sortEntries,
 		type EntryAccessors,
 		type SortKey,
 		type SortState
 	} from '$lib/list-view';
+	import { WatchStatus } from '$lib/status';
 	import { tvFilter, tvList } from '$lib/stores/lists';
 	import { showError, showToast } from '$lib/stores/toasts';
 	import ConfirmModal from './ConfirmModal.svelte';
@@ -28,7 +30,7 @@
 		score: (e) => e.show.score
 	};
 
-	let sort = $state<SortState | null>(null);
+	let sort = $state<SortState | null>(DEFAULT_SORT);
 	const rows = $derived(
 		sortEntries(filterEntries($tvList?.entries ?? [], $tvFilter, accessors), sort, accessors)
 	);
@@ -39,6 +41,10 @@
 
 	/** Episodes watched so far: the 1-based position of the current episode, 0 if not started. */
 	const progress = (e: TvListEntry) => (e.current_episode_metadata ? e.current_episode + 1 : 0);
+
+	/** The current episode's still, except for completed shows, which show the show's poster. */
+	const episodeImage = (e: TvListEntry) =>
+		e.status === WatchStatus.Completed ? null : (e.current_episode_metadata?.image ?? null);
 
 	// Mobile/tablet: a single modal, pointed at the row being edited.
 	let editingImdb = $state<string | null>(null);
@@ -95,8 +101,8 @@
 						<td><StatusSliver status={entry.status} /></td>
 						<td>
 							<Poster
-								src={meta?.image ?? entry.show.image}
-								wide={Boolean(meta?.image)}
+								src={episodeImage(entry) ?? entry.show.image}
+								wide={episodeImage(entry) !== null}
 								imdb={entry.show.imdb}
 								alt={entry.show.title}
 							/>

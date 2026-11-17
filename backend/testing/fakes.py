@@ -1,4 +1,4 @@
-"""In-process fakes for TVmaze, OMDb, Discord and Backblaze B2, served through httpx.MockTransport."""
+"""In-process fakes for TVmaze, OMDb, TMDB, Discord and Backblaze B2, served through httpx.MockTransport."""
 
 import base64
 import hashlib
@@ -11,6 +11,7 @@ from typing import Any
 import httpx
 
 OMDB_TEST_KEY = "omdb-test-key"
+TMDB_TEST_TOKEN = "tmdb-test-token"
 B2_TEST_KEY_ID = "b2-test-key-id"
 B2_TEST_APP_KEY = "b2-test-app-key"
 B2_TEST_BUCKET = "beantrack-test"
@@ -74,6 +75,40 @@ INTERSTELLAR = {
     "Response": "True",
 }
 MOVIES_BY_IMDB = {"tt0133093": THE_MATRIX, "tt0816692": INTERSTELLAR}
+
+# --- TMDB ---------------------------------------------------------------------------
+# Discover results. Each TMDB id maps to an IMDb id (None = TMDB doesn't know one).
+TMDB_TV_PAGES = {
+    1: [
+        {"id": 1396, "name": "Breaking Bad", "first_air_date": "2008-01-20", "vote_average": 8.912,
+         "vote_count": 15000, "poster_path": "/bb.jpg", "genre_ids": [18, 80]},
+        {"id": 5000, "name": "No IMDb Show", "first_air_date": "", "vote_average": 0,
+         "vote_count": 0, "poster_path": None, "genre_ids": [99999]},
+        {"id": 6000, "name": "Unknown To TVmaze", "first_air_date": "2020-05-01",
+         "vote_average": 6.5, "vote_count": 10, "poster_path": "/u.jpg", "genre_ids": []},
+    ],
+    2: [
+        {"id": 1438, "name": "The Wire", "first_air_date": "2002-06-02", "vote_average": 8.6,
+         "vote_count": 2500, "poster_path": "/wire.jpg", "genre_ids": [80, 18]},
+    ],
+}
+TMDB_TV_IMDB = {1396: "tt0903747", 1438: "tt0306414", 5000: None, 6000: "tt9999999"}
+TMDB_MOVIE_PAGES = {
+    1: [
+        {"id": 603, "title": "The Matrix", "release_date": "1999-03-31", "vote_average": 8.2,
+         "vote_count": 26000, "poster_path": "/matrix.jpg", "genre_ids": [28, 878]},
+        {"id": 7000, "title": "No IMDb Movie", "release_date": "2024-01-01", "vote_average": 5,
+         "vote_count": 3, "poster_path": None, "genre_ids": [18]},
+        {"id": 8000, "title": "Unknown To OMDb", "release_date": "2023-02-02", "vote_average": 7,
+         "vote_count": 3, "poster_path": None, "genre_ids": []},
+    ],
+    2: [
+        {"id": 157336, "title": "Interstellar", "release_date": "2014-11-05", "vote_average": 8.4,
+         "vote_count": 35000, "poster_path": "/inter.jpg", "genre_ids": [12, 18, 878]},
+    ],
+}
+TMDB_MOVIE_IMDB = {603: "tt0133093", 157336: "tt0816692", 7000: None, 8000: "tt8888888"}
+TMDB_TOTAL_PAGES = 2
 
 
 def tv_add_payload(
@@ -151,6 +186,8 @@ class FakeUpstream:
             return self._omdb(request)
         if host == "discord.com":
             return self._discord(request)
+        if host == "api.themoviedb.org":
+            return self._tmdb(request)
         if host.endswith("backblazeb2.com"):
             return self._b2(request)
         return httpx.Response(404)
@@ -206,6 +243,34 @@ class FakeUpstream:
                 return httpx.Response(200, json={"Response": "False", "Error": "Incorrect IMDb ID."})
             return httpx.Response(200, json=movie)
         return httpx.Response(200, json={"Response": "False", "Error": "No parameters."})
+
+    def _tmdb(self, request: httpx.Request) -> httpx.Response:
+        if request.headers.get("authorization") != f"Bearer {TMDB_TEST_TOKEN}":
+            return httpx.Response(401, json={"status_message": "Invalid API key"})
+        path = request.url.path
+        if match := re.fullmatch(r"/3/discover/(tv|movie)", path):
+            pages = TMDB_TV_PAGES if match.group(1) == "tv" else TMDB_MOVIE_PAGES
+            page = int(request.url.params.get("page", "1"))
+            return httpx.Response(
+                200,
+                json={
+                    "page": page,
+                    "results": pages.get(page, []),
+                    "total_pages": TMDB_TOTAL_PAGES,
+                    "total_results": sum(len(p) for p in pages.values()),
+                },
+            )
+        if match := re.fullmatch(r"/3/tv/(\d+)/external_ids", path):
+            tmdb_id = int(match.group(1))
+            if tmdb_id not in TMDB_TV_IMDB:
+                return httpx.Response(404, json={"status_message": "not found"})
+            return httpx.Response(200, json={"id": tmdb_id, "imdb_id": TMDB_TV_IMDB[tmdb_id]})
+        if match := re.fullmatch(r"/3/movie/(\d+)", path):
+            tmdb_id = int(match.group(1))
+            if tmdb_id not in TMDB_MOVIE_IMDB:
+                return httpx.Response(404, json={"status_message": "not found"})
+            return httpx.Response(200, json={"id": tmdb_id, "imdb_id": TMDB_MOVIE_IMDB[tmdb_id]})
+        return httpx.Response(404)
 
     def _discord(self, request: httpx.Request) -> httpx.Response:
         if request.url.path == "/api/oauth2/token" and request.method == "POST":

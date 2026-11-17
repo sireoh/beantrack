@@ -10,6 +10,9 @@ export default defineConfig(({ mode }) => {
 	// So the site works from any device on the network (e.g. a phone at http://<LAN-IP>:5173)
 	// and the session cookie is first-party, with no CORS or localhost/127.0.0.1 mix-ups.
 	const apiTarget = env.API_PROXY_TARGET || 'http://127.0.0.1:8000';
+	// xfwd: send X-Forwarded-For, so the backend records the real client IP at login
+	// (it trusts that header from 127.0.0.1, see FORWARDED_ALLOW_IPS).
+	const apiProxy = { '/api': { target: apiTarget, xfwd: true } };
 
 	return {
 		plugins: [tailwindcss(), sveltekit()],
@@ -17,11 +20,11 @@ export default defineConfig(({ mode }) => {
 			host: '0.0.0.0', // reachable from other devices on the LAN
 			port: 5173,
 			strictPort: true,
-			proxy: { '/api': { target: apiTarget } }
+			proxy: apiProxy
 		},
 		preview: {
 			host: '0.0.0.0',
-			proxy: { '/api': { target: apiTarget } }
+			proxy: apiProxy
 		}
 	};
 });

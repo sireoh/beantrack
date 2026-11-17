@@ -10,6 +10,7 @@ from sqlalchemy.orm import Session, sessionmaker
 from app.clients.b2 import B2Client
 from app.clients.discord import DiscordOAuthClient
 from app.clients.omdb import OmdbClient
+from app.clients.tmdb import TmdbClient
 from app.clients.tvmaze import TvMazeClient
 from app.core.config import Settings
 from app.core.errors import AppError
@@ -43,6 +44,13 @@ def get_tvmaze(http: HttpClient) -> TvMazeClient:
 
 def get_omdb(http: HttpClient, settings: SettingsDep) -> OmdbClient:
     return OmdbClient(http, settings.omdb_api_key.get_secret_value())
+
+
+def get_tmdb(http: HttpClient, settings: SettingsDep) -> TmdbClient:
+    token = settings.tmdb_bearer_token.get_secret_value()
+    if not token:
+        raise AppError("Discover is not configured: set TMDB_BEARER_TOKEN")
+    return TmdbClient(http, token)
 
 
 def get_discord(http: HttpClient, settings: SettingsDep) -> DiscordOAuthClient:
@@ -83,6 +91,7 @@ def get_b2(http: HttpClient, settings: SettingsDep) -> B2Client:
 
 TvMaze = Annotated[TvMazeClient, Depends(get_tvmaze)]
 Omdb = Annotated[OmdbClient, Depends(get_omdb)]
+Tmdb = Annotated[TmdbClient, Depends(get_tmdb)]
 Discord = Annotated[DiscordOAuthClient, Depends(get_discord)]
 Cipher = Annotated[TokenCipher, Depends(get_cipher)]
 CurrentUser = Annotated[User, Depends(get_current_user)]

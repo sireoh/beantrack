@@ -2,11 +2,13 @@
 
 import secrets
 from datetime import timedelta
+from urllib.parse import urljoin
 
 from fastapi import APIRouter, Request, Response, status
 from fastapi.responses import RedirectResponse
 
 from app.api.deps import Cipher, CurrentUser, DbSession, Discord, Omdb, SettingsDep, TvMaze
+from app.core.client_ip import client_ip
 from app.core.config import Settings
 from app.core.errors import AppError
 from app.schemas.profile import ProfileExport, ProfileImportRequest, ProfileImportResult
@@ -19,6 +21,19 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 STATE_COOKIE = "beantrack_oauth_state"
 STATE_COOKIE_PATH = "/api/auth"
 STATE_TTL_SECONDS = 600
+# Where to send the browser after login (an app path such as /discover/tv), kept next to
+# the OAuth state cookie for the round trip through Discord.
+NEXT_COOKIE = "beantrack_login_next"
+MAX_NEXT_LENGTH = 512
+
+
+def _safe_next(path: str | None) -> str | None:
+    """Accept only same-site paths ("/x"), never "//host" or "/\\host" (open redirects)."""
+    if not path or len(path) > MAX_NEXT_LENGTH or not path.startswith("/"):
+        return None
+    if path.startswith("//") or "\\" in path or any(ord(c) < 32 for c in path):
+        return None
+    return path
 
 
 def _set_session_cookie(response: Response, token: str, settings: Settings) -> None:
@@ -34,8 +49,8 @@ def _set_session_cookie(response: Response, token: str, settings: Settings) -> N
 
 
 @router.get("/login", status_code=status.HTTP_302_FOUND)
-def login(discord: Discord, settings: SettingsDep) -> RedirectResponse:
-    """Redirect the browser to Discord's consent screen."""
+def login(discord: Discord, settings: SettingsDep, next: str | None = None) -> RedirectResponse:
+    """Redirect the browser to Discord's consent screen. `next` is an app path to return to."""
     state = secrets.token_urlsafe(24)
     response = RedirectResponse(discord.authorize_url(state), status_code=status.HTTP_302_FOUND)
     # CSRF protection for the OAuth flow: the callback must echo this value back.
@@ -48,6 +63,18 @@ def login(discord: Discord, settings: SettingsDep) -> RedirectResponse:
         samesite="lax",
         path=STATE_COOKIE_PATH,
     )
+    if (target := _safe_next(next)) is not None:
+        response.set_cookie(
+            NEXT_COOKIE,
+            target,
+            max_age=STATE_TTL_SECONDS,
+            httponly=True,
+            secure=settings.cookie_secure,
+            samesite="lax",
+            path=STATE_COOKIE_PATH,
+        )
+    else:
+        response.delete_cookie(NEXT_COOKIE, path=STATE_COOKIE_PATH)
     return response
 
 
@@ -76,9 +103,18 @@ def callback(
         code=code,
         device_info=request.headers.get("user-agent"),
         session_ttl=timedelta(days=settings.session_ttl_days),
+        ip_address=client_ip(
+            request.client.host if request.client else None,
+            request.headers.get("x-forwarded-for"),
+            request.headers.get("x-real-ip"),
+            settings.trusted_proxies,
+        ),
     )
-    response = RedirectResponse(settings.frontend_url, status_code=status.HTTP_302_FOUND)
+    target = _safe_next(request.cookies.get(NEXT_COOKIE))
+    destination = urljoin(settings.frontend_url, target) if target else settings.frontend_url
+    response = RedirectResponse(destination, status_code=status.HTTP_302_FOUND)
     response.delete_cookie(STATE_COOKIE, path=STATE_COOKIE_PATH)
+    response.delete_cookie(NEXT_COOKIE, path=STATE_COOKIE_PATH)
     _set_session_cookie(response, token, settings)
     return response
 

@@ -65,4 +65,4 @@ services:
       NGINX_MAX_BODY_SIZE: ${NGINX_MAX_BODY_SIZE:-10m}
     ports:
       # e.g. FRONTEND_PUBLISH=127.0.0.1:8080 behind a reverse proxy on the same host
-      - ${FRONTEND_PUBLISH:-8080}:${NGINX_PORT:-8080}
+      - 4736:${NGINX_PORT:-8080}
